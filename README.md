@@ -1,4 +1,4 @@
-# Non-Adiabatic Path Integral Monte Carlo for Molecular Systems
+# Non-Adiabatic Path Integral Monte Carlo Algorithm for Molecular Systems
 Implementation of a Markov Chain Monte Carlo Algorithm to sample static finite temperature properties of molecules. 
 
 ## Usage
