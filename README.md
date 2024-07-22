@@ -24,7 +24,7 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 
 | Parameter                 | Value              | Description                                                  |
 |---------------------------|--------------------|--------------------------------------------------------------|
-| `T`                       | `t_1, ..., t_n`| Set the temperatures for the simulation. Multiple temperature loops 1,..,n can be run in parallel            |
+| `T`                       | `t_1,...,t_n`| Set the temperature for the simulation. Multiple temperature loops 1,..,n can be run in parallel            |
 | `numParticles`            |          | Specify the number of particles                              |
 | `lam`                     | `1/(2*m_1), ..., 1/(2*m_n)`     | Lambda, calculated as half the inverse of mass for particle 1,...,n     |
 | `n`                       |          | Number of electronic states                                  |
@@ -74,4 +74,4 @@ python main.py
 
 4) Analyze output in `debug.log` and `output/`
 
-For more detailes see [pdf](https://ulb-dok.uibk.ac.at/urn/urn:nbn:at:at-ubi:1-148622).
+For more details see [pdf](https://ulb-dok.uibk.ac.at/urn/urn:nbn:at:at-ubi:1-148622).
