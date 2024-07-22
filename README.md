@@ -48,13 +48,14 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 ### Two harmonic adiabats
 
 ```math
-$V = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}$
+V = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}
 ```
 
-- Define input parameters
-- Define Potential in `potential.py`
+1) Define input parameters
+2) Define potential in `potential.py`
 
 ```python
+# getV is called from the main PIMC code
 def getV(R, eState):
 	if eState[0] == 0:
 		return V_HO(R[0], 0)  # only one particle, thus r = R[0]
@@ -66,9 +67,9 @@ def getGradV(R, eState):
 	return np.array([R[0][0], R[0][1], R[0][2]]) # x,y,z coordinates of particle
 ```
 
-- Run script with: 
+3) Run script with: 
 ```bash
 python main.py
 ```
 
-- Analyze output in `debug.log` and `output/`
+4) Analyze output in `debug.log` and `output/`
