@@ -442,9 +442,9 @@ def worker(args):
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
     if kinVirial == "True":
         save_to_csv(Energy[:,2], f'{i}_KinEnergyTrace.csv')
+        save_to_csv(Energy[:,1], f'{i}_KinThermoEnergyTrace.csv')
     else:
         save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
-    save_to_csv(Energy, f'{i}_EnergyTrace.csv')
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     for key in numAccept:
@@ -517,6 +517,7 @@ if __name__ == "__main__":
     #    exit()
 
     # run PICM simulations
+    np.random.seed(rand_seed)
     parallel_main(T, n, echange, k_e, k_c)
     # resample and check convergance
     rcc()

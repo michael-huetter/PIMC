@@ -12,8 +12,8 @@ import configparser
 config = configparser.ConfigParser()
 config.read('input.in')
 use_jit = str(config["settings"]["use_jit"]) 
-numParticles = int(config["settings"]["numParticles"])    
-
+numParticles = int(config["settings"]["numParticles"])  
+kinVir = str(config["settings"]["kin_virial"]) 
 
 def jackknife_after_bootstrap(data, num_resamples=1000):
     n = len(data)
@@ -153,10 +153,7 @@ def rcc():
     if numParticles == 1:
         for i in T:
             r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
-            write_debug_log(f"Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
+            write_debug_log(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
 
-    # compute theat capacity
-    
-
-
+rcc()
     
