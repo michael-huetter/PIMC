@@ -73,3 +73,5 @@ python main.py
 ```
 
 4) Analyze output in `debug.log` and `output/`
+
+For more detailes see [pdf](https://ulb-dok.uibk.ac.at/urn/urn:nbn:at:at-ubi:1-148622).
