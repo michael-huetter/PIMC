@@ -43,12 +43,12 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 | `eCG`                     |         | Parameter related to skipping global e-changes              |
 | `eCL`                     |         | Parameter related to skipping local e-changes               |
 
-## Example Input
+## Example Usage
 
-### Two harmonic adiabats
+### System composed of two harmonic adiabats
 
 ```math
-V = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}
+V_{\text{HO}} = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}
 ```
 
 1) Define input parameters
