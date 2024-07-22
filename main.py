@@ -3,6 +3,7 @@ from numba import jit, njit, typed
 from concurrent.futures import ProcessPoolExecutor
 import os
 from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
+from propExcit import move_kink, find_kinks, create_or_destroy_kink
 import configparser
 from readGeom import getGeom
 from stats import rcc
@@ -78,12 +79,14 @@ def getEig(V):
     return S
 
 def get_phi(beads, eState, numTimeSlices, n):
+    """
+    Currnetly only implementet for diatomics!!!       
+    """
 
     S = []
     for j in range(numTimeSlices):
-        
         R = beads[j,0:]
-        V_result = getDiabV(R)         # <-----
+        V_result = getDiabV(R[0]) 
         if isinstance(V_result, float):
             V_tot = np.full((n * n,), V_result)
         else:
@@ -91,12 +94,16 @@ def get_phi(beads, eState, numTimeSlices, n):
         V = V_tot.reshape((n, n))
         S_i = getEig(V)
         S.append(S_i)
-
+    
     phi = 1
+
     for i in range(len(S)):
+
         current_vector = S[i][:, eState[i]]
-        next_vector = S[(i+1) % len(S)][eState[(i+1) % len(S)]]
+        next_vector = S[(i+1) % len(S)][:, eState[(i+1) % len(S)]]   # korrekt soo?
+
         dot = np.dot(current_vector, next_vector)
+
         phi *= dot
 
     return phi
@@ -330,12 +337,37 @@ def nonAdiab(beads, ptcl, tau, numTimeSlices, n, eState):
         return old_eState
 
     
-def PoE(beads, ptcl, tau, numTimeSlices, n, eState):
+def PoEmove(beads, tau, numTimeSlices, n, eState):
     """
     Propagation of excitation move.
     """
+
+    old_eState = eState.copy()
+    kinks = find_kinks(eState)
+    acc, new_eState =  move_kink(eState, kinks)
+
+    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
+    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, new_eState)
+
+    if np.random.random() < np.exp(-(newAction - oldAction)):
+        return new_eState
+    else:
+        return old_eState
     
-    pass
+def change_overlap_terms(beads, tau, numTimeSlices, n, eState):
+    """
+    Change the number of overlapping terms in the PoE move.
+    """
+
+    old_eState = eState.copy()
+    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
+    new_eState = create_or_destroy_kink(eState, n)
+    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, new_eState)
+
+    if np.random.random() < np.exp(-(newAction - oldAction)):
+        return new_eState
+    else:
+        return old_eState
 
 def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, k_e, k_c):
     """
@@ -355,9 +387,8 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     for k in tqdm(range(numSteps)):
 
         # try a center-of-mass move
-        if k % 1 == 0:
-            for i in np.random.randint(0,numParticles,numParticles):
-                    numAccept["CoM"] += center_of_mass_move(beads, i, tau, delta, numTimeSlices, n, eState)
+        for i in np.random.randint(0,numParticles,numParticles):
+                numAccept["CoM"] += center_of_mass_move(beads, i, tau, delta, numTimeSlices, n, eState)
         
         if staging == "True":
             # try a staging move
@@ -368,22 +399,21 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             for i in np.random.randint(0,numParticles,numParticles):
                 numAccept["Bead"] += bead_move(beads, i, tau, delta_bead, numTimeSlices, lam, numParticles, n,eState)
         
-        if echange == "True":
+        if echange == "True" and PoE == "False":
             if k % k_c == 0:
-                for i in np.random.randint(0,numParticles,numParticles):
-                    eState, accept = e_change(beads, i, tau, numTimeSlices, n, eState)
-                    numAccept["eChange"] += accept
+                eState, accept = e_change(beads, i, tau, numTimeSlices, n, eState)
+                numAccept["eChange"] += accept
             if non_adiabatic_coupling == "True":
                 if k % k_e == 0:
-                    for i in np.random.randint(0,numParticles,numParticles):
-                        eState = nonAdiab(beads, i, tau, numTimeSlices, n, eState)
+                    eState = nonAdiab(beads, i, tau, numTimeSlices, n, eState)
+        elif echange == "True" and PoE == "True":
+            eState = PoEmove(beads, tau, numTimeSlices, n, eState)
+            if k % k_e == 0:
+                eState = change_overlap_terms(beads, tau, numTimeSlices, n, eState)
         
-        # keep track of the energy and position
-        potE = potEnergy(beads, tau, numTimeSlices, n, eState)
-        
-        
-
+        # keep track of the energy and position    
         if k % corrSkip == 0 and k > thermSkip:
+            potE = potEnergy(beads, tau, numTimeSlices, n, eState)
             if kinVirial == "True":
                 kinEvirial = virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState)
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
