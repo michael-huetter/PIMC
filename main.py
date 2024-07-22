@@ -1,19 +1,14 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from numba import jit, njit, typed
-import matplotlib
 from concurrent.futures import ProcessPoolExecutor
-import csv
 import os
 from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
 import configparser
 from readGeom import getGeom
 from stats import rcc
-import functools
-import random
 from potential import getV, getGradV, getDiabV
 from tqdm import tqdm
-import chemcoord as cc
+
 
 
 """
@@ -135,7 +130,7 @@ def potAction(beads, j_min, j_max, tau, numTimeSlices, n, eState):
         phi = get_phi(beads, eState, numTimeSlices, n)
     else:
         phi = 1
-
+    
     return PE*tau - np.log(np.abs(phi))/tau
 
 
@@ -202,10 +197,10 @@ def beadPos(beads, numTimeSlices):
     Estimator for the binding lengt.
     """
     
-    x = []
+    x = 0
     for j in range(numTimeSlices):
-        x.append(beads[j,0:])
-    return x
+        x +=  np.sqrt( beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2) 
+    return x/numTimeSlices
     
 """
 MC steps  -----------------------------------------------------------------
@@ -213,7 +208,8 @@ MC steps  -----------------------------------------------------------------
 
 @conditional_jit
 def center_of_mass_move(beads, ptcl, tau, delta, numTimeSlices, n, eState):
-    """Center of mass update. (displacing an entire particle worldline)
+    """
+    Center of mass update. (displacing an entire particle worldline)
     delta: controle the acceptance ratio of a center of mass move
     """
 
@@ -227,7 +223,7 @@ def center_of_mass_move(beads, ptcl, tau, delta, numTimeSlices, n, eState):
 
     
     newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
-
+    
     if np.random.random() < np.exp(-(newAction - oldAction)):
         return True
     else:
@@ -357,6 +353,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
     #for k in range(numSteps): 
     for k in tqdm(range(numSteps)):
+
         # try a center-of-mass move
         if k % 1 == 0:
             for i in np.random.randint(0,numParticles,numParticles):
@@ -383,16 +380,22 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
         
         # keep track of the energy and position
         potE = potEnergy(beads, tau, numTimeSlices, n, eState)
-        if kinVirial == "True":
-            kinE = virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState)
-        else:
-            kinE = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
+        
         
 
         if k % corrSkip == 0 and k > thermSkip:
-            EnergyTrace.append([potE, kinE])
-            PositionTrace.append(beadPos(beads, numTimeSlices))
+            if kinVirial == "True":
+                kinEvirial = virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState)
+                kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
+                EnergyTrace.append([potE, kinEthermo, kinEvirial])
+            else:
+                kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
+                EnergyTrace.append([potE, kinEthermo])
             eStateTrace.append(eState)
+            if numParticles == 1:
+                PositionTrace.append(beadPos(beads, numTimeSlices))
+            else:
+                PositionTrace.append(beads)
       
     return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace)
 
@@ -437,7 +440,11 @@ def worker(args):
 
     # Save Energy and Position data to CSV files
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
-    save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
+    if kinVirial == "True":
+        save_to_csv(Energy[:,2], f'{i}_KinEnergyTrace.csv')
+    else:
+        save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
+    save_to_csv(Energy, f'{i}_EnergyTrace.csv')
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     for key in numAccept:
@@ -504,6 +511,10 @@ if __name__ == "__main__":
     if numParticles < 1:
         write_debug_log(f"Error: Looks like you tried to bring {numParticles} particles. We need at least 1 to get this party started.")
         exit()
+    
+    #if len(getV(np.array([0.0]), np.array([0]))):
+    #    write_debug_log(f"Error: getV does not return a float")
+    #    exit()
 
     # run PICM simulations
     parallel_main(T, n, echange, k_e, k_c)

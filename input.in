@@ -1,16 +1,16 @@
 [settings]
-T = 2
+T = 0.00095
 numParticles = 1   
-lam = 0.5
-n = 2
-delta = 1.3           
-numTimeSlices = 25
+lam = 0.0005443213673352747
+n = 1
+delta = 2.46          
+numTimeSlices = 20
 m = 18   
-numMCSteps = 100000
+numMCSteps = 50000
 corrSkip = 25      
 thermSkip = 1000    
 rand_seed = 4772618
-echange = True
+echange = False
 non_adiabatic_coupling = False
 staging = True      
 delta_bead = 0.05  

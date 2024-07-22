@@ -8,6 +8,12 @@ from scipy.stats import bootstrap
 from helpers import get_filenames, remove_duplicates_floats, HO3DEnergyExact, write_debug_log, HO3DEnergyExactAdiab
 from statsmodels.tsa.stattools import acf
 import arviz as az
+import configparser
+config = configparser.ConfigParser()
+config.read('input.in')
+use_jit = str(config["settings"]["use_jit"]) 
+numParticles = int(config["settings"]["numParticles"])    
+
 
 def jackknife_after_bootstrap(data, num_resamples=1000):
     n = len(data)
@@ -142,8 +148,15 @@ def rcc():
         # Print eState population
         data = np.loadtxt(f"output/{i}_eStatTrace.csv", delimiter=",")
         eStatePop(data, i)
-     
-     
+
+    # mean bond length for simple diatomic molecules
+    if numParticles == 1:
+        for i in T:
+            r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
+            write_debug_log(f"Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
+
+    # compute theat capacity
+    
 
 
     
