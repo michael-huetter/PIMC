@@ -25,20 +25,53 @@ Define your input parameters in the file input.in. Ensure that all units are ato
 | Parameter                 | Value              | Description                                                  |
 |---------------------------|--------------------|--------------------------------------------------------------|
 | `T`                       | `t1, t2, ..., tn`| Set the temperatures for the simulation                      |
-| `numParticles`            | ``         | Specify the number of particles                              |
+| `numParticles`            |          | Specify the number of particles                              |
 | `lam`                     | `1/(2*mass)`     | Lambda parameter, calculated as half the inverse of mass     |
-| `n`                       | ``         | Number of electronic states                                  |
-| `delta`                   | ``          | Controls acceptance ratio (Center of Mass move)              |
-| `numTimeSlices`           | ``         | Number of beads in the path integral                         |
-| `m`                       | ``         | Stage length (controls acceptance ratio of staging move)     |
-| `numMCSteps`              | ``         | Total Monte Carlo sweeps                                     |
+| `n`                       |          | Number of electronic states                                  |
+| `delta`                   |           | Controls acceptance ratio (Center of Mass move)              |
+| `numTimeSlices`           |          | Number of beads in the path integral                         |
+| `m`                       |          | Stage length (controls acceptance ratio of staging move)     |
+| `numMCSteps`              |          | Total Monte Carlo sweeps                                     |
 | `corrSkip`                | `20`               | Correlation skip                                             |
 | `thermSkip`               | `2000`             | Thermalization skip                                          |
-| `rand_seed`               | ``           | Random seed                                                  |
+| `rand_seed`               |            | Random seed                                                  |
 | `echange`                 | `true/false`       | Set to true if multiple electronic states are present        |
 | `non_adiabatic_coupling`  | `true/false`       | Set to true to consider non-adiabatic effects                |
 | `staging`                 | `true/false`       | Set to true if staging should be enabled                     |
-| `delta_bead`              | ``          | Controls acceptance ratio for individual bead moves          |
+| `delta_bead`              |           | Controls acceptance ratio for individual bead moves          |
 | `PoE`                     | `true/false`       | True if propagation of Excitation moves should be used       |
-| `eCG`                     | ``        | Parameters related to skipping global e-changes              |
-| `eCL`                     | ``        | Parameters related to skipping local e-changes               |
+| `eCG`                     |         | Parameters related to skipping global e-changes              |
+| `eCL`                     |         | Parameters related to skipping local e-changes               |
+
+## Example Input
+
+### Two harmonic adiabats
+
+```latex
+V = \begin{bmatrix}
+0.5 \cdot (x^2 + y^2 + z^2) & 0 \\
+0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1
+\end{bmatrix}
+```
+
+- Define input parameters
+- Define Potential in `potential.py`
+
+```python
+def getV(R, eState):
+	if eState[0] == 0:
+		return V_HO(R[0], 0)  # only one particle, thus r = R[0]
+	else:
+		return V_HO(R[0], 1)
+	
+# Compute analytic gradient (only necessary if Virial Estimator is used)
+def getGradV(R, eState):
+	return np.array([R[0][0], R[0][1], R[0][2]]) # x,y,z coordinates of particle
+```
+
+- Run script with: 
+```bash
+python main.py
+```
+
+- Analyze output in `debug.log` and `output/`
