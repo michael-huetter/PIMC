@@ -47,12 +47,9 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 
 ### Two harmonic adiabats
 
-$
-V = \begin{bmatrix}
-0.5 \cdot (x^2 + y^2 + z^2) & 0 \\
-0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1
-\end{bmatrix}
-$
+
+$V = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}$
+
 
 - Define input parameters
 - Define Potential in `potential.py`
