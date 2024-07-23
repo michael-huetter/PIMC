@@ -2,7 +2,7 @@
 Implementation of a Markov Chain Monte Carlo Algorithm to sample static finite temperature properties of molecules.
 
 ## Requirements
-- Python 2.6 or higher
+- Python 3.6 or higher
 - numpy
 - numba
 - tqdm
