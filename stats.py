@@ -155,5 +155,4 @@ def rcc():
             r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
             write_debug_log(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
 
-rcc()
     
