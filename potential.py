@@ -9,7 +9,7 @@ import joblib
 import configparser
 config = configparser.ConfigParser()
 config.read('input.in')
-use_jit = str(config["settings"]["use_jit"]) 
+use_jit = str(config["PIMC"]["use_jit"]) 
 
 def conditional_jit(func):
 

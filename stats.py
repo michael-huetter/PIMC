@@ -11,9 +11,9 @@ import arviz as az
 import configparser
 config = configparser.ConfigParser()
 config.read('input.in')
-use_jit = str(config["settings"]["use_jit"]) 
-numParticles = int(config["settings"]["numParticles"])  
-kinVir = str(config["settings"]["kin_virial"]) 
+use_jit = str(config["PIMC"]["use_jit"]) 
+numParticles = int(config["system"]["numParticles"])  
+kinVir = str(config["PIMC"]["kin_virial"]) 
 
 def jackknife_after_bootstrap(data, num_resamples=1000):
     n = len(data)

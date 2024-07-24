@@ -1,39 +1,42 @@
-import numpy as np
-from numba import jit, njit, typed
-from concurrent.futures import ProcessPoolExecutor
 import os
-from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
-from propExcit import move_kink, find_kinks, create_or_destroy_kink
+from concurrent.futures import ProcessPoolExecutor
+
+import numpy as np
+from numba import njit, typed
 import configparser
-from readGeom import getGeom
-from stats import rcc
-from potential import getV, getGradV, getDiabV
 from tqdm import tqdm
 
-
+from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
+from propExcit import move_kink, find_kinks, create_or_destroy_kink
+from potential import getV, getGradV, getDiabV
+from stats import rcc
+from readGeom import getGeom
 
 """
-Read input parameters -----------------------------------------------------------------
+Read input parameters-----------------------------------------------------------------
 """
 
 config = configparser.ConfigParser()
 config.read('input.in')
-echange = str(config["settings"]["echange"]) 
-non_adiabatic_coupling = str(config["settings"]["non_adiabatic_coupling"]) 
-lam = str(config["settings"]["lam"]); lam_list = lam.split(','); lam = [float(item) for item in lam_list]
-numParticles = int(config["settings"]["numParticles"])    
-numMCSteps = int(config["settings"]["numMCSteps"])
-corrSkip = int(config["settings"]["corrSkip"])
-thermSkip = int(config["settings"]["thermSkip"])
-rand_seed = int(config["settings"]["rand_seed"])
-staging = str(config["settings"]["staging"]) 
-delta = float(config["settings"]["delta"]) # CoM displacement
-m = int(config["settings"]["m"]) # stage length
-numTimeSlices =  int(config["settings"]["numTimeSlices"])
-delta_bead = float(config["settings"]["delta_bead"]) 
-use_jit = str(config["settings"]["use_jit"]) 
-kinVirial = str(config["settings"]["kin_virial"]) 
-PoE = str(config["settings"]["PoE"])
+
+numParticles = config.getint("system", "numParticles")  
+lam = str(config["system"]["lam"]); lam_list = lam.split(','); lam = [float(item) for item in lam_list]  
+
+numMCSteps = config.getint("PIMC", "numMCSteps")
+staging = config.getboolean("PIMC", "staging") 
+m = config.getint("PIMC", "m") # stage length
+numTimeSlices =  config.getint("PIMC", "numTimeSlices")
+delta = config.getfloat("PIMC", "delta") # CoM displacement
+delta_bead = config.getfloat("PIMC", "delta_bead") 
+use_jit = config.getboolean("PIMC", "use_jit") 
+echange = config.getboolean("PIMC", "echange") 
+non_adiabatic_coupling = config.getboolean("PIMC", "non_adiabatic_coupling") 
+PoE = config.getboolean("PIMC", "PoE")
+rand_seed = config.getint("PIMC", "rand_seed")
+kinVirial = config.getboolean("PIMC", "kin_virial") 
+
+corrSkip = config.getint("convergence", "corrSkip")
+thermSkip = config.getint("convergence", "thermSkip")
 
 def conditional_jit(func):
 
@@ -110,9 +113,6 @@ def get_phi(beads, eState, numTimeSlices, n):
 
 @conditional_jit
 def potEnergy(beads, tau, numTimeSlices, n, eState):
-    """
-    Include non-adiabatic effects trough a thermally averaged mean-field potential.
-    """
 
     PE = 0.0
     for j in range(numTimeSlices):
@@ -198,10 +198,10 @@ def virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState):
 """
 Further estimators  -----------------------------------------------------------------
 """
+
 @conditional_jit
 def beadPos(beads, numTimeSlices):
     """
-    Estimator for the binding lengt.
     """
     
     x = 0
@@ -379,34 +379,33 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     eStateTrace = []
     numAccept = {"CoM":0, "Staging":0, "Bead": 0, "eChange": 0}
 
-    if use_jit == "True":
+    if use_jit:
         lam = typed.List(lam)
 
 
-    #for k in range(numSteps): 
     for k in tqdm(range(numSteps)):
 
         # try a center-of-mass move
         for i in np.random.randint(0,numParticles,numParticles):
                 numAccept["CoM"] += center_of_mass_move(beads, i, tau, delta, numTimeSlices, n, eState)
         
-        if staging == "True":
+        if staging:
             # try a staging move
             for i in np.random.randint(0,numParticles,numParticles): 
                 numAccept["Staging"] += staging_move(beads, i, tau, lam, numTimeSlices, m, n, eState)
-        else:
+        if not staging:
             # try a bead move
             for i in np.random.randint(0,numParticles,numParticles):
                 numAccept["Bead"] += bead_move(beads, i, tau, delta_bead, numTimeSlices, lam, numParticles, n,eState)
         
-        if echange == "True" and PoE == "False":
+        if echange and not PoE:
             if k % k_c == 0:
                 eState, accept = e_change(beads, i, tau, numTimeSlices, n, eState)
                 numAccept["eChange"] += accept
             if non_adiabatic_coupling == "True":
                 if k % k_e == 0:
                     eState = nonAdiab(beads, i, tau, numTimeSlices, n, eState)
-        elif echange == "True" and PoE == "True":
+        if echange and PoE:
             eState = PoEmove(beads, tau, numTimeSlices, n, eState)
             if k % k_e == 0:
                 eState = change_overlap_terms(beads, tau, numTimeSlices, n, eState)
@@ -428,8 +427,6 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 PositionTrace.append(beads)
       
     return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace)
-
-
 
 """
 Initialize  -----------------------------------------------------------------
@@ -481,23 +478,20 @@ def worker(args):
         numAccept[key] /= numMCSteps*numParticles
     write_debug_log(f"({i}) numAccept: {numAccept}")
    
-
 def parallel_main(T, n, echange, k_e, k_c):
 
     with ProcessPoolExecutor() as executor:
         executor.map(worker, [(i, n, echange, k_e, k_c) for i in T])
 
 if __name__ == "__main__": 
-
-    # Overwrite old outputs
+    
     remove_all_files_in_folder("output")
-    try:
+
+    if os.path.exists("debug.log"):
         os.remove("debug.log")
-    except:
-        pass
 
     # Read temperature loops
-    T = str(config["settings"]["T"]) 
+    T = str(config["system"]["T"]) 
     T_list = T.split(',')
     T = [float(item) for item in T_list]
 
@@ -515,23 +509,23 @@ if __name__ == "__main__":
     write_debug_log(f"Stage length: {m}")
     write_debug_log(f"Delta (CoM): {delta}")
 
-    if staging == "False":
+    if not staging:
         write_debug_log(f"Delta (Bead): {delta_bead}")
         write_debug_log(f"Warning: Staging is turned off")
 
-    n = int(config["settings"]["n"]) # dimension of the potetnial matrix (nxn) 
+    n = config.getint("system", "n") # dimension of the potetnial matrix (nxn) 
     # Read echange time lags
-    if non_adiabatic_coupling == "True":
-        k_e = int(config["settings"]["eCL"]) # local e change
-        k_c = int(config["settings"]["eCG"]) # global e change
+    if non_adiabatic_coupling:
+        k_e = config.getint("convergence", "eCL") # local e change
+        k_c = config.getint("convergence", "eCG") # global e change
         if numParticles != 1:
             write_debug_log(f"Error: Non-adiabatic couplings can currantly only be used with one particle")
             exit()
     else:
         k_e = float("inf")
-        k_c = int(config["settings"]["eCG"])
+        k_c = config.getint("convergence", "eCG")
 
-    if echange == "True":
+    if echange:
         write_debug_log(f"eCG: {k_c}")
         write_debug_log(f"eCL: {k_e}")
         if n == 1:
@@ -542,13 +536,8 @@ if __name__ == "__main__":
         write_debug_log(f"Error: Looks like you tried to bring {numParticles} particles. We need at least 1 to get this party started.")
         exit()
     
-    #if len(getV(np.array([0.0]), np.array([0]))):
-    #    write_debug_log(f"Error: getV does not return a float")
-    #    exit()
-
     # run PICM simulations
     np.random.seed(rand_seed)
     parallel_main(T, n, echange, k_e, k_c)
     # resample and check convergance
     rcc()
-    
