@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
 import ctypes
-
+from time import time
 
 import numpy as np
 from numba import njit, typed
@@ -9,14 +9,15 @@ import configparser
 from tqdm import tqdm
 
 from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
-from propExcit import move_kink, find_kinks, create_or_destroy_kink
 from potential import getV, getGradV, getDiabV
 from stats import rcc
 from readGeom import getGeom
 
+# Load the shared library
 lib = ctypes.CDLL('./lib_PoE.so')
 lib.initialize_random_seed()
 
+# Define argument and return types
 lib.performPoE.argtypes = [
     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
     ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
@@ -346,28 +347,28 @@ def nonAdiab(beads, ptcl, tau, numTimeSlices, n, eState):
     else:
         return old_eState
 
-"""    
-def PoEmove(i, beads, tau, numTimeSlices, n, eState, xi_change_interval, xi_possible):
+def PoE_move(eState: np.ndarray, xi: int, xi_change_interval: int, numTimeSlices: int, n: int, i: int, xi_possible: np.ndarray, beads, tau):
 
-    if i % xi_change_interval == 0:
-        xi = np.random.choice(xi_possible)
-        print(f"{i % xi_change_interval}-------------------")
+    xi_possible = xi_possible.astype(np.int32)
+    xi_current = ctypes.c_int(0)
+
+    xi_possible_ptr = xi_possible.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
+    eState_ptr = eState.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
     eState_old = np.copy(eState)
     xi_old = xi
-    #print(f"({i})", f"xi_old: ", xi, " <-> eState_old: ", eState)
 
     while np.array_equal(eState, eState_old): 
-        lib.performPoE(i, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))
+        lib.performPoE(i, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))  
+        xi = xi_current.value
 
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, new_eState)
+    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
+    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState_old)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return new_eState
+        return eState, xi
     else:
-        return old_eState
-"""    
+        return eState_old, xi_old
 
 
 def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, k_e, k_c):
@@ -384,18 +385,13 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     if use_jit:
         lam = typed.List(lam)
 
-    if PoE:
-        xi_possible = np.arange(0, numTimeSlices + 1, 2) if numTimeSlices % 2 == 0 else np.arange(0, numTimeSlices, 2)
-        xi_possible = xi_possible.astype(np.int32)
-        xi_current = ctypes.c_int(0)
-        xi_possible_ptr = xi_possible.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
-        eState_ptr = eState.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
-        xi_change_interval = k_e
-        xi = 0
+    xi_possible = np.arange(0, numTimeSlices + 1, 2) if numTimeSlices % 2 == 0 else np.arange(0, numTimeSlices, 2)
+    write_debug_log(f"xi_possible: {xi_possible}")
+    xi = 0
+    xi_change_interval = k_e
 
-
-    for k in tqdm(range(numSteps)):
-
+    for k in tqdm(range(numSteps), ascii=" >=", desc="MC steps"):
+        
         # try a center-of-mass move
         for i in np.random.randint(0,numParticles,numParticles):
                 numAccept["CoM"] += center_of_mass_move(beads, i, tau, delta, numTimeSlices, n, eState)
@@ -419,22 +415,12 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
         if echange and PoE:
             if k % xi_change_interval == 0:
                 xi = np.random.choice(xi_possible)
-            old_eState = np.copy(eState)
-            xi_old = xi
-
-            while np.array_equal(eState, old_eState): 
-                lib.performPoE(i, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))
-
-            oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
-            newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
-
-            if np.random.random() < np.exp(-(newAction - oldAction)):
-                xi = xi_current.value
-            else:
-                eState = old_eState
-                xi = xi_old
+            eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, i, xi_possible, beads, tau)
+            print(f"({k})", "xi: ", xi, " <-> eState: ", eState)
+            
 
             
+
         # keep track of the energy and position    
         if k % corrSkip == 0 and k > thermSkip:
             potE = potEnergy(beads, tau, numTimeSlices, n, eState)
@@ -446,12 +432,12 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo])
             eStateTrace.append(eState)
-            xiTrace.append(xi)
+            xiTrace.append([xi])
             if numParticles == 1:
                 PositionTrace.append(beadPos(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
-      
+
     return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace), np.array(xiTrace)
 
 """
@@ -479,7 +465,7 @@ def main(T, n, echange, k_e, k_c):
                 beads[j, i] = coord[i] + np.random.rand(3)*0.1
 
     # initialize e-states (cold start, may also be tried differantly) 
-    eState = np.zeros(numTimeSlices, dtype=int)    
+    eState = np.zeros(numTimeSlices, dtype=np.int32)    
 
     # run main MCMC loop (were the magic hapens)
     Position, Energy, numAccept, eState, xiTrace = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, k_e, k_c)
@@ -491,8 +477,6 @@ def worker(args):
     i, n, echange, k_e, k_c = args
     Energy, Position, eState, numAccept, xiTrace = main(i, n, echange, k_e, k_c)
 
-    # Save Energy and Position data to CSV files
-    save_to_csv(xiTrace, f'{i}_xiTrace.csv')
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
     if kinVirial == "True":
         save_to_csv(Energy[:,2], f'{i}_KinEnergyTrace.csv')
@@ -501,6 +485,7 @@ def worker(args):
         save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
+    save_to_csv(xiTrace, f'{i}_xiTrace.csv')
     for key in numAccept:
         numAccept[key] /= numMCSteps*numParticles
     write_debug_log(f"({i}) numAccept: {numAccept}")
