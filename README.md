@@ -12,12 +12,36 @@ Implementation of a Markov Chain Monte Carlo Algorithm to sample static finite t
 - scipy
 - statsmodels
 
+To include non-adiabatic effects using PoE moves:
+- C compiler (e.g. GCC for LINUX/macOS or MinGW for Windows)
+
 ### Installation
-Install the necessary packages using the command below:
+Install the necessary python packages using the command below:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+#### Compiling the C Library
+To perform PoE moves the C code neds to be compiled to create the necessary shared library. Do this by running the following command on Linx/macOS:
+
+```bash
+gcc -shared -fPIC -o lib_PoE.so PoE.c
+```
+
+or on Windows:
+
+```bash
+gcc -shared -o lib_PoE.dll PoE.c
+```
+
+Note that if you are using Windows you further have to change how the shared library is loded using ctypes by changing the following line of code in `main.py`:
+
+```python
+lib = ctypes.CDLL('./lib_PoE.so')
+```
+
+to use a .dll (Dynamic Link Librarie) instead of the usual shared object files of Linux/macOS.
 
 ## Input Parameters
 Define your input parameters in `input.in`. Ensure that atomic units are used.
