@@ -3,19 +3,19 @@ Some statistics...
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import bootstrap
-from helpers import get_filenames, remove_duplicates_floats, HO3DEnergyExact, write_debug_log, HO3DEnergyExactAdiab
 from statsmodels.tsa.stattools import acf
 import arviz as az
 import configparser
+
+from helpers import get_filenames, wOut
+
 config = configparser.ConfigParser()
 config.read('input.in')
 use_jit = str(config["PIMC"]["use_jit"]) 
 numParticles = int(config["system"]["numParticles"])  
 kinVir = str(config["PIMC"]["kin_virial"]) 
 
-def jackknife_after_bootstrap(data, num_resamples=1000):
+def _jackknife_after_bootstrap(data, num_resamples=1000):
     n = len(data)
     estimates = np.zeros(num_resamples)
     
@@ -24,23 +24,19 @@ def jackknife_after_bootstrap(data, num_resamples=1000):
         sample = np.random.choice(data, size=n, replace=True)
         estimates[i] = np.mean(sample)
     
-    # True mean estimate using the original data
     true_mean = np.mean(data)
-    
-    # Bias of the bootstrap estimator
     bias = np.mean(estimates) - true_mean
-    
-    # Variance of the bootstrap estimator
     variance = np.var(estimates, ddof=1)
     
     adjusted_mean = true_mean - bias
     
     return true_mean, np.mean(estimates), adjusted_mean, bias, variance
 
-def gelman_rubin(chains):
+def _gelman_rubin(chains):
     """
     Gelman-Rubin diagnostic for MCMC chain convergence.
     """
+    
     n = chains.shape[1]  # Number of samples per chain
     m = chains.shape[0]  # Number of chains
 
@@ -53,26 +49,21 @@ def gelman_rubin(chains):
     # Calculate the within-chain variances
     W = np.sum([(chains[i] - means_per_chain[i])**2 for i in range(m)]) / (m * (n - 1))
     
-    # Estimate of the marginal posterior variance
     var_hat = (n - 1) / n * W + B_over_n
-
     R_hat = np.sqrt(var_hat / W)
     
     return R_hat
 
-def integrated_autocorrelation_time(chain, max_lag=30):
+def _integrated_autocorrelation_time(chain, max_lag=30):
     """
-    Computes the Integrated Autocorrelation Time (IAT) for an MCMC chain.
     max_lag may needs to be adjusted depending on the use case
     """
 
     autocorr = acf(chain, nlags=max_lag, fft=True)
     return 1 + 2 * np.sum(autocorr[1:])  # summing from lag 1 to max_lag
 
-def eStatePop(data, T):
-    """
-    Compute the population of the individual eStates.
-    """
+def _eStatePop(data, T):
+  
     total_counts = {}
     for arr in data:
         unique, counts = np.unique(arr, return_counts=True)
@@ -85,7 +76,7 @@ def eStatePop(data, T):
     total_entries = sum(total_counts.values())
     percentages = {num: (count / total_entries) * 100 for num, count in total_counts.items()}
     for num, percentage in percentages.items():
-        write_debug_log(f"({T}) eState: {num}, Populated: {percentage:.2f}%")
+        wOut(f"({T}) eState: {num}, Populated: {percentage:.2f}%")
 
 
 def rcc():
@@ -93,7 +84,7 @@ def rcc():
     T = []
     name = []
 
-    write_debug_log(f"Some statistics on the energy estimator...")
+    wOut(f"Some statistics on the energy estimator...")
     for file in files[1]:
         temp = file.split("_")[0]    
         type = file.split("_")[1]
@@ -104,7 +95,7 @@ def rcc():
             name.append(type)
 
     if len(T) == 0:
-            write_debug_log(f"Error: NDF")
+            wOut(f"Error: NDF")
             exit()
 
     # Get toatal E
@@ -116,16 +107,16 @@ def rcc():
         e = np.mean(kin+pot)
 
         # JKNF resampling
-        true_mean, estimated_mean, adjusted_mean, bias, variance = jackknife_after_bootstrap(kin+pot)
-        write_debug_log(f"({i}) Mean: {true_mean}(+/-){variance}; Estimated Mean: {estimated_mean}; Bias: {bias}")
+        true_mean, estimated_mean, adjusted_mean, bias, variance = _jackknife_after_bootstrap(kin+pot)
+        wOut(f"({i}) Mean: {true_mean}(+/-){variance}; Estimated Mean: {estimated_mean}; Bias: {bias}")
 
         # Compute IAT
-        iat = integrated_autocorrelation_time(kin+pot)
-        write_debug_log(f"({i}) IAT: {iat:.2f}; (max_lag=30)")
+        iat = _integrated_autocorrelation_time(kin+pot)
+        wOut(f"({i}) IAT: {iat:.2f}; (max_lag=30)")
         ess = az.ess(kin+pot)
-        write_debug_log(f"({i}) ESS/TOT: {(ess/len(kin+pot)):.2f}")
+        wOut(f"({i}) ESS/TOT: {(ess/len(kin+pot)):.2f}")
         #if ess/len(kin+pot) < 0.95 or ess/len(kin+pot) > 1:
-        #    write_debug_log(f"Warning: Possible correlation problems for the ({i}) chain")
+        #    wOut(f"Warning: Possible correlation problems for the ({i}) chain")
 
 
         E_trace.append(kin+pot)
@@ -136,23 +127,23 @@ def rcc():
 
     # Compute R-hat with Gerlman-Rubin statistic
     if len(E_trace) > 1:
-        R = gelman_rubin(E_trace)
-        write_debug_log(f"Convergance: R-hat = {R:.2f}")
+        R = _gelman_rubin(E_trace)
+        wOut(f"Convergance: R-hat = {R:.2f}")
         #if R > 1.1:
-        #    write_debug_log(f"Warning: Chain most likely not converged properly") 
+        #    wOut(f"Warning: Chain most likely not converged properly") 
     else:
-        write_debug_log(f"Warning: GR statistic not possible to compute with one chain. Pleas check convergance manually.")  
+        wOut(f"Warning: GR statistic not possible to compute with one chain. Pleas check convergance manually.")  
 
-    write_debug_log(f"Population of the eStates")
+    wOut(f"Population of the eStates")
     for i in T:
         # Print eState population
         data = np.loadtxt(f"output/{i}_eStatTrace.csv", delimiter=",")
-        eStatePop(data, i)
+        _eStatePop(data, i)
 
     # mean bond length for simple diatomic molecules
     if numParticles == 1:
         for i in T:
             r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
-            write_debug_log(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
+            wOut(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
 
     

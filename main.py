@@ -1,27 +1,55 @@
 import os
 from concurrent.futures import ProcessPoolExecutor
 import ctypes
-from time import time
+import functools
+import logging 
 
 import numpy as np
 from numba import njit, typed
 import configparser
 from tqdm import tqdm
 
-from helpers import save_to_csv, write_debug_log, remove_all_files_in_folder
+from helpers import save_to_csv, wOut, remove_all_files_in_folder
 from potential import getV, getGradV, getDiabV
 from stats import rcc
 from readGeom import getGeom
 
-# Load the shared library
+# Load shared library
 lib = ctypes.CDLL('./lib_PoE.so')
 lib.initialize_random_seed()
 
-# Define argument and return types
 lib.performPoE.argtypes = [
     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
     ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
 ]
+
+# Define jit decorator
+def cJIT(func):
+
+    if use_jit == "True":
+        return njit()(func)
+    else:
+        return func
+    
+# Configure logging and define logging decorator
+logging.basicConfig(
+    filename='debug.log',  
+    filemode='w',  
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+def log(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        logging.info(f"Running {func.__name__} with args: {args} and kwargs: {kwargs}")
+        try:
+            result = func(*args, **kwargs)
+            logging.info(f"{func.__name__} completed successfully with result: {result}")
+            return result
+        except Exception as e:
+            logging.error(f"Error in {func.__name__}: {str(e)}", exc_info=True)
+            raise  
+    return wrapper
 
 """
 Read input parameters-----------------------------------------------------------------
@@ -49,58 +77,26 @@ kinVirial = config.getboolean("PIMC", "kin_virial")
 corrSkip = config.getint("convergence", "corrSkip")
 thermSkip = config.getint("convergence", "thermSkip")
 
-def conditional_jit(func):
-
-    if use_jit == "True":
-        return njit()(func)
-    else:
-        return func
-
 """
-Potential Energy-----------------------------------------------------------------
+Functions to compute Potential Energy/Action-----------------------------------------------------------------
 """
 
-def expm(M):
-    """
-    Matrix exponential (M needs to be diagonal!!!)
-    """
-    
-    eM = np.exp(np.diag(M))
-    
-    return np.diag(eM)
-
-def diag(V, tau):
-    """
-    Diagonalize the diabatic-matrix
-    V = diabatic matrix (should be symmetric!!!)
-    """
-    
-    eigValues, eigVectors = np.linalg.eig(V)
-    G = np.diag(eigValues)
-    S = eigVectors
-
-    return S.T @ expm(-G*tau) @ S
-
-def getEig(V):
-    """
-    Diagonalize the diabatic-matrix
-    V = diabatic matrix (should be symmetric!!!)
-    """
+def getEig(V: np.array) -> np.array:
     
     eigValues, eigVectors = np.linalg.eig(V)
     S = eigVectors
 
     return S
 
-def get_phi(beads, eState, numTimeSlices, n):
+def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> float:
     """
-    Currnetly only implementet for diatomics!!!       
+    Currnetly only implementet for diatomics       
     """
 
     S = []
     for j in range(numTimeSlices):
         R = beads[j,0:]
-        V_result = getDiabV(R[0]) 
+        V_result = getDiabV(R[0], eState) 
         if isinstance(V_result, float):
             V_tot = np.full((n * n,), V_result)
         else:
@@ -122,8 +118,8 @@ def get_phi(beads, eState, numTimeSlices, n):
 
     return phi
 
-@conditional_jit
-def potEnergy(beads, tau, numTimeSlices, n, eState):
+@cJIT
+def potEnergy(beads: np.array, numTimeSlices: int, eState: np.array) -> float:
 
     PE = 0.0
     for j in range(numTimeSlices):
@@ -134,8 +130,8 @@ def potEnergy(beads, tau, numTimeSlices, n, eState):
 
     return PE/(numTimeSlices) 
 
-@conditional_jit
-def potAction(beads, j_min, j_max, tau, numTimeSlices, n, eState):
+@cJIT
+def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: np.array) -> float:
 
     PE = 0.0
     for j in range(numTimeSlices):
@@ -144,7 +140,7 @@ def potAction(beads, j_min, j_max, tau, numTimeSlices, n, eState):
         V_result = getV(R, eState)
         PE = PE + V_result
 
-    if non_adiabatic_coupling == "True":
+    if non_adiabatic_coupling:
         phi = get_phi(beads, eState, numTimeSlices, n)
     else:
         phi = 1
@@ -156,8 +152,8 @@ def potAction(beads, j_min, j_max, tau, numTimeSlices, n, eState):
 Kinetic Energy-----------------------------------------------------------------
 """
 
-@conditional_jit
-def kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles):
+@cJIT
+def kinetic_estimator(beads: np.array, tau: float, lam: float, numTimeSlices: int, numParticles: int) -> float:
     """
     Thermodynamic estimator for the kinetic energy. 
     """
@@ -172,8 +168,8 @@ def kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles):
         
     return (3/2) * numParticles/tau + tot/numTimeSlices
 
-@conditional_jit
-def kinetic_action(beads, tau, lam, numTimeSlices, numParticles):
+@cJIT
+def kinetic_action(beads: np.array, tau: float, lam: float, numTimeSlices: int, numParticles: int) -> float:
     """
     Kinetic action. 
     """
@@ -188,8 +184,8 @@ def kinetic_action(beads, tau, lam, numTimeSlices, numParticles):
         
     return tot*tau 
 
-@conditional_jit
-def virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState):
+@cJIT
+def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticles: int, eState: np.array) -> float:
     """
     Virial estimator for the kinetic energy.
     """
@@ -207,84 +203,73 @@ def virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState):
     return (3*numParticles)/(2*tau*numTimeSlices) + tot
 
 """
-Further estimators  -----------------------------------------------------------------
+Some further used estimators  -----------------------------------------------------------------
 """
 
-@conditional_jit
-def beadPos(beads, numTimeSlices):
+@cJIT
+def bond_length(beads: np.array, numTimeSlices: int) -> float:
     """
+    Compute bond length for diatomic molecules.
     """
     
     x = 0
     for j in range(numTimeSlices):
         x +=  np.sqrt( beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2) 
+
     return x/numTimeSlices
     
 """
-MC steps  -----------------------------------------------------------------
+Implementation of diffrent MC steps  -----------------------------------------------------------------
 """
 
-@conditional_jit
-def center_of_mass_move(beads, ptcl, tau, delta, numTimeSlices, n, eState):
+@log
+@cJIT
+def center_of_mass_move(beads: np.array, ptcl: int, tau: float, delta: float, numTimeSlices: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
+
+    shift = delta*(2.0*np.random.random(3) - 1.0)
+    
+    beads_new = np.copy(beads)
+
+    beads_new[:,ptcl] += shift
+    
+    oldAction = potAction(beads, tau, numTimeSlices, n, eState)
+    newAction = potAction(beads_new, tau, numTimeSlices, n, eState)
+    
+    if np.random.random() < np.exp(-(newAction - oldAction)):
+        return beads_new, True
+    else:
+        return beads, False
+
+@log
+@cJIT
+def bead_move(beads: np.array, ptcl: int, tau: float, delta: float, numTimeSlices: int, lam: float, numParticles: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
     """
-    Center of mass update. (displacing an entire particle worldline)
-    delta: controle the acceptance ratio of a center of mass move
+    Individual bead move. Used if staging is turned off.
     """
 
     shift = delta*(2.0*np.random.random(3) - 1.0)
 
-    oldbeads = np.copy(beads[:,ptcl])
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
-
-    for tslice in range(numTimeSlices):
-        beads[tslice,ptcl] = oldbeads[tslice] + shift
-
+    beads_new = np.copy(beads)
     
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
-    
-    if np.random.random() < np.exp(-(newAction - oldAction)):
-        return True
-    else:
-        beads[:,ptcl] = np.copy(oldbeads)
-        return False
+    rand_tslice = np.random.randint(0, numTimeSlices)
+    beads_new[rand_tslice,ptcl] += shift
 
-@conditional_jit
-def bead_move(beads, ptcl, tau, delta, numTimeSlices, lam, numParticles,n, eState):
-    """
-    Individual bead move
-    """
-
-    shift = delta*(2.0*np.random.random(3) - 1.0)
-
-    oldbeads = np.copy(beads[:,ptcl])
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState) + kinetic_action(beads, tau, lam, numTimeSlices, numParticles)
-    
-    to_move = np.random.randint(0, numTimeSlices)
-    beads[to_move,ptcl] = oldbeads[to_move] + shift
-  
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState) + kinetic_action(beads, tau, lam, numTimeSlices, numParticles)
+    oldAction = potAction(beads, tau, numTimeSlices, n, eState) + kinetic_action(beads, tau, lam, numTimeSlices, numParticles)
+    newAction = potAction(beads_new, tau, numTimeSlices, n, eState) + kinetic_action(beads_new, tau, lam, numTimeSlices, numParticles)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return True
+        return beads_new, True
     else:
-        beads[:,ptcl] = np.copy(oldbeads)
-        return False
-    
-@conditional_jit
-def staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState):
-    """
-    Staging move, which exactly samples the free particle propagator between two positions using the Levy construction.
-    m: controle acceptance ratio of staging moves. m<P!!!
-    """
+        return beads, False
 
+@log  
+@cJIT
+def staging_move(beads: np.array, ptcl: int, tau: float, lam: float, numTimeSlices: int, m: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
+
+    beads_new = np.copy(beads)
+    
     alpha_start = np.random.randint(0,numTimeSlices)
-    alpha_end = (alpha_start + m) % numTimeSlices
-
-    oldbeads = np.zeros((m-1, 3))
-    for a in range(1,m):
-        tslice = (alpha_start + a) % numTimeSlices
-        oldbeads[a-1] = beads[tslice,ptcl]    
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState) # is 1 correct?
+    alpha_end = (alpha_start + m) % numTimeSlices    
     
     for a in range(1,m):
         tslice = (alpha_start + a) % numTimeSlices
@@ -292,89 +277,93 @@ def staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState):
         tau1 = (m-a)*tau
         avex = (tau1*beads[tslicem1,ptcl] + tau*beads[alpha_end,ptcl]) / (tau + tau1)
         sigma2 = 2.0*lam[ptcl] / (1.0 / tau + 1.0 / tau1)
-        beads[tslice,ptcl] = avex + np.sqrt(sigma2)*np.random.randn()
+        beads_new[tslice,ptcl] = avex + np.sqrt(sigma2)*np.random.randn()
 
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
+    oldAction = potAction(beads, tau, numTimeSlices, n, eState)
+    newAction = potAction(beads_new, tau, numTimeSlices, n, eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return True
+        return beads_new, True
     else:
-        for a in range(1,m):
-            tslice = (alpha_start + a) % numTimeSlices
-            beads[tslice,ptcl] = oldbeads[a-1]
-        return False
-    
-def e_change(beads, ptcl, tau, numTimeSlices, n, eState):
+        return beads, False
+
+@log    
+def global_e_change(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
     """
-    Include multiple PES trough changing the e-state of all beads simultanuously -> adiabatic!!!
+    Change the electronic state of the system globally. Adiabatic limit. 
     """
 
-    old_eState = eState
-    new_eState = eState
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
-  
+    old_eState = np.copy(eState)
+    new_eState = np.copy(eState)
+    
     possible_states = np.setdiff1d(np.arange(n), old_eState[0])
     rand_e_state = np.random.choice(possible_states)
     new_eState = np.full_like(eState, rand_e_state)
 
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, new_eState)
+    oldAction = potAction(beads, tau, numTimeSlices, n, old_eState)
+    newAction = potAction(beads, tau, numTimeSlices, n, new_eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
         return new_eState, True
     else:
         return old_eState, False
 
-def nonAdiab(beads, ptcl, tau, numTimeSlices, n, eState):
+@log
+def local_e_change(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
     """
-    Include non-adiabatic effects trough moving the beads individually between PES
+    Individual bead moves. Diabatic limit.
     """
 
     old_eState = eState
     new_eState = eState
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, old_eState)
   
     to_move = np.random.randint(0, numTimeSlices)
     possible_states = list(range(n)) 
-    # remove old_estate
     possible_states = [i for i in possible_states if i != old_eState[to_move]]
     rand_e_state = np.random.choice(possible_states)
     new_eState[to_move] = rand_e_state
     
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, new_eState)
+    oldAction = potAction(beads, tau, numTimeSlices, n, old_eState)
+    newAction = potAction(beads, tau, numTimeSlices, n, new_eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return new_eState
+        return new_eState, True
     else:
-        return old_eState
+        return old_eState, False
 
-def PoE_move(eState: np.ndarray, xi: int, xi_change_interval: int, numTimeSlices: int, n: int, i: int, xi_possible: np.ndarray, beads, tau):
+@log
+def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: int, n: int, k: int, xi_possible: np.array, beads: np.array, tau: float) -> tuple[np.array, int]:
 
+    xi_old = xi
+    eState_old = np.copy(eState)
+    
+    if k % xi_change_interval == 0:
+        xi = np.random.choice(xi_possible)
+    
     xi_possible = xi_possible.astype(np.int32)
     xi_current = ctypes.c_int(0)
 
     xi_possible_ptr = xi_possible.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
     eState_ptr = eState.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
-    eState_old = np.copy(eState)
-    xi_old = xi
-
     while np.array_equal(eState, eState_old): 
-        lib.performPoE(i, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))  
-        xi = xi_current.value
+        lib.performPoE(k, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))  
 
-    newAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState)
-    oldAction = potAction(beads, 1, numTimeSlices, tau, numTimeSlices, n, eState_old)
+    newAction = potAction(beads, tau, numTimeSlices, n, eState)
+    oldAction = potAction(beads, tau, numTimeSlices, n, eState_old)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return eState, xi
+        return eState, xi_current.value
     else:
         return eState_old, xi_old
 
 
-def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, k_e, k_c):
-    """
-    Perform the path integral Monte Carlo simulation.
-    """
+"""
+Main MC loop  -----------------------------------------------------------------
+"""
+
+
+def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG):
     
     EnergyTrace = []
     PositionTrace = []
@@ -384,48 +373,47 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
     if use_jit:
         lam = typed.List(lam)
-
+    
+    # only needed if PoE is turned on
     xi_possible = np.arange(0, numTimeSlices + 1, 2) if numTimeSlices % 2 == 0 else np.arange(0, numTimeSlices, 2)
-    write_debug_log(f"xi_possible: {xi_possible}")
+    wOut(f"xi_possible: {xi_possible}")
     xi = 0
-    xi_change_interval = k_e
+    xi_change_interval = eCL
 
     for k in tqdm(range(numSteps), ascii=" >=", desc="MC steps"):
         
-        # try a center-of-mass move
-        for i in np.random.randint(0,numParticles,numParticles):
-                numAccept["CoM"] += center_of_mass_move(beads, i, tau, delta, numTimeSlices, n, eState)
-        
+        # sample potential and kinetic action with CoM and staging/individual bead moves
+        for ptcl in np.random.randint(0,numParticles,numParticles):
+                beads, accept = center_of_mass_move(beads, ptcl, tau, delta, numTimeSlices, n, eState)
+                numAccept["CoM"] += 1
         if staging:
-            # try a staging move
-            for i in np.random.randint(0,numParticles,numParticles): 
-                numAccept["Staging"] += staging_move(beads, i, tau, lam, numTimeSlices, m, n, eState)
+            for ptcl in np.random.randint(0,numParticles,numParticles): 
+                beads, accept = staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState)
+                numAccept["Staging"] += 1
         if not staging:
-            # try a bead move
-            for i in np.random.randint(0,numParticles,numParticles):
-                numAccept["Bead"] += bead_move(beads, i, tau, delta_bead, numTimeSlices, lam, numParticles, n,eState)
+            for ptcl in np.random.randint(0,numParticles,numParticles):
+                beads, accept = bead_move(beads, ptcl, tau, delta_bead, numTimeSlices, lam, numParticles, n,eState)
+                numAccept["CoM"] += accept
         
+        # sample multiple electronic states
         if echange and not PoE:
-            if k % k_c == 0:
-                eState, accept = e_change(beads, i, tau, numTimeSlices, n, eState)
+            if k % eCG == 0:
+                eState, accept = global_e_change(beads, tau, numTimeSlices, n, eState)
                 numAccept["eChange"] += accept
-            if non_adiabatic_coupling == "True":
-                if k % k_e == 0:
-                    eState = nonAdiab(beads, i, tau, numTimeSlices, n, eState)
-        if echange and PoE:
-            if k % xi_change_interval == 0:
-                xi = np.random.choice(xi_possible)
-            eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, i, xi_possible, beads, tau)
-            print(f"({k})", "xi: ", xi, " <-> eState: ", eState)
+            if non_adiabatic_coupling:
+                if k % eCL == 0:
+                    eState = local_e_change(beads, tau, numTimeSlices, n, eState)
+
+        if PoE:
+            eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, k, xi_possible, beads, tau)
+            #print(f"({k})", "xi: ", xi, " <-> eState: ", eState)
             
 
-            
-
-        # keep track of the energy and position    
+        # keep track of observables
         if k % corrSkip == 0 and k > thermSkip:
-            potE = potEnergy(beads, tau, numTimeSlices, n, eState)
-            if kinVirial == "True":
-                kinEvirial = virial_estimator(beads, tau, lam, numTimeSlices, numParticles, eState)
+            potE = potEnergy(beads, numTimeSlices, eState)
+            if kinVirial:
+                kinEvirial = virial_estimator(beads, tau, numTimeSlices, numParticles, eState)
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo, kinEvirial])
             else:
@@ -434,21 +422,21 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             eStateTrace.append(eState)
             xiTrace.append([xi])
             if numParticles == 1:
-                PositionTrace.append(beadPos(beads, numTimeSlices))
+                PositionTrace.append(bond_length(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
 
     return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace), np.array(xiTrace)
 
 """
-Initialize  -----------------------------------------------------------------
+Run multiple T loops in parallel  -----------------------------------------------------------------
 """
 
-def main(T, n, echange, k_e, k_c):
+def main(T, n, echange, eCL, eCG):
     
     tau = 1.0/(T*numTimeSlices)
 
-    # initialize main data structure: beads[bead][particl][coordinate]
+    # beads[bead][particl][coordinate]
     beads = np.zeros([numTimeSlices,numParticles, 3])
 
     if numParticles == 1:
@@ -459,7 +447,7 @@ def main(T, n, echange, k_e, k_c):
     elif numParticles > 1:
         # If more than one particle is use distribute them according to the input geometry in geom.in
         atoms, coord = getGeom()
-        write_debug_log(f"({T}) Input geometry:\n {coord}")
+        wOut(f"({T}) Input geometry:\n {coord}")
         for i in range(numParticles):
             for j in range(numTimeSlices):
                 beads[j, i] = coord[i] + np.random.rand(3)*0.1
@@ -467,89 +455,101 @@ def main(T, n, echange, k_e, k_c):
     # initialize e-states (cold start, may also be tried differantly) 
     eState = np.zeros(numTimeSlices, dtype=np.int32)    
 
-    # run main MCMC loop (were the magic hapens)
-    Position, Energy, numAccept, eState, xiTrace = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, k_e, k_c)
+    Position, Energy, numAccept, eState, xiTrace = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG)
     
     return Energy, Position, eState, numAccept, xiTrace
 
 def worker(args):
 
-    i, n, echange, k_e, k_c = args
-    Energy, Position, eState, numAccept, xiTrace = main(i, n, echange, k_e, k_c)
+    i, n, echange, eCL, eCG = args
+    Energy, Position, eState, numAccept, xiTrace = main(i, n, echange, eCL, eCG)
 
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
-    if kinVirial == "True":
+
+    if kinVirial:
         save_to_csv(Energy[:,2], f'{i}_KinEnergyTrace.csv')
         save_to_csv(Energy[:,1], f'{i}_KinThermoEnergyTrace.csv')
     else:
         save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
+
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     save_to_csv(xiTrace, f'{i}_xiTrace.csv')
+
     for key in numAccept:
         numAccept[key] /= numMCSteps*numParticles
-    write_debug_log(f"({i}) numAccept: {numAccept}")
+
+    wOut(f"({i}) numAccept: {numAccept}")
    
-def parallel_main(T, n, echange, k_e, k_c):
+def parallel_main(T, n, echange, eCL, eCG):
 
     with ProcessPoolExecutor() as executor:
-        executor.map(worker, [(i, n, echange, k_e, k_c) for i in T])
+        executor.map(worker, [(i, n, echange, eCL, eCG) for i in T])
+
+"""
+Initialize  -----------------------------------------------------------------
+"""
 
 if __name__ == "__main__": 
     
     remove_all_files_in_folder("output")
 
-    if os.path.exists("debug.log"):
-        os.remove("debug.log")
+    if os.path.exists("output.out"):
+        os.remove("output.out")
 
-    # Read temperature loops
+    # Read in temperature loops
     T = str(config["system"]["T"]) 
     T_list = T.split(',')
     T = [float(item) for item in T_list]
 
-    # Write input parameters to debug file
-    write_debug_log(f"PIMC V1.1")
-    write_debug_log(f"Avalible CPUs: {os.cpu_count()}")
-    write_debug_log(f"Used CPUs: {len(T)}")
-    write_debug_log(f"JIT compiler: {use_jit}")
-    write_debug_log(f"Virial estimator: {kinVirial}")
-    write_debug_log(f"T: {T}")
-    write_debug_log(f"lam: {lam}")
-    write_debug_log(f"rand_seed: {rand_seed}")
-    write_debug_log(f"numParticles: {numParticles}")
-    write_debug_log(f"numTimeSlices: {numTimeSlices}")
-    write_debug_log(f"Stage length: {m}")
-    write_debug_log(f"Delta (CoM): {delta}")
-
+    # Write some input parameters to output file
+    wOut(f"PIMC V1.1")
+    wOut(f"Avalible CPUs: {os.cpu_count()}")
+    wOut(f"Used CPUs: {len(T)}")
+    wOut(f"JIT compiler: {use_jit}")
+    wOut(f"Virial estimator: {kinVirial}")
+    wOut(f"T: {T}")
+    wOut(f"lam: {lam}")
+    wOut(f"rand_seed: {rand_seed}")
+    wOut(f"numParticles: {numParticles}")
+    wOut(f"numTimeSlices: {numTimeSlices}")
+    wOut(f"Stage length: {m}")
+    wOut(f"Delta (CoM): {delta}")
+    
     if not staging:
-        write_debug_log(f"Delta (Bead): {delta_bead}")
-        write_debug_log(f"Warning: Staging is turned off")
+        wOut(f"Delta (Bead): {delta_bead}")
+        wOut(f"Warning: Staging is turned off")
 
     n = config.getint("system", "n") # dimension of the potetnial matrix (nxn) 
-    # Read echange time lags
-    if non_adiabatic_coupling:
-        k_e = config.getint("convergence", "eCL") # local e change
-        k_c = config.getint("convergence", "eCG") # global e change
-        if numParticles != 1:
-            write_debug_log(f"Error: Non-adiabatic couplings can currantly only be used with one particle")
-            exit()
-    else:
-        k_e = float("inf")
-        k_c = config.getint("convergence", "eCG")
-
-    if echange:
-        write_debug_log(f"eCG: {k_c}")
-        write_debug_log(f"eCL: {k_e}")
-        if n == 1:
-            write_debug_log(f"Warning: echange is True, while n is set to 1")
+    
+    match non_adiabatic_coupling, PoE:
+        case True, False:
+            eCL = config.getint("convergence", "eCL") # local e change
+            eCG = config.getint("convergence", "eCG") # global e change
+            wOut(f"Non-adiabatic coupling True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
+        case False, True:
+            eCL = config.getint("convergence", "eCL") 
+            eCG = np.inf
+            wOut(f"PoE True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
+        case False, False:
+            eCL = np.inf
+            eCG =config.getint("convergence", "eCG") 
+            wOut(f"Only global e-changes: Adiabatic limit (ecL: {eCL}, eCG: {eCG})")
+        case True, True:
+            wOut("Error: Both non-adiabatic coupling and PoE are turned on")
+            exit("Error: Both non-adiabatic coupling and PoE are turned on")
     
     # sanitiy check of some input parameters
-    if numParticles < 1:
-        write_debug_log(f"Error: Looks like you tried to bring {numParticles} particles. We need at least 1 to get this party started.")
-        exit()
+    if numParticles > 1 and (non_adiabatic_coupling or PoE):
+        wOut(f"Error: Non-adiabatic coupling and PoE are only implemented for one particle atm")
+        exit() 
+    if thermSkip < 1000:
+        wOut(f"Warning: thermSkip is very low")
+    if corrSkip < 10:
+        wOut(f"Warning: corrSkip is very low")
     
     # run PICM simulations
     np.random.seed(rand_seed)
-    parallel_main(T, n, echange, k_e, k_c)
-    # resample and check convergance
+    parallel_main(T, n, echange, eCL, eCG)
+    # some basic statistics on the output is written to output.out
     rcc()
