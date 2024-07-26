@@ -96,7 +96,7 @@ def rcc():
 
     if len(T) == 0:
             wOut(f"Error: NDF")
-            exit()
+            exit(f"Error: NDF")
 
     # Get toatal E
     E = []
@@ -141,9 +141,9 @@ def rcc():
         _eStatePop(data, i)
 
     # mean bond length for simple diatomic molecules
-    if numParticles == 1:
-        for i in T:
-            r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
-            wOut(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
+    #if numParticles == 1:
+    #    for i in T:
+    #        r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
+    #        wOut(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
 
     

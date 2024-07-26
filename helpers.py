@@ -33,23 +33,6 @@ def get_filenames(directory):
     
     return files_path, files
 
-def HO3DEnergyExact(T):
-    """
-    The exact HO energy.
-    """
-
-    return (3/2)/np.tanh(0.5/T)
-
-def HO3DEnergyExactAdiab(T, dE):
-    """
-    The exact HO energy with two adiabats.
-    """
-
-    return (3/2)/np.tanh(0.5/T) + dE / (np.exp(dE/T) + 1)
-
-def HO3DEnergyExact(T):
-    return np.exp(-(3/2)*(1/T)) * ( 1 / (1-np.exp(-(1/T))) )**3
-
 def save_to_csv(data, filename):
     """
     Save resutls to /output/ with a unique filename if multiple T loops are used

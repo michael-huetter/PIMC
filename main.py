@@ -14,43 +14,6 @@ from potential import getV, getGradV, getDiabV
 from stats import rcc
 from readGeom import getGeom
 
-# Load shared library
-lib = ctypes.CDLL('./lib_PoE.so')
-lib.initialize_random_seed()
-
-lib.performPoE.argtypes = [
-    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
-    ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
-]
-
-# Define jit decorator
-def cJIT(func):
-
-    if use_jit == "True":
-        return njit()(func)
-    else:
-        return func
-    
-# Configure logging and define logging decorator
-logging.basicConfig(
-    filename='debug.log',  
-    filemode='w',  
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-def log(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        logging.info(f"Running {func.__name__} with args: {args} and kwargs: {kwargs}")
-        try:
-            result = func(*args, **kwargs)
-            logging.info(f"{func.__name__} completed successfully with result: {result}")
-            return result
-        except Exception as e:
-            logging.error(f"Error in {func.__name__}: {str(e)}", exc_info=True)
-            raise  
-    return wrapper
-
 """
 Read input parameters-----------------------------------------------------------------
 """
@@ -76,6 +39,49 @@ kinVirial = config.getboolean("PIMC", "kin_virial")
 
 corrSkip = config.getint("convergence", "corrSkip")
 thermSkip = config.getint("convergence", "thermSkip")
+
+log_flag = config.getboolean("debug", "logging")
+
+# Load shared library
+lib = ctypes.CDLL('./lib_PoE.so')
+lib.initialize_random_seed()
+
+lib.performPoE.argtypes = [
+    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
+    ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
+]
+
+# Define jit decorator
+def cJIT(func):
+
+    if use_jit:
+        return njit()(func)
+    else:
+        return func
+    
+# Configure logging and define logging decorator
+logging.basicConfig(
+    filename='debug.log',  
+    filemode='w',  
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+def log(func):
+
+    if log_flag:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            logging.info(f"Running {func.__name__} with args: {args} and kwargs: {kwargs}")
+            try:
+                result = func(*args, **kwargs)
+                logging.info(f"{func.__name__} completed successfully with result: {result}")
+                return result
+            except Exception as e:
+                logging.error(f"Error in {func.__name__}: {str(e)}", exc_info=True)
+                raise  
+        return wrapper
+    else:
+        return func
 
 """
 Functions to compute Potential Energy/Action-----------------------------------------------------------------
@@ -217,6 +223,18 @@ def bond_length(beads: np.array, numTimeSlices: int) -> float:
         x +=  np.sqrt( beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2) 
 
     return x/numTimeSlices
+
+@cJIT
+def bead_pos(beads: np.array, numTimeSlices: int) -> tuple[float, float, float]:
+
+    x, y, z = 0, 0, 0
+    for j in range(numTimeSlices):
+        x +=  beads[j][0][0]
+        y +=  beads[j][0][1]
+        z +=  beads[j][0][2]
+
+    return x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
+
     
 """
 Implementation of diffrent MC steps  -----------------------------------------------------------------
@@ -385,11 +403,11 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
         # sample potential and kinetic action with CoM and staging/individual bead moves
         for ptcl in np.random.randint(0,numParticles,numParticles):
                 beads, accept = center_of_mass_move(beads, ptcl, tau, delta, numTimeSlices, n, eState)
-                numAccept["CoM"] += 1
+                numAccept["CoM"] += accept
         if staging:
             for ptcl in np.random.randint(0,numParticles,numParticles): 
                 beads, accept = staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState)
-                numAccept["Staging"] += 1
+                numAccept["Staging"] += accept
         if not staging:
             for ptcl in np.random.randint(0,numParticles,numParticles):
                 beads, accept = bead_move(beads, ptcl, tau, delta_bead, numTimeSlices, lam, numParticles, n,eState)
@@ -422,7 +440,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             eStateTrace.append(eState)
             xiTrace.append([xi])
             if numParticles == 1:
-                PositionTrace.append(bond_length(beads, numTimeSlices))
+                PositionTrace.append(bead_pos(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
 
@@ -547,6 +565,9 @@ if __name__ == "__main__":
         wOut(f"Warning: thermSkip is very low")
     if corrSkip < 10:
         wOut(f"Warning: corrSkip is very low")
+    if echange and n<2:
+        wOut(f"Error: echange is turned on but n < 2")
+        exit(f"Error: echange is turned on but n < 2")
     
     # run PICM simulations
     np.random.seed(rand_seed)
