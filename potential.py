@@ -1,16 +1,15 @@
 """
-Define your potential here. V is calles from the main MCMC loop
+Define your potential here. getV functino is calles from the main MCMC loop!!!
 """
 
 import numpy as np
 from numba import jit, njit
 from projToINRC import proj_main
 import joblib
-import matplotlib.pyplot as plt
 import configparser
 config = configparser.ConfigParser()
 config.read('input.in')
-use_jit = str(config["settings"]["use_jit"]) 
+use_jit = str(config["PIMC"]["use_jit"]) 
 
 def conditional_jit(func):
 
@@ -19,59 +18,61 @@ def conditional_jit(func):
     else:
         return func
 
+
 ############Some example potentials for testing#######################
 
 @conditional_jit
-def HO(R):
-
-    V1 = .5 * (R[0]**2+R[1]**2+R[2]**2)
-    V2 = .5 * (R[0]**2+R[1]**2+R[2]**2) + 2
-
-    return V1, V2
-
-@conditional_jit
-def morsePot(r):
+def V_H2(R):
     """
-    Parameters:
-    - r: Distance between the atoms.
-    - D_e: Depth of the potential well.
-    - alpha: Width of the potential well.
-    - r_e: Equilibrium bond distance.
+    Morse potential for H2 calculated at the FCI/aug-cc-pVDZ level of theory. In atomic units.
     """
 
-    # Define parameters as needed (here H2@FCI/aug-cc-pVDZ)
+    r =  np.sqrt(R[0][0]**2 + R[0][1]**2 + R[0][2]**2)
     D_e = 1.16637054
-    alpha = 2.02881752 # 1/amstrong
-    r_e = 0.76345602 # amstrong
-    A = 0.17089793  # hartree
-
+    alpha = 3.8339091936
+    r_e = 1.4427226821
+    A = 0.17089793
+    
     return A * (1 - np.exp(-alpha * (r - r_e)))**2 - D_e
 
-@conditional_jit
-def GradMorsePot(r):
-  """
-  Analytic grad of the Morse Potential. 
-  """
-  alpha = 2.02881752
-  r_e = 0.76345602
-  A = 0.17089793
-
-  return 2*alpha*A * ( np.exp(-alpha * (r - r_e)) - np.exp(-2*alpha * (r - r_e)) )
 
 
-
-@conditional_jit
-def getVHO(R, eState):
-
-    V1, V2 = HO(R)
-
-    if eState[0] == 0:
-        return V1
-    else: 
-        return V2
+############Called from main code#######################
     
 @conditional_jit
+def getV(R, eState):
+    """
+    Called from main code to get the potential energy at a given geometry R. 
+    """
+
+    return V_H2(R)
+    
+@conditional_jit   
+def getGradV(R, eState):
+    """
+    Only needed if virial estimator is used.
+    """
+
+    r = np.sqrt(R[0][0]**2 + R[0][1]**2 + R[0][2]**2)
+    alpha = 3.8339091936
+    r_e = 1.4427226821
+    A = 0.17089793
+    
+    return 2*A*alpha*np.exp(-alpha * (r - r_e))*( 1 - np.exp(-alpha * (r - r_e)) ) * np.array([R[0][0]/r, R[0][1]/r, R[0][2]/r])
+
+@conditional_jit
+def getDiabV(R, eState):
+    """
+    Only needed in the diabatic limit.
+    """
+
+    pass
+
+@conditional_jit
 def getVgaussProcess(R):
+    """
+    If a gaussian process regression model is used to fit the PES.
+    """
 
     scaler_loaded = joblib.load('scaler.pkl')
     gp_loaded = joblib.load('VgaussProcess.pkl')
@@ -80,27 +81,3 @@ def getVgaussProcess(R):
     y_pred, sigma = gp_loaded.predict(X_new_scaled, return_std=True)
 
     return y_pred, sigma
-    
-@conditional_jit
-def getV(R, eState):
-
-    R = R[0]
-    V1, V2 = HO(R)
-
-    if eState[0] == 0:
-        return V1
-    else: 
-        return V2
-
-@conditional_jit   
-def getGradV(R, eState):
-
-    R = R[0]
-    gradV = np.array([R[0], R[1], R[2]])
-
-    return gradV    
-
-@conditional_jit
-def getDiabV(R, eState):
-
-    pass
