@@ -99,4 +99,4 @@ python main.py
 4) Analyze output in `output.out` and `output/`
 
 ### Sample Files
-For examples see `sample_input/` or just run the `test_script.py/`.
+For examples see `sample_input/` or just run the `test_script.py`.
