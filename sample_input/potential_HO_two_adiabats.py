@@ -52,4 +52,4 @@ def getDiabV(R: np.array, eState: np.array) -> tuple:
     Only needed in the diabatic limit. So if non_adiabatic_coupling or PoE is used.
     """
 
-    _HO(R), 0, 0, _HO(R)+2
+    return _HO(R), 0, 0, _HO(R)+2

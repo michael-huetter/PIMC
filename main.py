@@ -42,14 +42,17 @@ thermSkip = config.getint("convergence", "thermSkip")
 
 log_flag = config.getboolean("debug", "logging")
 
-# Load shared library
-lib = ctypes.CDLL('./lib_PoE.so')
-lib.initialize_random_seed()
+try:
+    # Load shared library
+    lib = ctypes.CDLL('./lib_PoE.so')
+    lib.initialize_random_seed()
 
-lib.performPoE.argtypes = [
-    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
-    ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
-]
+    lib.performPoE.argtypes = [
+        ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int, 
+        ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
+    ]
+except:
+    wOut("Warning: Could not load shared library for PoE.")
 
 # Define jit decorator
 def cJIT(func):
@@ -87,6 +90,7 @@ def log(func):
 Functions to compute Potential Energy/Action-----------------------------------------------------------------
 """
 
+@cJIT
 def getEig(V: np.array) -> np.array:
     
     eigValues, eigVectors = np.linalg.eig(V)
@@ -94,6 +98,7 @@ def getEig(V: np.array) -> np.array:
 
     return S
 
+@cJIT
 def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> float:
     """
     Currnetly only implementet for diatomics       
@@ -102,7 +107,7 @@ def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> fl
     S = []
     for j in range(numTimeSlices):
         R = beads[j,0:]
-        V_result = getDiabV(R[0], eState) 
+        V_result = getDiabV(R, eState) 
         if isinstance(V_result, float):
             V_tot = np.full((n * n,), V_result)
         else:
@@ -437,7 +442,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             else:
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo])
-            eStateTrace.append(eState)
+            eStateTrace.append(np.copy(eState))
             xiTrace.append([xi])
             if numParticles == 1:
                 PositionTrace.append(bead_pos(beads, numTimeSlices))
@@ -546,16 +551,18 @@ if __name__ == "__main__":
             eCG = config.getint("convergence", "eCG") # global e change
             wOut(f"Non-adiabatic coupling True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
         case False, True:
-            eCL = config.getint("convergence", "eCL") 
-            eCG = np.inf
-            wOut(f"PoE True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
+            wOut("Warning: Non-adiabatic couplings should be turned on for PoE")
+            eCL = config.getint("convergence", "eCL") # local e change
+            eCG = config.getint("convergence", "eCG") # global e change
+            wOut(f"Non-adiabatic coupling True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
         case False, False:
             eCL = np.inf
             eCG =config.getint("convergence", "eCG") 
             wOut(f"Only global e-changes: Adiabatic limit (ecL: {eCL}, eCG: {eCG})")
         case True, True:
-            wOut("Error: Both non-adiabatic coupling and PoE are turned on")
-            exit("Error: Both non-adiabatic coupling and PoE are turned on")
+            eCL = config.getint("convergence", "eCL") 
+            eCG = np.inf
+            wOut(f"PoE True: Diabatic limit (ecL: {eCL}, eCG: {eCG})")
     
     # sanitiy check of some input parameters
     if numParticles > 1 and (non_adiabatic_coupling or PoE):
