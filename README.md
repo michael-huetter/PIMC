@@ -98,4 +98,5 @@ python main.py
 
 4) Analyze output in `output.out` and `output/`
 
-For more details see [pdf](https://ulb-dok.uibk.ac.at/urn/urn:nbn:at:at-ubi:1-148622).
+### Sample Files
+For examples see `sample_input/` or just run the `test_script.py/`.
