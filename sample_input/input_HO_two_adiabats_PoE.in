@@ -2,26 +2,26 @@
 numParticles = 1
 T = 0.5, 3, 5
 lam = 0.5
-n = 1
+n = 2
 
 [PIMC]
 numMCSteps = 100000
-numTimeSlices = 1
+numTimeSlices = 20
 m = 8  
 delta = 1.0
-delta_bead = 0.01 
+delta_bead = 0.05 
 use_jit = True
-staging = False         
-echange = False
-non_adiabatic_coupling = False   
-PoE = False
+staging = True         
+echange = True
+non_adiabatic_coupling = True   
+PoE = True
 kin_virial = True
 rand_seed = 111
 
 [convergence]
 thermSkip = 1000  
 corrSkip = 20      
-eCG = 1
+eCG = 2
 eCL = 1 
 
 [debug]
