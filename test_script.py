@@ -253,3 +253,5 @@ axs[2].legend()
 axs[2].set_xlabel(r"$T$ in natural units")
 
 plt.show()
+
+print(GREEN + "All tests passed." + RESET)
