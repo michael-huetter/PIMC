@@ -98,7 +98,7 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 | `PoE` | `true/false` | True if propagation of Excitation moves should be used       |
 | `eCG` |         | Every n-th step a global e-change is attempted    (adiabatic limit)        |
 | `eCL` |         | Every n-th step a local e-change is attempted  (diabatic limit)             |
-| `logging` |         | Logs attempted moves for debugging             |
+| `logging` |    `true/false`     | Logs attempted moves for debugging             |
 
 ## Example Usage
 
