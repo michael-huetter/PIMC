@@ -104,28 +104,20 @@ def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> fl
     Currnetly only implementet for diatomics       
     """
 
-    S = []
+    S = np.empty((numTimeSlices, n, n))
     for j in range(numTimeSlices):
         R = beads[j,0:]
         V_result = getDiabV(R) 
-        if isinstance(V_result, float):
-            V_tot = np.full((n * n,), V_result)
-        else:
-            V_tot = np.array(V_result)
-        V = V_tot.reshape((n, n))
-        S_i = getEig(V)
-        S.append(S_i)
+        V = np.array(V_result).reshape((n, n))
+        S[j] = getEig(V)
     
     phi = 1
 
     for i in range(len(S)):
 
-        current_vector = S[i][:, eState[i]]
-        next_vector = S[(i+1) % len(S)][:, eState[(i+1) % len(S)]]   # korrekt soo?
-
-        dot = np.dot(current_vector, next_vector)
-
-        phi *= dot
+        current_vector = np.ascontiguousarray(S[i, :, eState[i]])
+        next_vector = np.ascontiguousarray(S[(i + 1) % numTimeSlices, :, eState[(i + 1) % numTimeSlices]])
+        phi *= np.dot(current_vector, next_vector)
 
     return phi
 
@@ -148,7 +140,7 @@ def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: n
     for j in range(numTimeSlices):
 
         R = beads[j,0:]
-        V_result = getV(R, eState[j])
+        V_result = getV(R,eState[j])
         PE = PE + V_result
 
     if non_adiabatic_coupling:
@@ -156,7 +148,7 @@ def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: n
     else:
         phi = 1
     
-    return PE*tau - np.log(np.abs(phi))/tau
+    return PE*tau - np.log(np.abs(phi+1e-10))/tau
 
 
 """
@@ -206,7 +198,7 @@ def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticl
         for ptcl in range(numParticles):
             Rc = (1/numTimeSlices) * np.sum(beads[:, ptcl, :], axis=0)
             delR = beads[tslice,ptcl] - Rc
-            dVdR = getGradV(beads[tslice,:], eState)
+            dVdR = getGradV(beads[tslice,:], eState[tslice])
             tot = tot + np.dot(delR, dVdR)
 
     tot = tot * 1/(2*numTimeSlices)
@@ -354,6 +346,7 @@ def local_e_change(beads: np.array, tau: float, numTimeSlices: int, n: int, eSta
     else:
         return old_eState, False
 
+
 @log
 def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: int, n: int, k: int, xi_possible: np.array, beads: np.array, tau: float) -> tuple[np.array, int]:
 
@@ -371,12 +364,13 @@ def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: 
 
     while np.array_equal(eState, eState_old): 
         lib.performPoE(k, xi, xi_change_interval, xi_possible_ptr, xi_possible.size, numTimeSlices, n, eState_ptr, ctypes.byref(xi_current))  
+    eState_new = np.copy(eState).astype(np.int32)
 
-    newAction = potAction(beads, tau, numTimeSlices, n, eState)
+    newAction = potAction(beads, tau, numTimeSlices, n, eState_new)
     oldAction = potAction(beads, tau, numTimeSlices, n, eState_old)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return eState, xi_current.value
+        return eState_new, xi_current.value
     else:
         return eState_old, xi_old
 
@@ -429,7 +423,6 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
         if PoE:
             eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, k, xi_possible, beads, tau)
-            #print(f"({k})", "xi: ", xi, " <-> eState: ", eState)
             
 
         # keep track of observables

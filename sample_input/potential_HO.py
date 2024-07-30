@@ -14,7 +14,7 @@ config = configparser.ConfigParser()
 config.read('input.in')
 use_jit = config.getboolean("PIMC", "use_jit") 
 
-def conditional_jit(func):
+def cJIT(func):
 
     if use_jit:
         return njit()(func)
@@ -24,14 +24,14 @@ def conditional_jit(func):
 
 ############Some example potentials for testing#######################
 
-@conditional_jit
+@cJIT
 def _HO(R):
 
     return 0.5 * (R[0][0]**2 + R[0][1]**2 + R[0][2]**2)
 
 ############Called from main code#######################
     
-@conditional_jit
+@cJIT
 def getV(R: np.array, eState: int) -> float:
     """
     Called from main code to get the potential energy at a given geometry R. 
@@ -41,7 +41,7 @@ def getV(R: np.array, eState: int) -> float:
 
 
     
-@conditional_jit   
+@cJIT   
 def getGradV(R: np.array, eState: int) -> np.array:
     """
     Only needed if virial estimator is used.
@@ -49,7 +49,7 @@ def getGradV(R: np.array, eState: int) -> np.array:
 
     return np.array([R[0][0], R[0][1], R[0][2]])
 
-@conditional_jit
+@cJIT
 def getDiabV(R: np.array) -> tuple:
     """
     Only needed in the diabatic limit. So if non_adiabatic_coupling or PoE is used.
