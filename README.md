@@ -13,6 +13,8 @@ Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Ch
 </script>
 ```
 
+$\xi test$
+
 both electronic and nuclear degrees of freedom are sampled naturally. Calculations are possible in both the adiabatic limit of uncoupled PESs and the diabatic limit, where non-adiabatic effects are included. 
 
 ## Requirements
