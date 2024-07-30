@@ -1,5 +1,5 @@
 """
-Define your potential here. getV functino is calles from the main MCMC loop!!!
+Define your potential in this script.
 """
 
 import numpy as np
