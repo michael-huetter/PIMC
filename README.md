@@ -1,8 +1,3 @@
-# PIMC
-Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Chain Monte Carlo method (Metropolis-Hastings) to sample static finite temperature properties of molecules from previously computed Potential Energy Surfaces (PES). Due to a generalized Path Integral expression of the canonical density matrix, given by:
-
-
-```html
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
     tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
@@ -11,9 +6,15 @@ Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Ch
 <script type="text/javascript" async
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-```
 
-$\xi test$
+# PIMC
+Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Chain Monte Carlo method (Metropolis-Hastings) to sample static finite temperature properties of molecules from previously computed Potential Energy Surfaces (PES). Due to a generalized Path Integral expression of the canonical density matrix, given by:
+
+$$
+Z &= \lim_{P \to \infty } \prod_{I=1}^{N}\left[ \left( \frac{m_{I}P}{2\pi\beta\hbar ^{2}} \right)^{\frac{3P}{2}} \int dR^{1}_{I}... \int dR^{P}_{I} \right]\\
+& \times \text{exp}\left[ -\beta\sum_{k=1}^{P}\sum_{I=1}^{N}\frac{m_{I}}{2}\omega_{P}^{2}\left( R_{I}^{k}-R_{I}^{k-1} \right)^{2} \right] \\
+& \times \sum_{i_{1}}...\sum_{i_{P}}\prod_{k=1}^{P}\left\langle\Psi_{i_k}|\Psi_{i_{k-1}}\right\rangle e^{-\frac{\beta}{P} E_{i_k}}
+$$
 
 both electronic and nuclear degrees of freedom are sampled naturally. Calculations are possible in both the adiabatic limit of uncoupled PESs and the diabatic limit, where non-adiabatic effects are included. 
 
