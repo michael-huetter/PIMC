@@ -1,4 +1,4 @@
-# PIMC
+# Path Integral Monte Carlo
 Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Chain Monte Carlo method (Metropolis-Hastings) to sample static finite temperature properties of molecules from previously computed Potential Energy Surfaces (PES). Due to a generalized Path Integral expression of the canonical density matrix, given by:
 
 ```math
