@@ -7,11 +7,12 @@ Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Ch
 both electronic and nuclear degrees of freedom are sampled naturally. Calculations are possible in both the adiabatic limit of uncoupled PESs and the diabatic limit, where non-adiabatic effects are included. The current implementation includes center of mass (CoM) moves, single bead moves, staging moves, global e-change moves, local e-change moves, and propagation of excitation (PoE) moves.
 
 ### CoM moves
-The entire path is uniformly translated by a random vector. Acceptance propability can be controlled with the `delta` parameter.
+The entire path is uniformly translated by a random vector. The acceptance propability is controlled with the `delta` parameter.
 ### Single bead moves
-Individual beads are displaced by a random vector.  Acceptance propability can be controlled with the `delta_bead` parameter.
+Individual beads are displaced by a random vector. The acceptance propability is controlled with the `delta_bead` parameter.
 ### Staging moves
-Staging moves are only applied to a section of path, where stage length and thus the acceptance probability can be controlled with the `m` parameter.
+Staging moves are applied to a section of path, where stage length and thus the acceptance probability can be controlled with the `m` parameter, while the kinetic action of the displaced path segment is sampled directly using
+the Lévy construct.
 ### Global e-change moves
 Electronic states of all beads simultaneously are changed if the parameter `echange` is set to `True`. With this multiple electronic states can be included in the adiabatic limit. 
 ### Local e-change moves
