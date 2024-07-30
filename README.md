@@ -114,7 +114,7 @@ The general workflow is as follows:
 getV(R, eState)
 ```
 
-where `R` is a three-dimensional array containing the xyz - coordinates of bead $k$ and particle I with [x,z,z] = R[I,k], and eState is an intager containing the index of the PES on which bead k is currently located. Finally, this function should return the numerical value of the potential consistent with the current positions and occupied electronic states. Depending on how the potentials were computed, the function needs to be adjusted accordingly.
+where `R` is a three-dimensional array containing the xyz - coordinates of bead $k$ and particle $I$ with [x,z,z] = R[I,k], and eState is an intager containing the index of the PES on which bead $k$ is currently located. Finally, this function should return the numerical value of the potential consistent with the current positions and occupied electronic states. Depending on how the potentials were computed, the function needs to be adjusted accordingly.
 
 Secondly, if the virial estimator for the kinetic energy is used, the gradient of the potential needs be be computed. Therefor the function 
 
