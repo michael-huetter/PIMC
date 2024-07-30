@@ -1,5 +1,5 @@
 """
-Some statistics...
+Some statistics on the ouptut data.
 """
 
 import numpy as np
@@ -16,6 +16,7 @@ numParticles = int(config["system"]["numParticles"])
 kinVir = str(config["PIMC"]["kin_virial"]) 
 
 def _jackknife_after_bootstrap(data, num_resamples=1000):
+
     n = len(data)
     estimates = np.zeros(num_resamples)
     
@@ -56,7 +57,7 @@ def _gelman_rubin(chains):
 
 def _integrated_autocorrelation_time(chain, max_lag=30):
     """
-    max_lag may needs to be adjusted depending on the use case
+    max_lag may needs to be adjusted depending on the use case!!!
     """
 
     autocorr = acf(chain, nlags=max_lag, fft=True)
@@ -80,6 +81,7 @@ def _eStatePop(data, T):
 
 
 def rcc():
+    
     files = get_filenames("output")
     T = []
     name = []
@@ -95,8 +97,11 @@ def rcc():
             name.append(type)
 
     if len(T) == 0:
-            wOut(f"Error: NDF")
-            exit(f"Error: NDF")
+            wOut(f"Error: No data found in output directory, make sure the potential is properly defined and appropriat input parameters are used. \
+Alternatively, try the logging mode.")
+            exit(f"Error: No data found in output directory, make sure the potential is properly defined and appropriat input parameters are used. \
+Alternatively, try the logging mode.")
+
 
     # Get toatal E
     E = []
@@ -115,9 +120,6 @@ def rcc():
         wOut(f"({i}) IAT: {iat:.2f}; (max_lag=30)")
         ess = az.ess(kin+pot)
         wOut(f"({i}) ESS/TOT: {(ess/len(kin+pot)):.2f}")
-        #if ess/len(kin+pot) < 0.95 or ess/len(kin+pot) > 1:
-        #    wOut(f"Warning: Possible correlation problems for the ({i}) chain")
-
 
         E_trace.append(kin+pot)
         E.append([float(i), e])
@@ -129,8 +131,6 @@ def rcc():
     if len(E_trace) > 1:
         R = _gelman_rubin(E_trace)
         wOut(f"Convergance: R-hat = {R:.2f}")
-        #if R > 1.1:
-        #    wOut(f"Warning: Chain most likely not converged properly") 
     else:
         wOut(f"Warning: GR statistic not possible to compute with one chain. Pleas check convergance manually.")  
 
@@ -139,11 +139,5 @@ def rcc():
         # Print eState population
         data = np.loadtxt(f"output/{i}_eStatTrace.csv", delimiter=",")
         _eStatePop(data, i)
-
-    # mean bond length for simple diatomic molecules
-    #if numParticles == 1:
-    #    for i in T:
-    #        r0 = np.loadtxt(f"output/{i}_PositionTrace.csv", delimiter=",")
-    #        wOut(f"({i}) Mean bond length r_0 = {np.mean(r0)}(+/-){np.var(r0)}") 
 
     

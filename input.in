@@ -24,3 +24,5 @@ corrSkip = 25
 eCG = 1
 eCL = 1 
 
+[debug]
+logging = False
