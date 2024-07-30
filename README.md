@@ -4,7 +4,26 @@ Implementation of a Path Integral Monte Carlo (PIMC) algorithm using a Markov Ch
 ```math
         Z = \lim_{P \to \infty } \prod_{I=1}^{N}\left[ \left( \frac{m_{I}P}{2\pi\beta\hbar ^{2}} \right)^{\frac{3P}{2}} \int dR^{1}_{I}... \int dR^{P}_{I} \right]  \times \text{exp}\left[ -\beta\sum_{k=1}^{P}\sum_{I=1}^{N}\frac{m_{I}}{2}\omega_{P}^{2}\left( R_{I}^{k}-R_{I}^{k-1} \right)^{2} \right]  \times \sum_{i_{1}}...\sum_{i_{P}}\prod_{k=1}^{P}\left\langle\Psi_{i_k}|\Psi_{i_{k-1}}\right\rangle e^{-\frac{\beta}{P} E_{i_k}},
 ```
-both electronic and nuclear degrees of freedom are sampled naturally. Calculations are possible in both the adiabatic limit of uncoupled PESs and the diabatic limit, where non-adiabatic effects are included. 
+both electronic and nuclear degrees of freedom are sampled naturally. Calculations are possible in both the adiabatic limit of uncoupled PESs and the diabatic limit, where non-adiabatic effects are included. The current implementation includes center of mass (CoM) moves, single bead moves, staging moves, global e-change moves, local e-change moves, and propagation of excitation (PoE) moves.
+
+### CoM moves
+The entire path is uniformly translated by a random vector. Acceptance propability can be controlled with the `delta` parameter.
+### Single bead moves
+Individual beads are displaced by a random vector.  Acceptance propability can be controlled with the `delta_bead` parameter.
+### Staging moves
+Staging moves are only applied to a section of path, where stage length and thus the acceptance probability can be controlled with the `m` parameter.
+### Global e-change moves
+Electronic states of all beads simultaneously are changed if the parameter `echange` is set to `True`. With this multiple electronic states can be included in the adiabatic limit. 
+### Local e-change moves
+Electronic states of a single bead is changed if the parameter `non_adiabatic_coupling` is set to `True`. With this non-adiabatic effects can be included in the diabatic limit.
+### PoE moves
+A randomly choosen number of overlap terms 
+
+```math
+\left\langle\Psi_{i_k}|\Psi_{i_{k-1}}\right\rangle
+```
+
+is set periodically and excitations are propagated randomly trough the nacklace of beads while keeping the number of overlap terms fixed if the `PoE` parameter is set to `True`. With this non-adiabatic effects are included in the diabatic limit and no global/local e-changes moves are necessary.
 
 ## Requirements
 - Python 3.10 or higher
