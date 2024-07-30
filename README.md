@@ -24,7 +24,7 @@ A randomly choosen number of overlap terms
 \left\langle\Psi_{i_k}|\Psi_{i_{k-1}}\right\rangle
 ```
 
-is set periodically and excitations are propagated randomly trough the nacklace of beads while keeping the number of overlap terms fixed, if the `PoE` parameter is set to `True`. With this, non-adiabatic effects are included in the diabatic limit and no global/local e-changes moves are necessary.
+is set periodically and excitations are propagated randomly trough the nacklace of beads while keeping the number of overlap terms fixed, if the `PoE` parameter is set to `True`. With this, non-adiabatic effects are included in the diabatic limit and no global/local e-change moves are necessary.
 
 ## Requirements
 - Python 3.10 or higher
