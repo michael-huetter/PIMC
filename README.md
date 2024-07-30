@@ -102,34 +102,50 @@ Define your input parameters in `input.in`. Ensure that atomic units are used.
 
 ## Example Usage
 
-### System composed of two harmonic adiabats
+The general workflow is as follows:
 
-```math
-V_{\text{HO}} = \begin{bmatrix} 0.5 \cdot (x^2 + y^2 + z^2) & 0 \\ 0 & 0.5 \cdot (x^2 + y^2 + z^2) + 1 \end{bmatrix}
-```
+1) Find a continuous representation of the PESs. This typically involves firstly conducting quantum chemical calculations to sample the PES and subsequantly fitting it using for example simple interpolation schemes or more sophisticated methods like Neural Networks. Note that if non-adiabatic effects should be considered, an additional quasi-diabatization transformation needs to be applied.
 
-1) Define input parameters
-2) Define potential in `potential.py`
+2) Define the input parameters in `input.in`. Note that in the code natural units are used, so it is recommended to use atomic units if simulations are run for molecules.
+
+3) Secify your potential in `potential.py`. Firstly, the main PIMC code calls the function,
 
 ```python
-# getV is called from the main PIMC code
-def getV(R, eState):
-    if eState[0] == 0:
-        return V_HO(R[0], 0)  # only one particle, thus r = R[0]
-    else:
-        return V_HO(R[0], 1)
-    
-# Compute analytic gradient (only necessary if Virial Estimator is used)
-def getGradV(R, eState):
-    return np.array([R[0][0], R[0][1], R[0][2]]) # x,y,z coordinates of particle
+getV(R, eState)
 ```
 
-3) Run script with: 
+where `R` is a three-dimensional array containing the xyz - coordinates of bead k and particle I with [x,z,z] = R[I,k], and eState is an intager containing the index of the PES on which bead k is currently located. Finally, this function should return the numerical value of the potential consistent with the current positions and occupied electronic states. Depending on how the potentials were computed, the function needs to be adjusted accordingly.
+
+Secondly, if the virial estimator for the kinetic energy is used, the gradient of the potential needs be be computed. Therefor the function 
+
+```python
+getGradV(R, eState)
+```
+
+is called, where the input parameters are equal to the getV function, and the gradient should be returned. Thirdly, if non-adiabatic effects should be considered, the function 
+
+```python
+getDiabV(R)
+```
+
+is called and should return the diabatic matrix elements as a tuple, for example, 
+
+```python
+def getDiabV(R):
+	...
+	return V11, V12, V21, V22 
+```
+
+
+in the case of two PESs.
+
+4) Run the simulation with 
+
 ```bash
 python main.py
 ```
 
-4) Analyze output in `output.out` and `output/`
+5) Analyze output in `output.out` and `output/`
 
-### Sample Files
-For examples see `sample_input/` or just run the `test_script.py`.
+### Harmonic Oscillator
+Sample input files for `input.in` and `potential.py` can be found in the `sample_input/` folder for the Harmonic Oscillator with one and two adiabats. The `test_script.py` automatically runs PIMC simulations for these input files and plots some of the results using matplotlib. This acts as a test if everything is installed properly and behaves as expected.

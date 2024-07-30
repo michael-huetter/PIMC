@@ -28,18 +28,18 @@ def _HO(R):
 ############Called from main code#######################
     
 @conditional_jit
-def getV(R: np.array, eState: np.array) -> float:
+def getV(R: np.array, eState: int) -> float:
     """
     Called from main code to get the potential energy at a given geometry R. 
     """
 
-    if eState[0] == 0:
+    if eState == 0:
         return _HO(R)
     else:
         return _HO(R) + 2
     
 @conditional_jit   
-def getGradV(R: np.array, eState: np.array) -> np.array:
+def getGradV(R: np.array, eState: int) -> np.array:
     """
     Only needed if virial estimator is used.
     """
@@ -47,7 +47,7 @@ def getGradV(R: np.array, eState: np.array) -> np.array:
     return np.array([R[0][0], R[0][1], R[0][2]])
 
 @conditional_jit
-def getDiabV(R: np.array, eState: np.array) -> tuple:
+def getDiabV(R: np.array) -> tuple:
     """
     Only needed in the diabatic limit. So if non_adiabatic_coupling or PoE is used.
     """

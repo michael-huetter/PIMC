@@ -107,7 +107,7 @@ def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> fl
     S = []
     for j in range(numTimeSlices):
         R = beads[j,0:]
-        V_result = getDiabV(R, eState) 
+        V_result = getDiabV(R) 
         if isinstance(V_result, float):
             V_tot = np.full((n * n,), V_result)
         else:
@@ -136,7 +136,7 @@ def potEnergy(beads: np.array, numTimeSlices: int, eState: np.array) -> float:
     for j in range(numTimeSlices):
 
         R = beads[j,0:]
-        V_result = getV(R, eState)
+        V_result = getV(R, eState[j])
         PE = PE + V_result
 
     return PE/(numTimeSlices) 
@@ -148,7 +148,7 @@ def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: n
     for j in range(numTimeSlices):
 
         R = beads[j,0:]
-        V_result = getV(R, eState)
+        V_result = getV(R, eState[j])
         PE = PE + V_result
 
     if non_adiabatic_coupling:

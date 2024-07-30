@@ -21,7 +21,7 @@ def conditional_jit(func):
 ############Called from main code#######################
     
 @conditional_jit
-def getV(R: np.array, eState: np.array) -> float:
+def getV(R: np.array, eState: int) -> float:
     """
     Called from main code to get the potential energy at a given geometry R. 
     """
@@ -29,7 +29,7 @@ def getV(R: np.array, eState: np.array) -> float:
     pass
     
 @conditional_jit   
-def getGradV(R: np.array, eState: np.array) -> np.array:
+def getGradV(R: np.array, eState: int) -> np.array:
     """
     Only needed if virial estimator is used.
     """
@@ -37,7 +37,7 @@ def getGradV(R: np.array, eState: np.array) -> np.array:
     pass
 
 @conditional_jit
-def getDiabV(R: np.array, eState: np.array) -> tuple:
+def getDiabV(R: np.array) -> tuple:
     """
     Only needed in the diabatic limit. So if non_adiabatic_coupling or PoE is used.
     """
