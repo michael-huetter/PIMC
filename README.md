@@ -146,5 +146,25 @@ python main.py
 
 5) Analyze output in `output.out` and `output/`
 
-### Harmonic Oscillator
-Sample input files for `input.in` and `potential.py` can be found in the `sample_input/` folder for the Harmonic Oscillator with one and two adiabats. The `test_script.py` automatically runs PIMC simulations for these input files and plots some of the results using matplotlib. This acts as a test if everything is installed properly and behaves as expected.
+### Harmonic Oscillator and H$_2$
+Sample input files for `input.in` and `potential.py` can be found in the `sample_input/` folder for the Harmonic Oscillator with one and two adiabats and H$_2$. The `test_script.py` automatically runs PIMC simulations for these input files and plots some of the results using matplotlib. 
+
+## H$_2$
+
+For illustration pourpuses we will here calculate static finite temperature properties of H$_2$ a temperature of 300 K. To do so the PES was calculated at a FCI/aug-cc-pVDZ level of theory. Due to the simple nature of this PES a Morse Potential can be used to find a continous representation of it. Thus,
+
+```math
+V(r) = D\left( 1-e^{-\alpha\left( r-r_{\text{e}} \right)} \right)^{2}$,
+```
+
+with $r$ being the H-H distance and $r_e=0.763$ Å, $\alpha=2.02$ 1/Å, and $D= 4.65$ eV were obtained by fitting the upper Eq. to the FCI data. As discussed above, if the virial estimator shoud be used, also gradients need to be computed, with
+
+```math
+\nabla V = -2\alpha\left( 1-e^{-\alpha(r-r_e)} e^{-\alpha(r-r_e)}\right) \frac{\textbf{r}}{r}.
+```
+
+Now we can define the input parameters in `input.in`. As natural units are used we set:
+
+- `lam` =  1/(2*918.575) = 0.0005443213673352747
+- `T` = 300 K = 0.00095
+

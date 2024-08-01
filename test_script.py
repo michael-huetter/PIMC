@@ -45,6 +45,7 @@ def read_output():
     K = []
     R = []
     e = []
+    K_thermo = []
      
     files = get_filenames("output")
     for file in files[1]:
@@ -56,14 +57,16 @@ def read_output():
         U.append(np.mean(np.loadtxt("output/"+t+"_PotEnergyTrace.csv")))
         R.append(np.loadtxt("output/"+t+"_PositionTrace.csv", delimiter=","))
         e.append(np.loadtxt("output/"+t+"_eStatTrace.csv", delimiter=","))
+        K_thermo.append(np.mean(np.loadtxt("output/"+t+"_KinThermoEnergyTrace.csv")))
 
     T_pimc = np.array(T_pimc, dtype=float)
     U = np.array(U)
     K = np.array(K)
     R = np.array(R)
     e = np.array(e)
+    K_thermo = np.array(K_thermo)
 
-    return T_pimc, U, K, R, e
+    return T_pimc, U, K, R, e, K_thermo
 
 
 ###############General.####################
@@ -72,7 +75,7 @@ print(BLUE + "General information." + RESET)
 cpu_c = os.cpu_count()
 if cpu_c < 3:
     print(RED + f"Error: Not enough CPUs avalible to run this script. Only {cpu_c} avalible, and 3 needed." + RESET)
-print(GREEN + f"Number of avalible CPUs: {cpu_c}" + RESET)
+print(YELLOW + f"Number of avalible CPUs: {cpu_c}" + RESET)
 
 ###############Harmonic Oscillator with one adiabat.####################
 
@@ -82,36 +85,29 @@ os.system("cp sample_input/input_HO.in input.in")
 t0 = time()
 os.system(path_to_python_inptr + " main.py")
 t1 = time()
-print(GREEN + f"Runtime: {t1-t0:.2f} s" + RESET)
+print(YELLOW + f"Runtime: {t1-t0:.2f} s" + RESET)
 
 # plotting
 
 T = np.linspace(0.1, 6, 1000)
 x = np.linspace(-13, 13, 1000)
 
-T_pimc, U, K, R, e = read_output()
+T_pimc, U, K, R, e, K_thermo = read_output()
 
-fig, axs = plt.subplots(3)
+fig, axs = plt.subplots(2)
 fig.suptitle("3D Harmonic Oscillator")
+
 axs[0].plot(T, HO3DEnergyExact(T), "b-",label="Exact")
-axs[0].plot(T_pimc, U+K, "ro",label="PIMC")
+axs[0].plot(T_pimc, U+K, "ro",label="PIMC Virial")
+axs[0].plot(T_pimc, U+K_thermo, "go",label="PIMC Thermo")
 axs[0].set_xlabel(r"$T$ in natural units")
 axs[0].set_ylabel(r"$E$ in natural units")
 axs[0].legend()
 axs[1].plot(x, .5*x**2, "b-",label="Potential")
-#axs[1].hist(R, bins=100, density=True, histtype='step', color='r',label="PIMC")
-
-i = 0
-for t in T_pimc:
-    axs[2].hist(R[i,:,0], bins=100, histtype='step', color='r', density=True)
-    axs[2].hist(R[i,:,1], bins=100, histtype='step', color='g', density=True)
-    axs[2].hist(R[i,:,2], bins=100, histtype='step', color='b', density=True)
-    axs[2].plot(x, np.array([HOExactDist(q, t) for q in x]), "k-", label="Exact")
-    i += 1
-
+axs[1].set_xlabel(r"$x$ in natural units")
+axs[1].set_ylabel(r"$V$ in natural units")
 axs[1].legend()
-axs[2].set_xlabel(r"$x$ in natural units")
-axs[2].legend()
+
 
 plt.show()
 
@@ -126,20 +122,23 @@ os.system("cp sample_input/input_HO_two_adiabats.in input.in")
 t0 = time()
 os.system(path_to_python_inptr + " main.py")
 t1 = time()
-print(GREEN + f"Runtime: {t1-t0:.2f} s" + RESET)
+print(YELLOW + f"Runtime: {t1-t0:.2f} s" + RESET)
 
-T_pimc, U, K, R, e = read_output()
+T_pimc, U, K, R, e, K_thermo = read_output()
 
 fig, axs = plt.subplots(3)
 fig.suptitle("3D Harmonic Oscillator with two adiabats")
 axs[0].plot(T, HO3DEnergyExactAdiab(T, dE), "b-", label="Exact two adiabats")
 axs[0].plot(T, HO3DEnergyExact(T), "g-",label="Exact one adiabat")
-axs[0].plot(T_pimc, U+K, "ro",label="PIMC")
+axs[0].plot(T_pimc, U+K, "ro",label="PIMC Virial")
+axs[0].plot(T_pimc, U+K_thermo, "go",label="PIMC Thermo")
 axs[0].set_xlabel(r"$T$ in natural units")
 axs[0].set_ylabel(r"$E$ in natural units")
 axs[0].legend()
 axs[1].plot(x, .5*x**2, "b-",label="V1")
 axs[1].plot(x, .5*x**2+2, "b-",label="V2")
+axs[1].set_xlabel(r"$x$ in natural units")
+axs[1].set_ylabel(r"$V$ in natural units")
 axs[1].legend()
 
 groundstat_count = []
@@ -163,39 +162,6 @@ axs[2].bar(T_pimc, groundstat_count, label='Ground state')
 axs[2].bar(T_pimc, excited_count, bottom=bottom, label='Excited state')
 axs[2].legend()
 axs[2].set_xlabel(r"$T$ in natural units")
-
-plt.show()
- 
-
-###############Harmonic Oscillator classical limit.####################
-
-print(BLUE + "Running PIMC simulation simulation for the Harmonic Oscillator the classical limit of P=1." + RESET)
-os.system("cp sample_input/potential_HO.py potential.py")
-os.system("cp sample_input/input_HO_classical.in input.in")
-t0 = time()
-os.system(path_to_python_inptr + " main.py")
-t1 = time()
-print(GREEN + f"Runtime: {t1-t0:.2f} s" + RESET)
-
-T_pimc, U, K, R, e = read_output()
-
-fig, axs = plt.subplots(3)
-fig.suptitle(r"Classical 3D HO (classical limit of $P$=1)")
-axs[0].plot(T, 3*T, "b-", label="Classical HO")
-axs[0].plot(T, HO3DEnergyExact(T), "g-",label="Quantum HO")
-axs[0].plot(T_pimc, U+K, "ro",label="PIMC")
-axs[0].set_xlabel(r"$T$ in natural units")
-axs[0].set_ylabel(r"$E$ in natural units")
-axs[0].legend()
-axs[1].plot(x, .5*x**2, "b-",label="Potential")
-axs[1].legend()
-
-i = 0
-for t in T_pimc:
-    axs[2].hist(R[i,:,0], bins=100, histtype='step', color='r', density=True)
-    axs[2].hist(R[i,:,1], bins=100, histtype='step', color='g', density=True)
-    axs[2].hist(R[i,:,2], bins=100, histtype='step', color='b', density=True)
-    i += 1
 
 plt.show()
 
@@ -210,24 +176,26 @@ os.system("cp sample_input/input_HO_two_adiabats_PoE.in input.in")
 t0 = time()
 os.system(path_to_python_inptr + " main.py")
 t1 = time()
-print(GREEN + f"Runtime: {t1-t0:.2f} s" + RESET)
+print(YELLOW + f"Runtime: {t1-t0:.2f} s" + RESET)
 
+poe_flag = True
 if not os.path.exists("output/0.5_eStatTrace.csv"):
     print(RED + "Error: PoE moves failed. Make sure the shared library is proparly compiled and referanced in main.py" + RESET)
-    exit()
+    poe_flag = False
 
-T_pimc, U, K, R, e = read_output()
+T_pimc, U, K, R, e, K_thermo = read_output()
 
 fig, axs = plt.subplots(3)
 fig.suptitle("3D Harmonic Oscillator with two adiabats")
 axs[0].plot(T, HO3DEnergyExactAdiab(T, dE), "b-", label="Exact two adiabats")
 axs[0].plot(T, HO3DEnergyExact(T), "g-",label="Exact one adiabat")
-axs[0].plot(T_pimc, U+K, "ro",label="PIMC")
+axs[0].plot(T_pimc, U+K, "ro",label="PIMC Virial")
+axs[0].plot(T_pimc, U+K_thermo, "go",label="PIMC Thermo")
 axs[0].set_xlabel(r"$T$ in natural units")
 axs[0].set_ylabel(r"$E$ in natural units")
 axs[0].legend()
 axs[1].plot(x, .5*x**2, "b-",label="V1")
-axs[1].plot(x, .5*x**2+2, "b-",label="V2")
+axs[1].plot(x, .5*x**2+2, "r-",label="V2")
 axs[1].legend()
 
 groundstat_count = []
@@ -254,4 +222,62 @@ axs[2].set_xlabel(r"$T$ in natural units")
 
 plt.show()
 
-print(GREEN + "All tests passed." + RESET)
+
+###############Harmonic Oscillator classical limit.####################
+
+print(BLUE + "Running PIMC simulation simulation for the Harmonic Oscillator the classical limit of P=1." + RESET)
+os.system("cp sample_input/potential_HO.py potential.py")
+os.system("cp sample_input/input_HO_classical.in input.in")
+t0 = time()
+os.system(path_to_python_inptr + " main.py")
+t1 = time()
+print(YELLOW + f"Runtime: {t1-t0:.2f} s" + RESET)
+
+T_pimc, U, K, R, e, K_thermo = read_output()
+
+fig, axs = plt.subplots(2)
+fig.suptitle(r"Classical 3D HO (classical limit of $P$=1)")
+axs[0].plot(T, 3*T, "b-", label="Classical HO")
+axs[0].plot(T, HO3DEnergyExact(T), "g-",label="Quantum HO")
+axs[0].plot(T_pimc, U+K, "ro",label="PIMC Virial")
+axs[0].plot(T_pimc, U+K_thermo, "go",label="PIMC Thermo")
+axs[0].set_xlabel(r"$T$ in natural units")
+axs[0].set_ylabel(r"$E$ in natural units")
+axs[0].legend()
+axs[1].plot(x, .5*x**2, "b-",label="Potential")
+axs[1].legend()
+axs[1].set_xlabel(r"$x$ in natural units")
+axs[1].set_ylabel(r"$V$ in natural units")
+
+plt.show()
+
+
+###############H2 molecule.####################
+
+print(BLUE + r"Running PIMC simulation simulation for H2 @ 300K" + RESET)
+os.system("cp sample_input/potential_H2.py potential.py")
+os.system("cp sample_input/input_H2.in input.in")
+t0 = time()
+os.system(path_to_python_inptr + " main.py")
+t1 = time()
+print(YELLOW + f"Runtime: {t1-t0:.2f} s" + RESET)
+
+T_pimc, U, K, R, e, K_thermo = read_output()
+R = R[1]
+R_mean = np.mean(R)
+print("Mean bond length in Å: ", round(R_mean*0.529177, 3) )
+E_mean = U[1] + K[1]
+E_mean_thermo = U[1] + K_thermo[1]
+print("Mean energy in eV (virial): ", round(E_mean*27.211396641308, 3))
+print("Mean energy in eV (thermodynamic): ", round(E_mean_thermo*27.211396641308, 3))
+E0 = K[0] + U[0]; E1 = K[1] + U[1]; E2 = K[2] + U[2]
+Cv = (E0 - E2) / (T_pimc[0] - T_pimc[2]) * 2600 * 1000 / 320000
+print("Cp in J/(mol K): ", round(Cv+8.314, 1))
+
+
+#################################################
+
+if not poe_flag:
+    print(RED + "PoE moves failed." + RESET)
+else:
+    print(GREEN + "All tests passed." + RESET)
