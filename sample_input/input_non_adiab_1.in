@@ -1,0 +1,29 @@
+[system]
+numParticles = 1
+T = 0.0000032, 0.0000475, 0.0000792, 0.000095, 0.000127
+lam = 0.00013608034183381867
+n = 2
+
+[PIMC]
+numMCSteps = 100000
+numTimeSlices = 20
+m = 18 
+delta = 1.4
+delta_bead = 0.1
+use_jit = True
+staging = True
+echange = True
+non_adiabatic_coupling = False   
+PoE = False
+kin_virial = False
+rand_seed = 224422
+
+[convergence]
+thermSkip = 1000  
+corrSkip = 20      
+eCG = 1
+eCL = 1 
+
+[debug]
+logging = False
+

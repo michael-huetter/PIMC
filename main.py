@@ -1,4 +1,5 @@
 import os
+import sys
 from concurrent.futures import ProcessPoolExecutor
 import ctypes
 import functools
@@ -42,8 +43,14 @@ thermSkip = config.getint("convergence", "thermSkip")
 
 log_flag = config.getboolean("debug", "logging")
 
+# set spacial dimensions (default to 3)
+try: 
+    simulation_dim = int(sys.argv[1])
+except:
+    simulation_dim = 3
+
+# Load shared library
 try:
-    # Load shared library
     lib = ctypes.CDLL('./lib_PoE.so')
     lib.initialize_random_seed()
 
@@ -62,7 +69,7 @@ def cJIT(func):
     else:
         return func
     
-# Configure logging and define logging decorator
+# Configure logging and define logging decorator (for debugging)
 logging.basicConfig(
     filename='debug.log',  
     filemode='w',  
@@ -169,7 +176,8 @@ def kinetic_estimator(beads: np.array, tau: float, lam: float, numTimeSlices: in
             delR = beads[tslicep1,ptcl] - beads[tslice,ptcl]
             tot = tot - norm*np.dot(delR, delR)
         
-    return (3/2) * numParticles/tau + tot/numTimeSlices
+    return (simulation_dim/2) * numParticles/tau + tot/numTimeSlices
+
 
 @cJIT
 def kinetic_action(beads: np.array, tau: float, lam: float, numTimeSlices: int, numParticles: int) -> float:
@@ -203,7 +211,7 @@ def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticl
 
     tot = tot * 1/(2*numTimeSlices)
 
-    return (3*numParticles)/(2*tau*numTimeSlices) + tot
+    return (simulation_dim*numParticles)/(2*tau*numTimeSlices) + tot
 
 
 """
@@ -249,7 +257,7 @@ def dbetaK(beads: np.array, tau: float, lam: float, numTimeSlices: int, numParti
             delR = beads[tslicep1,ptcl] - beads[tslice,ptcl]
             tot = tot + norm*np.dot(delR, delR)
         
-    return -(3/2) * numParticles*numTimeSlices/beta**2 + tot
+    return -(simulation_dim/2) * numParticles*numTimeSlices/beta**2 + tot
     
 """
 Implementation of diffrent MC steps  -----------------------------------------------------------------
@@ -259,12 +267,7 @@ Implementation of diffrent MC steps  -------------------------------------------
 @cJIT
 def center_of_mass_move(beads: np.array, ptcl: int, tau: float, delta: float, numTimeSlices: int, n: int, eState: np.array) -> tuple[np.ndarray, bool]:
 
-    shift = delta*(2.0*np.random.random(3) - 1.0)
-    #shift = delta*(2.0*np.random.random() - 1.0)
-    #i_rand = np.random.randint(0, 3)
-    #dR = np.zeros(3)
-    #dR[i_rand] = shift
-    
+    shift = delta*(2.0*np.random.random(simulation_dim) - 1.0)    
     beads_new = np.copy(beads)
 
     beads_new[:,ptcl] += shift
@@ -284,7 +287,7 @@ def bead_move(beads: np.array, ptcl: int, tau: float, delta: float, numTimeSlice
     Individual bead move. Used if staging is turned off.
     """
 
-    shift = delta*(2.0*np.random.random(3) - 1.0)
+    shift = delta*(2.0*np.random.random(simulation_dim) - 1.0)
     beads_new = np.copy(beads)
     
     rand_tslice = np.random.randint(0, numTimeSlices)
@@ -352,8 +355,8 @@ def local_e_change(beads: np.array, tau: float, numTimeSlices: int, n: int, eSta
     Individual bead moves. Diabatic limit.
     """
 
-    old_eState = eState
-    new_eState = eState
+    old_eState = np.copy(eState)
+    new_eState = np.copy(eState)
   
     to_move = np.random.randint(0, numTimeSlices)
     possible_states = list(range(n)) 
@@ -365,9 +368,9 @@ def local_e_change(beads: np.array, tau: float, numTimeSlices: int, n: int, eSta
     newAction = potAction(beads, tau, numTimeSlices, n, new_eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return new_eState, True
+        return new_eState
     else:
-        return old_eState, False
+        return old_eState
 
 
 @log
@@ -446,8 +449,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                     eState = local_e_change(beads, tau, numTimeSlices, n, eState)
 
         if PoE:
-            eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, k, xi_possible, beads, tau)
-            
+            eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, k, xi_possible, beads, tau)   
 
         # keep track of observables
         if k % corrSkip == 0 and k > thermSkip:
@@ -462,7 +464,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 EnergyTrace.append([potE, kinEthermo])
             eStateTrace.append(np.copy(eState))
             xiTrace.append([xi])
-            if numParticles == 1:
+            if numParticles == 1 and simulation_dim == 3:
                 PositionTrace.append(bead_pos(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
@@ -478,20 +480,20 @@ def main(T, n, echange, eCL, eCG):
     tau = 1.0/(T*numTimeSlices)
 
     # beads[bead][particl][coordinate]
-    beads = np.zeros([numTimeSlices,numParticles, 3])
+    beads = np.zeros([numTimeSlices,numParticles, simulation_dim])
 
     if numParticles == 1:
         # If only one particle randomly distribute them
         for tslice in range(numTimeSlices):
             for ptcl in range(numParticles):
-                beads[tslice,ptcl] = 0.76345602*1.8897268777744 + 0.5*(-1.0 + 2.0*np.random.random(3)) # [-0.5, 0.5)
+                beads[tslice,ptcl] = 0.5*(-1.0 + 2.0*np.random.random(simulation_dim)) # [-0.5, 0.5)
     elif numParticles > 1:
         # If more than one particle is use distribute them according to the input geometry in geom.in
         atoms, coord = getGeom()
         wOut(f"({T}) Input geometry:\n {coord}")
         for i in range(numParticles):
             for j in range(numTimeSlices):
-                beads[j, i] = coord[i] + np.random.rand(3)*0.1
+                beads[j, i] = coord[i] + np.random.rand(simulation_dim)*0.1
 
     # initialize e-states (cold start, may also be tried differantly) 
     eState = np.zeros(numTimeSlices, dtype=np.int32)    
