@@ -146,7 +146,7 @@ python main.py
 
 5) Analyze output in `output.out` and `output/`
 
-### Harmonic Oscillator and H$_2$
+### Sample Input Files
 Sample input files for `input.in` and `potential.py` can be found in the `sample_input/` folder for the Harmonic Oscillator, a 1D model system composed of two harmonic diabats with an off-diagonal Gaussian diabatic couplin, and H2. The `test_script.py` automatically runs PIMC simulations for these input files and plots some of the results using matplotlib. 
 
 
