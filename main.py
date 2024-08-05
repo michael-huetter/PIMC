@@ -475,7 +475,9 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 Run multiple T loops in parallel  -----------------------------------------------------------------
 """
 
-def main(T, n, echange, eCL, eCG):
+def main(T, n, echange, eCL, eCG, rSeed):
+
+    np.random.seed(rSeed)
 
     tau = 1.0/(T*numTimeSlices)
 
@@ -504,8 +506,8 @@ def main(T, n, echange, eCL, eCG):
 
 def worker(args):
 
-    i, n, echange, eCL, eCG = args
-    Energy, Position, eState, numAccept, xiTrace, dBK = main(i, n, echange, eCL, eCG)
+    i, n, echange, eCL, eCG, rSeed = args
+    Energy, Position, eState, numAccept, xiTrace, dBK = main(i, n, echange, eCL, eCG, rSeed)
 
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
 
@@ -525,10 +527,10 @@ def worker(args):
 
     wOut(f"({i}) numAccept: {numAccept}")
    
-def parallel_main(T, n, echange, eCL, eCG):
+def parallel_main(T, n, echange, eCL, eCG, rSeed):
 
     with ProcessPoolExecutor() as executor:
-        executor.map(worker, [(i, n, echange, eCL, eCG) for i in T])
+        executor.map(worker, [(i, n, echange, eCL, eCG, rSeed) for i in T])
 
 """
 Initialize  -----------------------------------------------------------------
@@ -600,8 +602,8 @@ if __name__ == "__main__":
         wOut(f"Error: echange is turned on but n < 2")
         exit(f"Error: echange is turned on but n < 2")
     
+    rSeed = rand_seed
     # run PICM simulations
-    np.random.seed(rand_seed)
-    parallel_main(T, n, echange, eCL, eCG)
+    parallel_main(T, n, echange, eCL, eCG, rSeed)
     # some basic statistics on the output is written to output.out
     rcc()
