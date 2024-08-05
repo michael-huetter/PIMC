@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from helpers import get_filenames
 
-path_to_python_inptr = "/usr/local/bin/python3"
+path_to_python_inptr = "python"
 
 # Some colors for the terminal output (may not work on some Windows terminals without ANSI Escape Codes)
 RED = "\033[31m"
