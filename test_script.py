@@ -238,7 +238,7 @@ plt.show()
 
 ###############Harmonic Oscillator classical limit.####################
 
-print(BLUE + "Running PIMC simulation simulation for the Harmonic Oscillator the classical limit of P=1." + RESET)
+print(BLUE + "Running PIMC simulation simulation for the Harmonic Oscillator in the classical limit of P=1." + RESET)
 os.system("cp sample_input/potential_HO.py potential.py")
 os.system("cp sample_input/input_HO_classical.in input.in")
 t0 = time()
