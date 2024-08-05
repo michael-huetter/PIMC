@@ -54,7 +54,7 @@ def H2_morse_grad_0(R):
     r_e = 1.23899468 * 1.8897268777744
     A = 0.17943589
 
-    return 2 * A * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e)) * (R/r)
+    return 2 * A * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e)) * (R[0,:]/r)
 
 @cJIT
 def H2_morse_grad_1(R):
@@ -64,7 +64,7 @@ def H2_morse_grad_1(R):
     r_e = 1.31764468 * 1.8897268777744
     A = 0.25420046
 
-    return 2 * A * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e)) * (R/r)
+    return 2 * A * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e)) * (R[0,:]/r)
 
 ############Called from main code#######################
     
