@@ -287,7 +287,6 @@ E0 = K[0] + U[0]; E1 = K[1] + U[1]; E2 = K[2] + U[2]
 Cv = (E0 - E2) / (T_pimc[0] - T_pimc[2]) * 2600 * 1000 / 320000
 print("Cp in J/(mol K): ", round(Cv+8.314, 1))
 
-
 ###############1D HO.####################
 print(BLUE + r"Running PIMC simulation for a 1D HO" + RESET)
 os.system("cp sample_input/potential_HO_1D.py potential.py")
