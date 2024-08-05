@@ -5,18 +5,18 @@ lam = 0.0005446169246244731
 n = 1
 
 [PIMC]
-numMCSteps = 1000000
+numMCSteps = 100000
 numTimeSlices = 20
 m = 8 
 delta = 1.5
 delta_bead = 0.1
-use_jit = True
+use_jit = False
 staging = False
 echange = False
 non_adiabatic_coupling = False   
 PoE = False
 kin_virial = True
-rand_seed = 224422
+rand_seed = 2312
 
 [convergence]
 thermSkip = 1000  
