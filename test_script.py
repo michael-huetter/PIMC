@@ -283,9 +283,9 @@ E_mean = U[1] + K[1]
 E_mean_thermo = U[1] + K_thermo[1]
 print("Mean energy in eV (virial): ", round(E_mean*27.211396641308, 3))
 print("Mean energy in eV (thermodynamic): ", round(E_mean_thermo*27.211396641308, 3))
-E0 = K[0] + U[0]; E1 = K[1] + U[1]; E2 = K[2] + U[2]
-Cv = (E0 - E2) / (T_pimc[0] - T_pimc[2]) * 2600 * 1000 / 320000
-print("Cp in J/(mol K): ", round(Cv+8.314, 1))
+#E0 = K[0] + U[0]; E1 = K[1] + U[1]; E2 = K[2] + U[2]
+#Cv = (E0 - E2) / (T_pimc[0] - T_pimc[2]) * 2600 * 1000 / 320000
+#print("Cp in J/(mol K): ", round(Cv+8.314, 1))
 
 ###############1D HO.####################
 print(BLUE + r"Running PIMC simulation for a 1D HO" + RESET)
