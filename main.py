@@ -244,6 +244,15 @@ def bead_pos(beads: np.array, numTimeSlices: int) -> tuple[float, float, float]:
     return r/numTimeSlices#x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
 
 @cJIT
+def bead_pos_1d(beads: np.array, numTimeSlices: int) -> float:
+
+    x = 0
+    for j in range(numTimeSlices):
+        x +=  beads[j][0][0]
+
+    return x/numTimeSlices#x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
+
+@cJIT
 def dbetaK(beads: np.array, tau: float, lam: float, numTimeSlices: int, numParticles: int) -> float:
 
     beta = tau*numTimeSlices
@@ -466,6 +475,8 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             xiTrace.append([xi])
             if numParticles == 1 and simulation_dim == 3:
                 PositionTrace.append(bead_pos(beads, numTimeSlices))
+            elif numParticles == 1 and simulation_dim == 1:
+                PositionTrace.append(bead_pos_1d(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
 

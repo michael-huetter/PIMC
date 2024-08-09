@@ -5,13 +5,13 @@ lam = 0.0005446169246244731
 n = 1
 
 [PIMC]
-numMCSteps = 100000
-numTimeSlices = 20
-m = 8 
+numMCSteps = 500000
+numTimeSlices = 30
+m = 24 
 delta = 1.5
 delta_bead = 0.1
-use_jit = False
-staging = False
+use_jit = True
+staging = True
 echange = False
 non_adiabatic_coupling = False   
 PoE = False
