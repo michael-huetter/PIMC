@@ -57,6 +57,9 @@ def morse(R, eState):
     r = R[0,0] 
     r_e, alpha, D, A = morse_param[eState]
 
+    r_e *= 1.8897268777744
+    alpha /= 1.8897268777744
+
     return D * (1 - np.exp(-alpha * (r - r_e)))**2 + A
 
 
@@ -65,6 +68,9 @@ def morse_grad_0(R, eState):
 
     r = R[0,0] 
     r_e, alpha, D, A = morse_param[eState]
+
+    r_e *= 1.8897268777744
+    alpha /= 1.8897268777744
 
     return np.array([2 * D * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e))])
 
