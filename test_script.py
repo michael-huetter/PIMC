@@ -8,7 +8,11 @@ import matplotlib.pyplot as plt
 
 from helpers import get_filenames
 
-path_to_python_inptr = "python"
+try:
+    path_to_python_inptr = "python"
+    os.system(path_to_python_inptr + " --version")
+except:
+    exit("Python not found. Pleas specify the path to the python interpreter in the variable 'path_to_python_inptr' in the script.")
 
 # Some colors for the terminal output (may not work on some Windows terminals without ANSI Escape Codes)
 RED = "\033[31m"
