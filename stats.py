@@ -97,9 +97,9 @@ def rcc():
             name.append(type)
 
     if len(T) == 0:
-            wOut(f"Error: No data found in output directory, make sure the potential is properly defined and appropriat input parameters are used. \
+            wOut(f"Error: No data found in output directory, make sure the potential is properly defined and appropriate input parameters are used. \
 Alternatively, try the logging mode.")
-            exit(f"Error: No data found in output directory, make sure the potential is properly defined and appropriat input parameters are used. \
+            exit(f"Error: No data found in output directory, make sure the potential is properly defined and appropriate input parameters are used. \
 Alternatively, try the logging mode.")
 
 
