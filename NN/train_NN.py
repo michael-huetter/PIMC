@@ -19,10 +19,10 @@ hidden_dims = [20]  # List of hidden layer dimensions
 output_dim = 1  # Potential energy output
 
 # Training options
-learning_rate = 0.015
+learning_rate = 0.01
 num_epochs = 6000
 patience = 50
-batch_size = 1000
+batch_size = 500
 
 # File paths
 model_path = "NN/models/model.pth"
@@ -31,9 +31,9 @@ scalers_path = "NN/models/scalers.pkl"  # Path to save scalers
 ################# DATA PREPARATION #####################
 
 def calculate_data(num_points: int) -> np.array:
-    x = np.random.uniform(-5, 5, num_points)
-    y = np.random.uniform(-5, 5, num_points)
-    z = np.random.uniform(-5, 5, num_points)
+    x = np.random.uniform(-10, 10, num_points)
+    y = np.random.uniform(-10, 10, num_points)
+    z = np.random.uniform(-10, 10, num_points)
 
     PE = 0.5 * (x**2 + y**2 + z**2)
 

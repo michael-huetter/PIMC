@@ -12,7 +12,7 @@ import torch.nn as nn
 from projToINRC import proj_main
 
 from NN.model_architechture import Molecule_NN
-
+from line_profiler import LineProfiler
 
 config = configparser.ConfigParser()
 config.read('input.in')
@@ -70,47 +70,33 @@ def H2_morse_grad(R):
     
 @cJIT
 def getV(R: np.array, eState: int) -> float:
-    """ R=torch.from_numpy(R.squeeze()).to(device)
-    # Scale the input data
-    R_scaled = scaler_X.transform(R)
-
-    # Convert to torch tensor
-    R_tensor = torch.from_numpy(R_scaled).float().to(device)
+    R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
+    R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device)
+    
     with torch.no_grad():
         E_scaled = model(R_tensor)
-        E = scaler_Y.inverse_transform(E_scaled.cpu().numpy()).flatten() """
-    E_ar = []
-    for elm in R.squeeze():
-        E = 0.5*(elm[0]**2+elm[1]**2+elm[2]**2)
-        E_ar.append(E)
-    return E_ar
+    
+    # Convert mean prediction back to original scale
+    E = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
+    
+    return E
 
     
 @cJIT   
 def getGradV(R: np.array, eState: int) -> np.array:
-    # Convert R to a PyTorch tensor with gradients enabled
-    R_tensor = torch.tensor(R, dtype=torch.float32, device=device, requires_grad=True)
-    
-    # Scale the input data using the scaler, but keep the tensor's gradient capability
-    R_scaled = scaler_X.transform(R_tensor.detach().cpu().numpy())
-    R_tensor_scaled = torch.tensor(R_scaled, dtype=torch.float32, device=device, requires_grad=True)
+    R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
+
+    R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device, requires_grad=True)
     
     # Forward pass to calculate the energy
-    E_scaled = model(R_tensor_scaled)
-    
-    # If E_scaled is 2D, you may need to flatten it
-    # E_scaled_flat = E_scaled.view(-1)  # This may or may not be necessary
-
-    # Create a gradient tensor for backward, all ones for sum of gradients
+    E_scaled = model(R_tensor)
     grad_outputs = torch.ones_like(E_scaled)
     
-    # Backward pass to calculate the gradient of the energy w.r.t R
+    # Backward pass to calculate the gradient of the energy 
     E_scaled.backward(grad_outputs)
-    
-    # Get the gradient from R_tensor_scaled
-    grad_R_scaled = R_tensor_scaled.grad.cpu().numpy()
+    grad_R_scaled = R_tensor.grad.cpu().numpy()
 
-    # Transform the gradient back to the original scale using the inverse of the scaler's transform
+    # Convert the output back to NumPy and inverse transform it to get the original scale
     grad_R_original = grad_R_scaled / scaler_X.scale_
 
     return grad_R_original
@@ -123,3 +109,20 @@ def getDiabV(R: np.array) -> tuple:
     """
 
     pass
+
+# Example data
+R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
+print(R.squeeze())
+eState = 1
+
+# Profile the functions
+profiler = LineProfiler()
+profiler.add_function(getV)
+profiler.add_function(getGradV)
+
+# Execute the functions to profile them
+profiler.run('getV(R, eState)')
+profiler.run('getGradV(R, eState)')
+
+# Print the profiling results
+profiler.print_stats()

@@ -25,7 +25,7 @@ scalers_path = "NN/models/scalers.pkl"  # Path to load scalers
 def calculate_data(num_points: int) -> np.array:
     x = np.linspace(0, 0, num_points)
     y = np.linspace(0, 0, num_points)
-    z = np.linspace(-5, 5, num_points)
+    z = np.linspace(-10, 10, num_points)
 
     PE = 0.5 * (x**2 + y**2 + z**2)
 
@@ -71,8 +71,8 @@ predictions = evaluate_model(model, X_new_tensor)
 def plot_potential(predictions, E):
     plt.figure(figsize=(10, 5))
     plt.title("Potential Energy: Model Predictions vs. harmonic oscillator")
-    plt.plot(np.linspace(-5,5, 10000), predictions, color="red", label="Model Predictions")
-    plt.plot(np.linspace(-5,5, 10000), E, color="black", label="harmonic oscillator")
+    plt.plot(np.linspace(-10,10, 10000), predictions, color="red", label="Model Predictions")
+    plt.plot(np.linspace(-10,10, 10000), E, color="black", label="harmonic oscillator")
     plt.xlabel("Sample Index")
     plt.ylabel("Potential Energy")
     plt.legend()

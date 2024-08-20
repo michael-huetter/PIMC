@@ -5,7 +5,7 @@ lam = 0.5
 n = 1
 
 [PIMC]
-numMCSteps = 200000
+numMCSteps = 300000
 numTimeSlices = 20
 m = 8  
 delta = 1.0
@@ -15,7 +15,7 @@ staging = True
 echange = False
 non_adiabatic_coupling = False   
 PoE = False
-kin_virial = False
+kin_virial = True
 rand_seed = 111
 
 [convergence]
@@ -26,3 +26,6 @@ eCL = 1
 
 [debug]
 logging = False
+
+[NN]
+useBatchInput = True

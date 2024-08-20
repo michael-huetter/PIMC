@@ -43,6 +43,8 @@ thermSkip = config.getint("convergence", "thermSkip")
 
 log_flag = config.getboolean("debug", "logging")
 
+use_batch_input = config.getboolean("NN", "useBatchInput")
+
 # set spacial dimensions (default to 3)
 try: 
     simulation_dim = int(sys.argv[1])
@@ -130,17 +132,17 @@ def get_phi(beads: np.array, eState: np.array, numTimeSlices: int, n: int) -> fl
 
 @cJIT
 def potEnergy(beads: np.array, numTimeSlices: int, eState: np.array) -> float:
-
-    V_result = getV(beads, eState)
-    PE = np.sum(V_result)
+    if use_batch_input:
+        V_result = getV(beads, eState)
+        PE = np.sum(V_result)
 
     return PE/(numTimeSlices) 
 
 @cJIT
 def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: np.array) -> float:
-
-    V_result = getV(beads, eState)
-    PE = np.sum(V_result)
+    if use_batch_input:
+        V_result = getV(beads, eState)
+        PE = np.sum(V_result)
 
     if non_adiabatic_coupling:
         phi = get_phi(beads, eState, numTimeSlices, n)
@@ -199,9 +201,15 @@ def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticl
         for ptcl in range(numParticles):
             Rc = (1/numTimeSlices) * np.sum(beads[:, ptcl, :], axis=0)
             delR = beads[tslice,ptcl] - Rc
-            delR_ar.append(delR)
-    dVdR = getGradV(beads[tslice,:], eState[tslice])
-    tot = np.sum(np.sum(delR_ar * dVdR, axis=1))
+            if not use_batch_input:
+                dVdR = getGradV(beads[tslice,:], eState[tslice])
+                tot += np.dot(delR, dVdR)
+            else:
+                delR_ar.append(delR)
+
+    if use_batch_input:
+        dVdR = getGradV(beads, eState)
+        tot = np.sum(np.sum(delR_ar * dVdR, axis=1))
 
     tot = tot * 1/(2*numTimeSlices)
 
