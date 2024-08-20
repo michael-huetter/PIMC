@@ -110,7 +110,7 @@ def getDiabV(R: np.array) -> tuple:
 
     pass
 
-# Example data
+"""# Example data
 R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
 print(R.squeeze())
 eState = 1
@@ -125,4 +125,4 @@ profiler.run('getV(R, eState)')
 profiler.run('getGradV(R, eState)')
 
 # Print the profiling results
-profiler.print_stats()
+profiler.print_stats()"""
