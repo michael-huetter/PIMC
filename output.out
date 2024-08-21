@@ -1,37 +1,589 @@
-2024-08-20 15:52:44 - PIMC V1.1
-2024-08-20 15:52:44 - Avalible CPUs: 12
-2024-08-20 15:52:44 - Used CPUs: 3
-2024-08-20 15:52:44 - JIT compiler: False
-2024-08-20 15:52:44 - Virial estimator: True
-2024-08-20 15:52:44 - T: [0.5, 2.0, 4.0]
-2024-08-20 15:52:44 - lam: [0.5]
-2024-08-20 15:52:44 - rand_seed: 111
-2024-08-20 15:52:44 - numParticles: 1
-2024-08-20 15:52:44 - numTimeSlices: 20
-2024-08-20 15:52:44 - Stage length: 8
-2024-08-20 15:52:44 - Delta (CoM): 1.0
-2024-08-20 15:52:44 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
-2024-08-20 15:52:47 - Warning: Could not load shared library for PoE.
-2024-08-20 15:52:47 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-20 15:52:47 - Warning: Could not load shared library for PoE.
-2024-08-20 15:52:47 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-20 15:52:47 - Warning: Could not load shared library for PoE.
-2024-08-20 15:52:47 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-20 15:58:25 - (2.0) numAccept: {'CoM': 0.73486, 'Staging': 0.9707433333333333, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-20 15:58:25 - (0.5) numAccept: {'CoM': 0.5032833333333333, 'Staging': 0.86693, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-20 15:58:27 - (4.0) numAccept: {'CoM': 0.8107766666666667, 'Staging': 0.98574, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-20 15:58:28 - Some statistics on the energy estimator...
-2024-08-20 15:58:28 - (0.5) Mean: 1.6882900507052876(+/-)2.6778544940151784e-05; Estimated Mean: 1.6885012146984175; Bias: 0.00021116399312992584
-2024-08-20 15:58:28 - (0.5) IAT: 1.06; (max_lag=30)
-2024-08-20 15:58:28 - (0.5) ESS/TOT: 0.96
-2024-08-20 15:58:28 - (2.0) Mean: 6.06890499609789(+/-)0.0004332450758566938; Estimated Mean: 6.070194513979157; Bias: 0.001289517881266633
-2024-08-20 15:58:28 - (2.0) IAT: 1.35; (max_lag=30)
-2024-08-20 15:58:28 - (2.0) ESS/TOT: 0.80
-2024-08-20 15:58:28 - (4.0) Mean: 12.096976599191553(+/-)0.001638633140392909; Estimated Mean: 12.096734010304827; Bias: -0.000242588886726125
-2024-08-20 15:58:28 - (4.0) IAT: 2.01; (max_lag=30)
-2024-08-20 15:58:28 - (4.0) ESS/TOT: 0.56
-2024-08-20 15:58:28 - Convergance: R-hat = 1.89
-2024-08-20 15:58:28 - Population of the eStates
-2024-08-20 15:58:29 - (0.5) eState: 0.0, Populated: 100.00%
-2024-08-20 15:58:29 - (2.0) eState: 0.0, Populated: 100.00%
-2024-08-20 15:58:29 - (4.0) eState: 0.0, Populated: 100.00%
+2024-08-21 15:47:23 - PIMC V1.1
+2024-08-21 15:47:23 - Avalible CPUs: 12
+2024-08-21 15:47:23 - Used CPUs: 10
+2024-08-21 15:47:23 - JIT compiler: False
+2024-08-21 15:47:23 - Virial estimator: True
+2024-08-21 15:47:23 - T: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+2024-08-21 15:47:23 - lam: [0.5]
+2024-08-21 15:47:23 - rand_seed: 111
+2024-08-21 15:47:23 - numParticles: 1
+2024-08-21 15:47:23 - numTimeSlices: 20
+2024-08-21 15:47:23 - Stage length: 8
+2024-08-21 15:47:23 - Delta (CoM): 1.0
+2024-08-21 15:47:23 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:47:30 - Warning: Could not load shared library for PoE.
+2024-08-21 15:47:30 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-21 15:48:04 - Warning: at bead position [[-4.65169529 -4.98037162  5.30745818]], the gradient error reaches 0.1037308553771008
+2024-08-21 15:48:04 - Warning: at bead position [[-4.68418893 -5.01286525  5.27496455]], the gradient error reaches 0.10391178734971762
+2024-08-21 15:48:04 - Warning: at bead position [[-4.69839975 -5.02707608  5.26075372]], the gradient error reaches 0.10399235161247013
+2024-08-21 15:48:04 - Warning: at bead position [[-4.73048627 -5.05916259  5.22866721]], the gradient error reaches 0.10417747496729957
+2024-08-21 15:48:04 - Warning: at bead position [[-4.69580821 -5.02448454  5.26334527]], the gradient error reaches 0.10397758868494737
+2024-08-21 15:48:04 - Warning: at bead position [[-4.74714544 -5.07582176  5.21200804]], the gradient error reaches 0.10427534225521227
+2024-08-21 15:48:04 - Warning: at bead position [[-4.67215132 -5.00082765  5.28700215]], the gradient error reaches 0.10384422257658854
+2024-08-21 15:48:04 - Warning: at bead position [[-4.4877598  -4.81643612  5.47139368]], the gradient error reaches 0.1028881768626819
+2024-08-21 15:48:04 - Warning: at bead position [[-4.53243437 -4.8611107   5.4267191 ]], the gradient error reaches 0.10310616429901293
+2024-08-21 15:48:04 - Warning: at bead position [[-4.61235332 -4.94102965  5.34680015]], the gradient error reaches 0.10351791969888928
+2024-08-21 15:48:04 - Warning: at bead position [[-4.61412453 -4.94280085  5.34502895]], the gradient error reaches 0.1035273624818518
+2024-08-21 15:48:04 - Warning: at bead position [[-4.54015823 -4.86883455  5.41899525]], the gradient error reaches 0.10314474507242923
+2024-08-21 15:48:04 - Warning: at bead position [[-4.76627416 -5.09495048  5.19287932]], the gradient error reaches 0.1043891902230549
+2024-08-21 15:48:04 - Warning: at bead position [[-4.93952165 -5.26819798  5.01963183]], the gradient error reaches 0.10549154611347132
+2024-08-21 15:48:04 - Warning: at bead position [[-4.87701517 -5.2056915   5.0821383 ]], the gradient error reaches 0.10507909170911109
+2024-08-21 15:48:04 - Warning: at bead position [[-4.59707766 -4.92575398  5.36207582]], the gradient error reaches 0.10343706779977081
+2024-08-21 15:48:04 - Warning: at bead position [[-4.6383508  -4.96702712  5.32080268]], the gradient error reaches 0.10365785395017095
+2024-08-21 15:48:04 - Warning: at bead position [[-4.77458379 -5.10326011  5.18456969]], the gradient error reaches 0.10443913375152099
+2024-08-21 15:48:04 - Warning: at bead position [[-4.75197074 -5.08064706  5.20718274]], the gradient error reaches 0.10430391294785284
+2024-08-21 15:48:04 - Warning: at bead position [[-4.77927304 -5.10794936  5.17988044]], the gradient error reaches 0.10446744872655761
+2024-08-21 15:48:05 - Warning: at bead position [[-4.97589379 -5.15619956  4.28276632]], the gradient error reaches 0.10005333110520713
+2024-08-21 15:48:05 - Warning: at bead position [[-4.97714685 -5.15745263  4.28151325]], the gradient error reaches 0.10006358143410876
+2024-08-21 15:48:05 - Warning: at bead position [[-4.99743045 -5.17773623  4.26122965]], the gradient error reaches 0.10023045049369231
+2024-08-21 15:48:05 - Warning: at bead position [[-5.01456292 -5.1948687   4.24409718]], the gradient error reaches 0.10037267747606003
+2024-08-21 15:48:05 - Warning: at bead position [[-5.05158721 -5.23189299  4.20707289]], the gradient error reaches 0.10068406432840153
+2024-08-21 15:48:05 - Warning: at bead position [[-5.01405685 -5.19436262  4.24460326]], the gradient error reaches 0.10036846007408685
+2024-08-21 15:48:05 - Warning: at bead position [[-5.01045801 -5.19076379  4.2482021 ]], the gradient error reaches 0.10033849148930296
+2024-08-21 15:48:05 - Warning: at bead position [[-5.30652609 -4.78100003  4.88419051]], the gradient error reaches 0.10380019246635662
+2024-08-21 15:48:05 - Warning: at bead position [[-5.3407774  -4.81525133  4.8499392 ]], the gradient error reaches 0.10403650823004311
+2024-08-21 15:48:05 - Warning: at bead position [[-5.35575692 -4.83023085  4.83495968]], the gradient error reaches 0.1041413995169967
+2024-08-21 15:48:05 - Warning: at bead position [[-5.38957907 -4.86405301  4.80113752]], the gradient error reaches 0.10438167177789523
+2024-08-21 15:48:05 - Warning: at bead position [[-5.35302519 -4.82749913  4.83769141]], the gradient error reaches 0.10412219851761843
+2024-08-21 15:48:05 - Warning: at bead position [[-5.40713938 -4.88161332  4.78357722]], the gradient error reaches 0.1045083102289229
+2024-08-21 15:48:05 - Warning: at bead position [[-5.32808864 -4.80256258  4.86262796]], the gradient error reaches 0.10394839396310665
+2024-08-21 15:48:05 - Warning: at bead position [[-5.13372291 -4.60819685  5.05699369]], the gradient error reaches 0.10268335025042699
+2024-08-21 15:48:05 - Warning: at bead position [[-5.18081405 -4.65528798  5.00990255]], the gradient error reaches 0.10297516781815942
+2024-08-21 15:48:05 - Warning: at bead position [[-5.26505602 -4.73952995  4.92566058]], the gradient error reaches 0.10352066401942715
+2024-08-21 15:48:05 - Warning: at bead position [[-5.26692303 -4.74139697  4.92379357]], the gradient error reaches 0.10353309740581512
+2024-08-21 15:48:05 - Warning: at bead position [[-5.18895571 -4.66342964  5.00176089]], the gradient error reaches 0.10302657999569402
+2024-08-21 15:48:05 - Warning: at bead position [[-5.42730282 -4.90177676  4.76341378]], the gradient error reaches 0.10465528813817249
+2024-08-21 15:48:05 - Warning: at bead position [[-5.60992172 -5.08439565  4.58079488]], the gradient error reaches 0.10606294121134242
+2024-08-21 15:48:05 - Warning: at bead position [[-5.5440341  -5.01850804  4.6466825 ]], the gradient error reaches 0.10553926991549685
+2024-08-21 15:48:05 - Warning: at bead position [[-5.24895405 -4.72342799  4.94176255]], the gradient error reaches 0.10341407534928856
+2024-08-21 15:48:05 - Warning: at bead position [[-5.29245976 -4.7669337   4.89825684]], the gradient error reaches 0.10370456812237852
+2024-08-21 15:48:05 - Warning: at bead position [[-5.43606194 -4.91053588  4.75465466]], the gradient error reaches 0.10471966082341391
+2024-08-21 15:48:05 - Warning: at bead position [[-5.4122257  -4.88669963  4.7784909 ]], the gradient error reaches 0.10454522282108912
+2024-08-21 15:48:05 - Warning: at bead position [[-5.44100484 -4.91547878  4.74971176]], the gradient error reaches 0.1047561325819343
+2024-08-21 15:48:05 - Warning: at bead position [[-5.53106891 -4.8571723   3.95915432]], the gradient error reaches 0.10017733296872333
+2024-08-21 15:48:05 - Warning: at bead position [[-5.6358311  -4.96193449  3.85439213]], the gradient error reaches 0.10114558264357079
+2024-08-21 15:48:05 - Warning: at bead position [[-5.61664665 -4.94275004  3.87357658]], the gradient error reaches 0.1009650882554997
+2024-08-21 15:48:05 - Warning: at bead position [[-5.6266291  -4.95273249  3.86359413]], the gradient error reaches 0.10105883653615194
+2024-08-21 15:48:05 - Warning: at bead position [[-5.63715195 -4.96325534  3.85307128]], the gradient error reaches 0.10115806639978152
+2024-08-21 15:48:05 - Warning: at bead position [[-5.65853274 -4.98463613  3.83169049]], the gradient error reaches 0.1013610198972338
+2024-08-21 15:48:05 - Warning: at bead position [[-5.67659195 -5.00269534  3.81363128]], the gradient error reaches 0.10153382308045712
+2024-08-21 15:48:05 - Warning: at bead position [[-5.55193413 -4.87803752  3.93828909]], the gradient error reaches 0.10036678131601809
+2024-08-21 15:48:05 - Warning: at bead position [[-5.51859828 -4.84470167  3.97162495]], the gradient error reaches 0.10006493810856977
+2024-08-21 15:48:05 - Warning: at bead position [[-5.559078   -4.88518138  3.93114523]], the gradient error reaches 0.10043201777306592
+2024-08-21 15:48:05 - Warning: at bead position [[-5.55196243 -4.87806581  3.9382608 ]], the gradient error reaches 0.10036703525871057
+2024-08-21 15:48:05 - Warning: at bead position [[-5.71561898 -5.04172237  3.77460425]], the gradient error reaches 0.10191155573238025
+2024-08-21 15:48:05 - Warning: at bead position [[-5.6760585  -5.00216189  3.81416473]], the gradient error reaches 0.10152871828360795
+2024-08-21 15:48:05 - Warning: at bead position [[-5.62373085 -4.94983424  3.86649237]], the gradient error reaches 0.10103157592628524
+2024-08-21 15:48:05 - Warning: at bead position [[-5.67226499 -4.99836838  3.81795824]], the gradient error reaches 0.10149230578897127
+2024-08-21 15:48:05 - Warning: at bead position [[-5.52863731 -4.8547407   3.96158592]], the gradient error reaches 0.10015536979196422
+2024-08-21 15:48:44 - Warning: at bead position [[ 1.24500935 -0.87107176  8.04374267]], the gradient error reaches 0.1001792499456371
+2024-08-21 15:48:44 - Warning: at bead position [[ 1.23437092 -0.88171019  8.03310423]], the gradient error reaches 0.10005089610268333
+2024-08-21 15:48:44 - Warning: at bead position [[ 1.39371947 -0.72236165  8.19245278]], the gradient error reaches 0.10198276026350303
+2024-08-21 15:48:44 - Warning: at bead position [[ 1.28429184 -0.83178927  8.08302516]], the gradient error reaches 0.10065407076459972
+2024-08-21 15:48:44 - Warning: at bead position [[ 1.42189938 -0.69418173  8.2206327 ]], the gradient error reaches 0.10232599366556573
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.62983081 -1.12615704  8.07215697]], the gradient error reaches 0.10004635389682476
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.65648975 -1.0994981   8.09881591]], the gradient error reaches 0.10033473954076264
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.6355626  -1.12042525  8.07788876]], the gradient error reaches 0.10010828261196394
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.64639724 -1.10959061  8.08872341]], the gradient error reaches 0.10022545908346185
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.79756855 -0.9584193   8.23989471]], the gradient error reaches 0.10187189822174403
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.69375639 -1.06223146  8.13608256]], the gradient error reaches 0.10073911627671751
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.82430236 -0.93168549  8.26662853]], the gradient error reaches 0.10216480280624929
+2024-08-21 15:48:45 - Warning: at bead position [[ 0.64081626 -1.11517159  8.08314242]], the gradient error reaches 0.10016508753777723
+2024-08-21 15:50:27 - Warning: at bead position [[0.05535215 4.66753235 6.86763481]], the gradient error reaches 0.10058495371788834
+2024-08-21 15:50:27 - Warning: at bead position [[0.10827071 4.72045091 6.92055337]], the gradient error reaches 0.10150208723493032
+2024-08-21 15:50:27 - Warning: at bead position [[0.09244541 4.70462561 6.90472806]], the gradient error reaches 0.10122738972818364
+2024-08-21 15:50:30 - Warning: at bead position [[-0.48481027  4.9550212   6.66121255]], the gradient error reaches 0.10051686140438353
+2024-08-21 15:50:30 - Warning: at bead position [[-0.50954792  4.93028355  6.63647489]], the gradient error reaches 0.10010606196225393
+2024-08-21 15:50:30 - Warning: at bead position [[-0.46053197  4.97929951  6.68549085]], the gradient error reaches 0.10092120832483274
+2024-08-21 15:50:30 - Warning: at bead position [[-0.34628963  5.09354184  6.79973319]], the gradient error reaches 0.1028388367578167
+2024-08-21 15:50:30 - Warning: at bead position [[-0.29608668  5.14374479  6.84993614]], the gradient error reaches 0.10368903466509896
+2024-08-21 15:50:30 - Warning: at bead position [[-0.31109988  5.12873159  6.83492294]], the gradient error reaches 0.10343431641396927
+2024-08-21 15:50:30 - Warning: at bead position [[-0.434901    5.00493047  6.71112182]], the gradient error reaches 0.10134930747042545
+2024-08-21 15:50:30 - Warning: at bead position [[-0.48925509  4.95057638  6.65676772]], the gradient error reaches 0.10044295980071208
+2024-08-21 15:52:58 - Warning: at bead position [[-5.12846045 -4.08772367  5.51213924]], the gradient error reaches 0.10307378769125254
+2024-08-21 15:52:58 - Warning: at bead position [[-5.20972461 -4.16898784  5.43087508]], the gradient error reaches 0.10345763936168302
+2024-08-21 15:52:58 - Warning: at bead position [[-5.14700684 -4.10627007  5.49359284]], the gradient error reaches 0.10315884949612437
+2024-08-21 15:52:58 - Warning: at bead position [[-5.19306135 -4.15232457  5.44753834]], the gradient error reaches 0.10337657147641892
+2024-08-21 15:52:58 - Warning: at bead position [[-5.27813484 -4.23739806  5.36246485]], the gradient error reaches 0.1038030539922183
+2024-08-21 15:52:58 - Warning: at bead position [[-5.25586112 -4.21512435  5.38473856]], the gradient error reaches 0.10368835269309336
+2024-08-21 15:52:58 - Warning: at bead position [[-5.39785693 -4.35712015  5.24274276]], the gradient error reaches 0.10445630010971357
+2024-08-21 15:52:58 - Warning: at bead position [[-5.45179704 -4.41106027  5.18880265]], the gradient error reaches 0.10477077187421564
+2024-08-21 15:52:58 - Warning: at bead position [[-5.29630292 -4.25556614  5.34429677]], the gradient error reaches 0.10389819717199969
+2024-08-21 15:52:58 - Warning: at bead position [[-5.22934818 -4.1886114   5.41125151]], the gradient error reaches 0.10355463427820649
+2024-08-21 15:52:58 - Warning: at bead position [[-5.14919134 -4.10845457  5.49140835]], the gradient error reaches 0.10316897006418792
+2024-08-21 15:52:58 - Warning: at bead position [[-5.34942964 -4.30869286  5.29117005]], the gradient error reaches 0.10418461070395287
+2024-08-21 15:52:58 - Warning: at bead position [[-5.40549005 -4.36475328  5.23510964]], the gradient error reaches 0.10450004236897949
+2024-08-21 15:52:58 - Warning: at bead position [[-5.35956609 -4.31882931  5.2810336 ]], the gradient error reaches 0.1042406364123718
+2024-08-21 15:52:58 - Warning: at bead position [[-5.45322993 -4.41249316  5.18736976]], the gradient error reaches 0.10477930102258404
+2024-08-21 15:52:58 - Warning: at bead position [[-5.29441119 -4.25367442  5.3461885 ]], the gradient error reaches 0.10388822206163091
+2024-08-21 15:52:58 - Warning: at bead position [[-5.17919966 -4.13846289  5.46140002]], the gradient error reaches 0.10331006370356931
+2024-08-21 15:52:58 - Warning: at bead position [[-5.25377069 -4.21303392  5.386829  ]], the gradient error reaches 0.10367770500782002
+2024-08-21 15:52:58 - Warning: at bead position [[-5.26161492 -4.22087814  5.37898477]], the gradient error reaches 0.10371777892366144
+2024-08-21 15:52:58 - Warning: at bead position [[-5.21793502 -4.17719825  5.42266466]], the gradient error reaches 0.10349801551390084
+2024-08-21 15:53:23 - Warning: at bead position [[ 6.72112696  4.79360629 -1.73917953]], the gradient error reaches 0.10158144975620469
+2024-08-21 15:53:23 - Warning: at bead position [[ 6.61369044  4.68616977 -1.84661605]], the gradient error reaches 0.10008479435182956
+2024-08-21 15:53:23 - Warning: at bead position [[ 6.69470894  4.76718827 -1.76559755]], the gradient error reaches 0.10121035889755524
+2024-08-21 15:53:23 - Warning: at bead position [[ 6.6403592   4.71283853 -1.81994729]], the gradient error reaches 0.10045320271601862
+2024-08-21 15:53:30 - Warning: at bead position [[ 3.10392737  7.18357424 -2.73944544]], the gradient error reaches 0.10009467920807907
+2024-08-21 15:53:30 - Warning: at bead position [[ 3.20362264  7.28326951 -2.63975017]], the gradient error reaches 0.10123567822691985
+2024-08-21 15:53:30 - Warning: at bead position [[ 3.2065007   7.28614757 -2.63687211]], the gradient error reaches 0.10126903831655085
+2024-08-21 15:53:31 - Warning: at bead position [[2.83966334 7.07423956 3.38842856]], the gradient error reaches 0.10049623216912054
+2024-08-21 15:53:31 - Warning: at bead position [[2.81539468 7.0499709  3.3641599 ]], the gradient error reaches 0.10001809897225133
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.29462609  7.1562262  -3.19587534]], the gradient error reaches 0.1026669968033854
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.22274497  7.08434508 -3.26775646]], the gradient error reaches 0.10190918619625151
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.18042427  7.04202439 -3.31007715]], the gradient error reaches 0.10147050669751728
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.11981137  6.98141149 -3.37069005]], the gradient error reaches 0.10085218054978187
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.14604205  7.00764216 -3.34445938]], the gradient error reaches 0.10111830308781293
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.26953092  7.13113103 -3.22097051]], the gradient error reaches 0.10240063061063054
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.40036614  7.26196625 -3.09013529]], the gradient error reaches 0.1038095923730296
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.20409342  7.06569353 -3.28640801]], the gradient error reaches 0.10171515590110779
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.40341854  7.26501865 -3.08708289]], the gradient error reaches 0.10384304431367684
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.1936724   7.05527251 -3.29682903]], the gradient error reaches 0.10160722342575182
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.10626835  6.96786847 -3.38423307]], the gradient error reaches 0.1007156612468068
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.0765596   6.93815971 -3.41394183]], the gradient error reaches 0.10041834042505518
+2024-08-21 15:53:37 - Warning: at bead position [[ 3.15659513  7.01819524 -3.3339063 ]], the gradient error reaches 0.10122600285655779
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.28014687  6.99524911 -2.59775653]], the gradient error reaches 0.10372028429280515
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.21585445  6.93095669 -2.66204895]], the gradient error reaches 0.10292577895931851
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.17800167  6.89310391 -2.69990173]], the gradient error reaches 0.10246363538565777
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.12378784  6.83889008 -2.75411556]], the gradient error reaches 0.10180916792842751
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.14724927  6.86235151 -2.73065413]], the gradient error reaches 0.10209129080398868
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.25770108  6.97280331 -2.62020232]], the gradient error reaches 0.103441566060773
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.37472366  7.08982589 -2.50317974]], the gradient error reaches 0.10491007672734998
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.199172    6.91427423 -2.6787314 ]], the gradient error reaches 0.1027215735012907
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.37745381  7.09255604 -2.50044959]], the gradient error reaches 0.1049447791601631
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.18985115  6.90495339 -2.68805225]], the gradient error reaches 0.10260783993123111
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.1116746   6.82677683 -2.7662288 ]], the gradient error reaches 0.10166414713690146
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.08510228  6.80020452 -2.79280112]], the gradient error reaches 0.1013476254431537
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.04568796  6.7607902  -2.83221544]], the gradient error reaches 0.10088220210582158
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.00325833  6.71836057 -2.87464507]], the gradient error reaches 0.1003866747482934
+2024-08-21 15:53:38 - Warning: at bead position [[ 4.15668824  6.87179047 -2.72121516]], the gradient error reaches 0.10220528580591026
+2024-08-21 15:53:38 - Warning: at bead position [[7.90983227 3.11898125 0.68107275]], the gradient error reaches 0.10334034896802374
+2024-08-21 15:53:38 - Warning: at bead position [[7.81367017 3.02281915 0.58491065]], the gradient error reaches 0.10175676638608647
+2024-08-21 15:53:38 - Warning: at bead position [[7.75431234 2.96346132 0.52555282]], the gradient error reaches 0.10078191290557986
+2024-08-21 15:53:38 - Warning: at bead position [[7.92642441 3.13557339 0.69766489]], the gradient error reaches 0.1036139509231363
+2024-08-21 15:53:38 - Warning: at bead position [[7.94459885 3.15374782 0.71583932]], the gradient error reaches 0.10391377839041625
+2024-08-21 15:53:38 - Warning: at bead position [[7.74169774 2.95084672 0.51293822]], the gradient error reaches 0.10057504118771858
+2024-08-21 15:53:38 - Warning: at bead position [[7.71662095 2.92576993 0.48786143]], the gradient error reaches 0.10016420856531501
+2024-08-21 15:53:38 - Warning: at bead position [[7.87207633 3.08122531 0.64331681]], the gradient error reaches 0.10271807387556399
+2024-08-21 15:53:38 - Warning: at bead position [[7.76967919 2.97882817 0.54091967]], the gradient error reaches 0.10103405725969787
+2024-08-21 15:53:38 - Warning: at bead position [[7.71175091 2.92089989 0.48299139]], the gradient error reaches 0.10008447493656923
+2024-08-21 15:53:38 - Warning: at bead position [[7.84308932 3.0522383  0.6143298 ]], the gradient error reaches 0.1022407616210282
+2024-08-21 15:53:38 - Warning: at bead position [[7.70719509 2.91634407 0.47843557]], the gradient error reaches 0.1000099283106466
+2024-08-21 15:53:38 - Warning: at bead position [[7.73438572 2.9435347  0.5056262 ]], the gradient error reaches 0.10045519549457159
+2024-08-21 15:53:38 - Warning: at bead position [[7.75033368 2.95948266 0.52157416]], the gradient error reaches 0.1007166473090323
+2024-08-21 15:53:38 - Warning: at bead position [[7.74808254 2.95723151 0.51932301]], the gradient error reaches 0.10067973845670174
+2024-08-21 15:53:38 - Warning: at bead position [[7.74183818 2.95098716 0.51307866]], the gradient error reaches 0.10057734736602421
+2024-08-21 15:53:38 - Warning: at bead position [[7.93970664 3.14885562 0.71094712]], the gradient error reaches 0.10383305384068517
+2024-08-21 15:55:12 - Warning: at bead position [[ 1.38932518 -2.93416541  7.51791858]], the gradient error reaches 0.10007400029361699
+2024-08-21 15:55:30 - Warning: at bead position [[-1.11383498 -4.68289472 -6.89217027]], the gradient error reaches 0.10130694685851217
+2024-08-21 15:55:30 - Warning: at bead position [[-1.09376626 -4.662826   -6.87210155]], the gradient error reaches 0.10092946417597351
+2024-08-21 15:55:30 - Warning: at bead position [[-1.15904413 -4.72810387 -6.93737942]], the gradient error reaches 0.10215987450415742
+2024-08-21 15:55:30 - Warning: at bead position [[-1.11670709 -4.68576683 -6.89504238]], the gradient error reaches 0.10136103998705225
+2024-08-21 15:55:30 - Warning: at bead position [[-1.04425735 -4.61331709 -6.82259264]], the gradient error reaches 0.10000125747644992
+2024-08-21 15:55:30 - Warning: at bead position [[-1.06238423 -4.63144397 -6.84071952]], the gradient error reaches 0.10034058422990844
+2024-08-21 15:55:30 - Warning: at bead position [[-1.13709841 -4.70615815 -6.9154337 ]], the gradient error reaches 0.10174540591964767
+2024-08-21 15:55:30 - Warning: at bead position [[-1.12441651 -4.69347625 -6.9027518 ]], the gradient error reaches 0.10150625796579983
+2024-08-21 15:55:30 - Warning: at bead position [[-1.05175648 -4.62081622 -6.83009177]], the gradient error reaches 0.10014157015478742
+2024-08-21 15:55:30 - Warning: at bead position [[-1.15244997 -4.72150971 -6.93078526]], the gradient error reaches 0.10203525330572658
+2024-08-21 15:56:06 - Warning: at bead position [[-0.16326835  8.39085854 -0.86106358]], the gradient error reaches 0.10186777919043508
+2024-08-21 15:56:06 - Warning: at bead position [[-0.24722075  8.30690614 -0.94501598]], the gradient error reaches 0.10104101949774738
+2024-08-21 15:56:06 - Warning: at bead position [[-0.20861572  8.34551117 -0.90641094]], the gradient error reaches 0.10142017271358396
+2024-08-21 15:56:06 - Warning: at bead position [[-0.3006759   8.25345099 -0.99847112]], the gradient error reaches 0.10051928609392535
+2024-08-21 15:56:06 - Warning: at bead position [[-0.09606287  8.45806402 -0.79385809]], the gradient error reaches 0.10253482516405459
+2024-08-21 15:56:06 - Warning: at bead position [[-0.04216613  8.51196076 -0.73996135]], the gradient error reaches 0.10307233513367417
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.0417448   8.59587169 -0.65605043]], the gradient error reaches 0.10391221279067246
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.18800912  8.74213601 -0.50978611]], the gradient error reaches 0.10537912708787017
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.10811035  8.66223724 -0.58968488]], the gradient error reaches 0.10457783861667844
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.08320236  8.63732925 -0.61459286]], the gradient error reaches 0.1043279452467402
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.05591588  8.61004277 -0.64187934]], the gradient error reaches 0.10405428301080807
+2024-08-21 15:56:06 - Warning: at bead position [[ 0.02359879  8.57772568 -0.67419643]], the gradient error reaches 0.10373034393458458
+2024-08-21 15:56:07 - Warning: at bead position [[-0.10826325  8.44586364 -0.80605848]], the gradient error reaches 0.10241343958844383
+2024-08-21 15:56:07 - Warning: at bead position [[-0.13748845  8.41663844 -0.83528368]], the gradient error reaches 0.102123170577005
+2024-08-21 15:56:07 - Warning: at bead position [[-0.04094184  8.51318505 -0.73873706]], the gradient error reaches 0.10308455454440277
+2024-08-21 15:56:07 - Warning: at bead position [[-0.03970074  8.51442615 -0.73749597]], the gradient error reaches 0.10309696448968689
+2024-08-21 15:56:07 - Warning: at bead position [[-0.31795443  8.23617246 -1.01574966]], the gradient error reaches 0.10035153742297537
+2024-08-21 15:56:07 - Warning: at bead position [[-0.15630904  8.39781785 -0.85410427]], the gradient error reaches 0.10193664804596445
+2024-08-21 15:56:07 - Warning: at bead position [[1.61046695 8.03659252 1.55819188]], the gradient error reaches 0.10091901347330415
+2024-08-21 15:56:07 - Warning: at bead position [[1.66496499 8.09109056 1.61268992]], the gradient error reaches 0.1017985921515743
+2024-08-21 15:56:07 - Warning: at bead position [[1.57925362 8.00537918 1.52697854]], the gradient error reaches 0.10041536393341875
+2024-08-21 15:56:07 - Warning: at bead position [[1.63328247 8.05940803 1.58100739]], the gradient error reaches 0.10128722609376618
+2024-08-21 15:56:07 - Warning: at bead position [[1.83032086 8.25644642 1.77804578]], the gradient error reaches 0.1044644774553918
+2024-08-21 15:56:07 - Warning: at bead position [[1.71128548 8.13741105 1.65901041]], the gradient error reaches 0.10254607061968259
+2024-08-21 15:56:07 - Warning: at bead position [[1.57819413 8.0043197  1.52591906]], the gradient error reaches 0.10039825666305872
+2024-08-21 15:56:07 - Warning: at bead position [[1.55462117 7.98074674 1.5023461 ]], the gradient error reaches 0.10001800692951192
+2024-08-21 15:56:07 - Warning: at bead position [[-3.70717047  8.28828013  0.12256559]], the gradient error reaches 0.10978949126434305
+2024-08-21 15:56:07 - Warning: at bead position [[-3.77917872  8.21627188  0.05055734]], the gradient error reaches 0.10936032352240878
+2024-08-21 15:56:07 - Warning: at bead position [[-3.67937853  8.31607207  0.15035753]], the gradient error reaches 0.1099576728901942
+2024-08-21 15:56:07 - Warning: at bead position [[-3.65220398  8.34324662  0.17753208]], the gradient error reaches 0.11012337424170857
+2024-08-21 15:56:07 - Warning: at bead position [[-3.48362045  8.51183015  0.34611561]], the gradient error reaches 0.11117566216222012
+2024-08-21 15:56:07 - Warning: at bead position [[-3.43314337  8.56230723  0.39659269]], the gradient error reaches 0.11149741686535666
+2024-08-21 15:56:07 - Warning: at bead position [[-3.28142329  8.71402731  0.54831277]], the gradient error reaches 0.11247695421432681
+2024-08-21 15:56:07 - Warning: at bead position [[-3.03379624  8.96165436  0.79593982]], the gradient error reaches 0.11409099395923353
+2024-08-21 15:56:07 - Warning: at bead position [[-3.04115487  8.95429573  0.78858119]], the gradient error reaches 0.11404314434010113
+2024-08-21 15:56:07 - Warning: at bead position [[-3.17128785  8.82416275  0.65844821]], the gradient error reaches 0.1131946905543754
+2024-08-21 15:56:07 - Warning: at bead position [[-3.33362209  8.66182851  0.49611397]], the gradient error reaches 0.11213828371584066
+2024-08-21 15:56:07 - Warning: at bead position [[-3.36992641  8.62552419  0.45980965]], the gradient error reaches 0.11190365646543188
+2024-08-21 15:56:07 - Warning: at bead position [[-3.42838145  8.56706915  0.40135461]], the gradient error reaches 0.11152790393103036
+2024-08-21 15:56:07 - Warning: at bead position [[-3.60551748  8.38993312  0.22421858]], the gradient error reaches 0.11041082930394194
+2024-08-21 15:56:07 - Warning: at bead position [[-3.67878886  8.31666174  0.1509472 ]], the gradient error reaches 0.10996125199489439
+2024-08-21 15:56:07 - Warning: at bead position [[-3.80700868  8.18844192  0.02272738]], the gradient error reaches 0.10919717409917694
+2024-08-21 15:56:07 - Warning: at bead position [[-3.6533422   8.3421084   0.17639386]], the gradient error reaches 0.11011641603747448
+2024-08-21 15:56:07 - Warning: at bead position [[-3.74217867  8.25327193  0.08755739]], the gradient error reaches 0.10957962048798647
+2024-08-21 15:56:07 - Warning: at bead position [[-3.65227809  8.34317251  0.17745797]], the gradient error reaches 0.11012292454007237
+2024-08-21 15:56:07 - Warning: at bead position [[-3.63380008  8.36165052  0.19593598]], the gradient error reaches 0.11023629723240036
+2024-08-21 15:56:07 - Warning: at bead position [[-1.79249933  7.1679196   4.26396123]], the gradient error reaches 0.1027594124623852
+2024-08-21 15:56:07 - Warning: at bead position [[-1.71964192  7.24077702  4.33681865]], the gradient error reaches 0.10379493816057886
+2024-08-21 15:56:07 - Warning: at bead position [[-1.83284645  7.12757249  4.22361412]], the gradient error reaches 0.10219179456178822
+2024-08-21 15:56:07 - Warning: at bead position [[-1.89525526  7.06516367  4.1612053 ]], the gradient error reaches 0.1013222956866713
+2024-08-21 15:56:07 - Warning: at bead position [[-1.66117205  7.29924688  4.39528851]], the gradient error reaches 0.10463534318697193
+2024-08-21 15:56:07 - Warning: at bead position [[-1.45163173  7.5087872   4.60482883]], the gradient error reaches 0.10770936504865482
+2024-08-21 15:56:07 - Warning: at bead position [[-1.57253501  7.38788393  4.48392556]], the gradient error reaches 0.10592432114298336
+2024-08-21 15:56:07 - Warning: at bead position [[-1.61024706  7.35017188  4.44621351]], the gradient error reaches 0.10537376895231165
+2024-08-21 15:56:07 - Warning: at bead position [[-1.65525179  7.30516715  4.40120877]], the gradient error reaches 0.10472088814555175
+2024-08-21 15:56:07 - Warning: at bead position [[-1.85509787  7.10532106  4.20136269]], the gradient error reaches 0.10188058146534178
+2024-08-21 15:56:07 - Warning: at bead position [[-1.72646695  7.23395199  4.32999362]], the gradient error reaches 0.10369738235031732
+2024-08-21 15:56:07 - Warning: at bead position [[-1.71397331  7.24644563  4.34248725]], the gradient error reaches 0.10387606252284955
+2024-08-21 15:56:07 - Warning: at bead position [[-1.75950924  7.2009097   4.29695133]], the gradient error reaches 0.10322665652221988
+2024-08-21 15:56:07 - Warning: at bead position [[-1.80230569  7.15811325  4.25415488]], the gradient error reaches 0.10262107069269749
+2024-08-21 15:56:07 - Warning: at bead position [[-1.95864886  7.00177008  4.0978117 ]], the gradient error reaches 0.10045006656810021
+2024-08-21 15:56:07 - Warning: at bead position [[-1.96182558  6.99859336  4.09463499]], the gradient error reaches 0.1004066756540112
+2024-08-21 15:56:07 - Warning: at bead position [[-1.84771871  7.11270022  4.20874185]], the gradient error reaches 0.10198363280386853
+2024-08-21 15:56:07 - Warning: at bead position [[-1.79921824  7.1612007   4.25724232]], the gradient error reaches 0.10266460615564423
+2024-08-21 15:56:07 - Warning: at bead position [[-1.93948156  7.02093737  4.116979  ]], the gradient error reaches 0.10071260716854835
+2024-08-21 15:56:08 - Warning: at bead position [[1.79058611 5.6012542  6.07544556]], the gradient error reaches 0.1017607654035217
+2024-08-21 15:56:08 - Warning: at bead position [[1.84100802 5.65167611 6.12586748]], the gradient error reaches 0.10275648637232049
+2024-08-21 15:56:08 - Warning: at bead position [[1.89885951 5.7095276  6.18371897]], the gradient error reaches 0.10390267486093901
+2024-08-21 15:56:08 - Warning: at bead position [[2.08159745 5.89226554 6.36645691]], the gradient error reaches 0.1075484653635468
+2024-08-21 15:56:08 - Warning: at bead position [[2.13617087 5.94683897 6.42103033]], the gradient error reaches 0.10864428659339265
+2024-08-21 15:56:08 - Warning: at bead position [[2.14704801 5.9577161  6.43190747]], the gradient error reaches 0.10886308366136822
+2024-08-21 15:56:08 - Warning: at bead position [[2.28126171 6.0919298  6.56612116]], the gradient error reaches 0.11157219542231932
+2024-08-21 15:56:08 - Warning: at bead position [[2.18918715 5.99985524 6.4740466 ]], the gradient error reaches 0.10971177963904183
+2024-08-21 15:56:08 - Warning: at bead position [[2.21117715 6.02184524 6.4960366 ]], the gradient error reaches 0.1101553564240758
+2024-08-21 15:56:08 - Warning: at bead position [[2.28820912 6.09887721 6.57306857]], the gradient error reaches 0.11171288959505954
+2024-08-21 15:56:08 - Warning: at bead position [[2.22066047 6.03132856 6.50551993]], the gradient error reaches 0.1103468121260425
+2024-08-21 15:56:08 - Warning: at bead position [[2.16895812 5.97962621 6.45381758]], the gradient error reaches 0.10930413594379357
+2024-08-21 15:56:08 - Warning: at bead position [[2.05657925 5.86724734 6.34143871]], the gradient error reaches 0.10704715618414964
+2024-08-21 15:56:08 - Warning: at bead position [[2.07447443 5.88514252 6.35933389]], the gradient error reaches 0.10740566390992787
+2024-08-21 15:56:08 - Warning: at bead position [[2.08771299 5.89838108 6.37257244]], the gradient error reaches 0.1076710948733196
+2024-08-21 15:56:08 - Warning: at bead position [[2.20406715 6.01473524 6.4889266 ]], the gradient error reaches 0.1100118893142399
+2024-08-21 15:56:08 - Warning: at bead position [[2.02486663 5.83553472 6.30972608]], the gradient error reaches 0.10641266021999649
+2024-08-21 15:56:08 - Warning: at bead position [[1.90175016 5.71241825 6.18660961]], the gradient error reaches 0.10396005085428485
+2024-08-21 15:56:08 - Warning: at bead position [[1.83091264 5.64158073 6.1157721 ]], the gradient error reaches 0.10255688384870101
+2024-08-21 15:56:08 - Warning: at bead position [[1.82522655 5.63589464 6.11008601]], the gradient error reaches 0.10244449489339606
+2024-08-21 15:56:18 - Warning: at bead position [[ 0.37952919  8.31179915 -0.29184416]], the gradient error reaches 0.10057420640844107
+2024-08-21 15:56:23 - Warning: at bead position [[-0.29803112  8.5442988  -0.7847336 ]], the gradient error reaches 0.10354405849327997
+2024-08-21 15:56:23 - Warning: at bead position [[-0.34374266  8.49858726 -0.83044513]], the gradient error reaches 0.1031109747588031
+2024-08-21 15:56:23 - Warning: at bead position [[-0.10207689  8.74025303 -0.58877936]], the gradient error reaches 0.10540982538560834
+2024-08-21 15:56:23 - Warning: at bead position [[-0.18172113  8.66060879 -0.6684236 ]], the gradient error reaches 0.10465060656428245
+2024-08-21 15:56:23 - Warning: at bead position [[-0.14509718  8.69723274 -0.63179965]], the gradient error reaches 0.10499973320007884
+2024-08-21 15:56:23 - Warning: at bead position [[-0.23243313  8.60989679 -0.71913561]], the gradient error reaches 0.10416756412363574
+2024-08-21 15:56:23 - Warning: at bead position [[-0.03832017  8.80400975 -0.52502264]], the gradient error reaches 0.1060169648541595
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.01281077  8.85514069 -0.4738917 ]], the gradient error reaches 0.10650279458436746
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.09241566  8.93474558 -0.39428681]], the gradient error reaches 0.10725595840733622
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.23117418  9.0735041  -0.25552829]], the gradient error reaches 0.10855445241100319
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.15537555  8.99770547 -0.33132692]], the gradient error reaches 0.10784781387293409
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.13174576  8.97407568 -0.35495671]], the gradient error reaches 0.10762614696337804
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.10585953  8.94818945 -0.38084294]], the gradient error reaches 0.10738266181597504
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.07520085  8.91753077 -0.41150162]], the gradient error reaches 0.10709349984042292
+2024-08-21 15:56:23 - Warning: at bead position [[-0.04989447  8.79243545 -0.53659694]], the gradient error reaches 0.10590683934967034
+2024-08-21 15:56:23 - Warning: at bead position [[-0.07761993  8.76470999 -0.5643224 ]], the gradient error reaches 0.10564285422827409
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.01397223  8.85630215 -0.47273024]], the gradient error reaches 0.10651382575762491
+2024-08-21 15:56:23 - Warning: at bead position [[ 0.01514964  8.85747956 -0.47155283]], the gradient error reaches 0.10652499298246826
+2024-08-21 15:56:23 - Warning: at bead position [[-0.24882499  8.59350493 -0.73552746]], the gradient error reaches 0.10401158948677618
+2024-08-21 15:56:23 - Warning: at bead position [[-0.09547471  8.74685521 -0.58217718]], the gradient error reaches 0.10547273806864342
+2024-08-21 15:56:23 - Warning: at bead position [[1.48219025 8.19651884 1.64100792]], the gradient error reaches 0.10266051132924066
+2024-08-21 15:56:23 - Warning: at bead position [[1.52031584 8.23464444 1.67913352]], the gradient error reaches 0.10326096908469469
+2024-08-21 15:56:23 - Warning: at bead position [[1.66186531 8.37619391 1.82068299]], the gradient error reaches 0.10548469014070429
+2024-08-21 15:56:23 - Warning: at bead position [[1.7135667  8.42789529 1.87238437]], the gradient error reaches 0.10629360981911952
+2024-08-21 15:56:23 - Warning: at bead position [[1.63225374 8.34658234 1.79107142]], the gradient error reaches 0.10502047140082227
+2024-08-21 15:56:23 - Warning: at bead position [[1.68351001 8.39783861 1.84232769]], the gradient error reaches 0.10582360753808902
+2024-08-21 15:56:23 - Warning: at bead position [[1.87043704 8.58476563 2.02925471]], the gradient error reaches 0.10873146996717896
+2024-08-21 15:56:23 - Warning: at bead position [[1.75751017 8.47183877 1.91632785]], the gradient error reaches 0.1069792582442859
+2024-08-21 15:56:23 - Warning: at bead position [[1.57705041 8.291379   1.73586808]], the gradient error reaches 0.10415354802375017
+2024-08-21 15:56:23 - Warning: at bead position [[1.51544304 8.22977164 1.67426072]], the gradient error reaches 0.10318424990768063
+2024-08-21 15:56:23 - Warning: at bead position [[1.52280598 8.23713457 1.68162365]], the gradient error reaches 0.10330016305287162
+2024-08-21 15:56:23 - Warning: at bead position [[1.52333998 8.23766858 1.68215766]], the gradient error reaches 0.1033085709053308
+2024-08-21 15:56:23 - Warning: at bead position [[1.48196295 8.19629155 1.64078063]], the gradient error reaches 0.1026569381937599
+2024-08-21 15:56:23 - Warning: at bead position [[1.48941855 8.20374715 1.64823623]], the gradient error reaches 0.10277437565765667
+2024-08-21 15:56:23 - Warning: at bead position [[1.63124863 8.34557722 1.7900663 ]], the gradient error reaches 0.10500469357069396
+2024-08-21 15:56:23 - Warning: at bead position [[1.60888535 8.32321395 1.76770303]], the gradient error reaches 0.1046537031800587
+2024-08-21 15:56:23 - Warning: at bead position [[1.49412999 8.20845859 1.65294767]], the gradient error reaches 0.10284860277023372
+2024-08-21 15:56:23 - Warning: at bead position [[1.36505401 8.0793826  1.52387168]], the gradient error reaches 0.10081440925493615
+2024-08-21 15:56:23 - Warning: at bead position [[1.37597455 8.09030314 1.53479222]], the gradient error reaches 0.10098651927233165
+2024-08-21 15:56:23 - Warning: at bead position [[1.46611621 8.18044481 1.62493389]], the gradient error reaches 0.10240725291033402
+2024-08-21 15:56:23 - Warning: at bead position [[-3.63305202  8.65060161  0.40777679]], the gradient error reaches 0.11331694501926627
+2024-08-21 15:56:23 - Warning: at bead position [[-3.70136504  8.58228859  0.33946377]], the gradient error reaches 0.11291127042761193
+2024-08-21 15:56:23 - Warning: at bead position [[-3.60668627  8.67696736  0.43414254]], the gradient error reaches 0.1134744138178011
+2024-08-21 15:56:23 - Warning: at bead position [[-3.58090623  8.7027474   0.45992259]], the gradient error reaches 0.11362879384014285
+2024-08-21 15:56:23 - Warning: at bead position [[-3.42097385  8.86267978  0.61985496]], the gradient error reaches 0.11459173883402228
+2024-08-21 15:56:23 - Warning: at bead position [[-3.37308709  8.91056655  0.66774173]], the gradient error reaches 0.11488052759570798
+2024-08-21 15:56:23 - Warning: at bead position [[-3.22915278  9.05450085  0.81167603]], the gradient error reaches 0.11574445294484752
+2024-08-21 15:56:23 - Warning: at bead position [[-2.99423314  9.28942049  1.04659568]], the gradient error reaches 0.11711999451297934
+2024-08-21 15:56:23 - Warning: at bead position [[-3.00121415  9.28243948  1.03961467]], the gradient error reaches 0.11708003730142443
+2024-08-21 15:56:23 - Warning: at bead position [[-3.12466913  9.1589845   0.91615968]], the gradient error reaches 0.11636340640729459
+2024-08-21 15:56:23 - Warning: at bead position [[-3.27867291  9.00498072  0.7621559 ]], the gradient error reaches 0.11544829002146605
+2024-08-21 15:56:23 - Warning: at bead position [[-3.31311421  8.97053942  0.7277146 ]], the gradient error reaches 0.11524155741045677
+2024-08-21 15:56:23 - Warning: at bead position [[-3.36856953  8.9150841   0.67225928]], the gradient error reaches 0.11490775473962998
+2024-08-21 15:56:23 - Warning: at bead position [[-3.53661552  8.74703811  0.50421329]], the gradient error reaches 0.11389473989816101
+2024-08-21 15:56:23 - Warning: at bead position [[-3.60612686  8.67752677  0.43470195]], the gradient error reaches 0.1134777663174245
+2024-08-21 15:56:23 - Warning: at bead position [[-3.72776687  8.55588676  0.31306195]], the gradient error reaches 0.11275556011985059
+2024-08-21 15:56:23 - Warning: at bead position [[-3.58198604  8.70166759  0.45884277]], the gradient error reaches 0.11362231309815146
+2024-08-21 15:56:23 - Warning: at bead position [[-3.66626372  8.61738991  0.37456509]], the gradient error reaches 0.11311926741276691
+2024-08-21 15:56:23 - Warning: at bead position [[-3.58097653  8.7026771   0.45985228]], the gradient error reaches 0.11362836148918716
+2024-08-21 15:56:23 - Warning: at bead position [[-3.56344675  8.72020688  0.47738206]], the gradient error reaches 0.11373351357332587
+2024-08-21 15:56:24 - Warning: at bead position [[-1.73763464  7.51098733  4.52991868]], the gradient error reaches 0.10789065142055596
+2024-08-21 15:56:24 - Warning: at bead position [[-1.66851602  7.58010594  4.59903729]], the gradient error reaches 0.1088872810366953
+2024-08-21 15:56:24 - Warning: at bead position [[-1.77591127  7.47271069  4.49164204]], the gradient error reaches 0.10734283821000404
+2024-08-21 15:56:24 - Warning: at bead position [[-1.95029536  7.2983266   4.31725795]], the gradient error reaches 0.104887764762183
+2024-08-21 15:56:24 - Warning: at bead position [[-1.83511747  7.41350449  4.43243584]], the gradient error reaches 0.10650159574496532
+2024-08-21 15:56:24 - Warning: at bead position [[-1.61304664  7.63557532  4.65450667]], the gradient error reaches 0.10969358610733596
+2024-08-21 15:56:24 - Warning: at bead position [[-1.41425924  7.83436273  4.85329408]], the gradient error reaches 0.11262457992030622
+2024-08-21 15:56:24 - Warning: at bead position [[-1.52895816  7.71966381  4.73859516]], the gradient error reaches 0.11092602043580352
+2024-08-21 15:56:24 - Warning: at bead position [[-1.56473495  7.68388702  4.70281837]], the gradient error reaches 0.11040023234026666
+2024-08-21 15:56:24 - Warning: at bead position [[-1.60743019  7.64119178  4.66012313]], the gradient error reaches 0.10977552516809821
+2024-08-21 15:56:24 - Warning: at bead position [[-1.79702083  7.45160114  4.47053249]], the gradient error reaches 0.10704203219204142
+2024-08-21 15:56:24 - Warning: at bead position [[-1.67499082  7.57363115  4.5925625 ]], the gradient error reaches 0.10879352165900819
+2024-08-21 15:56:24 - Warning: at bead position [[-1.66313831  7.58548365  4.604415  ]], the gradient error reaches 0.10896520032245674
+2024-08-21 15:56:24 - Warning: at bead position [[-1.70633748  7.54228448  4.56121583]], the gradient error reaches 0.10834076978023797
+2024-08-21 15:56:24 - Warning: at bead position [[-1.74693776  7.50168421  4.52061555]], the gradient error reaches 0.10775722269463743
+2024-08-21 15:56:24 - Warning: at bead position [[-1.89525792  7.35336405  4.3722954 ]], the gradient error reaches 0.10565506916545306
+2024-08-21 15:56:24 - Warning: at bead position [[-1.89827162  7.35035035  4.3692817 ]], the gradient error reaches 0.10561285268066857
+2024-08-21 15:56:24 - Warning: at bead position [[-1.79002034  7.45860162  4.47753297]], the gradient error reaches 0.10714169194050956
+2024-08-21 15:56:24 - Warning: at bead position [[-1.74400875  7.50461321  4.52354456]], the gradient error reaches 0.10779922083224865
+2024-08-21 15:56:24 - Warning: at bead position [[-1.87707423  7.37154774  4.39047909]], the gradient error reaches 0.10591013154182823
+2024-08-21 15:56:24 - Warning: at bead position [[1.8601721  5.95904322 6.35612431]], the gradient error reaches 0.10740767554590683
+2024-08-21 15:56:24 - Warning: at bead position [[1.90800653 6.00687765 6.40395874]], the gradient error reaches 0.10835986027903403
+2024-08-21 15:56:24 - Warning: at bead position [[1.96288927 6.06176039 6.45884148]], the gradient error reaches 0.1094554587499151
+2024-08-21 15:56:24 - Warning: at bead position [[2.13624971 6.23512083 6.63220192]], the gradient error reaches 0.11293639537765693
+2024-08-21 15:56:24 - Warning: at bead position [[2.1880226  6.28689372 6.68397481]], the gradient error reaches 0.11398143932480351
+2024-08-21 15:56:24 - Warning: at bead position [[2.19834156 6.29721268 6.69429377]], the gradient error reaches 0.11419000522921845
+2024-08-21 15:56:24 - Warning: at bead position [[2.32566785 6.42453897 6.82162006]], the gradient error reaches 0.11677041411232857
+2024-08-21 15:56:24 - Warning: at bead position [[2.23831825 6.33718937 6.73427046]], the gradient error reaches 0.11499882576524194
+2024-08-21 15:56:24 - Warning: at bead position [[2.2591798  6.35805092 6.75513201]], the gradient error reaches 0.11542140631602014
+2024-08-21 15:56:24 - Warning: at bead position [[2.33225874 6.43112986 6.82821095]], the gradient error reaches 0.11690430193496726
+2024-08-21 15:56:24 - Warning: at bead position [[2.26817647 6.36704759 6.76412868]], the gradient error reaches 0.11560377032045928
+2024-08-21 15:56:24 - Warning: at bead position [[2.21912731 6.31799843 6.71507952]], the gradient error reaches 0.11461037165713998
+2024-08-21 15:56:24 - Warning: at bead position [[2.11251536 6.21138648 6.60846757]], the gradient error reaches 0.1124581323809899
+2024-08-21 15:56:24 - Warning: at bead position [[2.12949222 6.22836334 6.62544443]], the gradient error reaches 0.11280018638934013
+2024-08-21 15:56:24 - Warning: at bead position [[2.14205141 6.24092253 6.63800362]], the gradient error reaches 0.1130533905939437
+2024-08-21 15:56:24 - Warning: at bead position [[2.25243466 6.35130578 6.74838687]], the gradient error reaches 0.11528473378968641
+2024-08-21 15:56:24 - Warning: at bead position [[2.08243012 6.18130124 6.57838233]], the gradient error reaches 0.11185262516315156
+2024-08-21 15:56:24 - Warning: at bead position [[1.96563158 6.0645027  6.46158379]], the gradient error reaches 0.10951026729777248
+2024-08-21 15:56:24 - Warning: at bead position [[1.89842921 5.99730033 6.39438142]], the gradient error reaches 0.1081690048044568
+2024-08-21 15:56:24 - Warning: at bead position [[1.89303492 5.99190604 6.38898712]], the gradient error reaches 0.10806156349334958
+2024-08-21 15:57:50 - Warning: at bead position [[-7.9036459  -2.64135347 -0.36727781]], the gradient error reaches 0.10118332586864667
+2024-08-21 16:02:11 - Warning: at bead position [[3.73387413 0.7722523  7.29773035]], the gradient error reaches 0.10039066714435417
+2024-08-21 16:02:11 - Warning: at bead position [[3.71945123 0.75782941 7.28330745]], the gradient error reaches 0.10013458717005183
+2024-08-21 16:02:11 - Warning: at bead position [[3.74640883 0.784787   7.31026505]], the gradient error reaches 0.10061332641666278
+2024-08-21 16:02:11 - Warning: at bead position [[3.72086717 0.75924534 7.28472338]], the gradient error reaches 0.10015973145458779
+2024-08-21 16:02:25 - Warning: at bead position [[-2.98928028 -7.60444833  1.96391395]], the gradient error reaches 0.10160877515250602
+2024-08-21 16:02:25 - Warning: at bead position [[-2.87328785 -7.48845589  2.07990638]], the gradient error reaches 0.10013217507764571
+2024-08-21 16:02:25 - Warning: at bead position [[-2.9051825  -7.52035054  2.04801173]], the gradient error reaches 0.10053527091784775
+2024-08-21 16:02:25 - Warning: at bead position [[-2.98525203 -7.60042008  1.9679422 ]], the gradient error reaches 0.1015570354227902
+2024-08-21 16:02:25 - Warning: at bead position [[-2.93742143 -7.55258947  2.0157728 ]], the gradient error reaches 0.10094502461438613
+2024-08-21 16:02:25 - Warning: at bead position [[-3.01044049 -7.62560853  1.94275374]], the gradient error reaches 0.10188120357429692
+2024-08-21 16:02:25 - Warning: at bead position [[-3.04777928 -7.66294732  1.90541495]], the gradient error reaches 0.10236399861924185
+2024-08-21 16:02:25 - Warning: at bead position [[-3.18674359 -7.80191163  1.76645064]], the gradient error reaches 0.1041821616463227
+2024-08-21 16:02:25 - Warning: at bead position [[-3.26147237 -7.87664041  1.69172186]], the gradient error reaches 0.10517187796505345
+2024-08-21 16:02:25 - Warning: at bead position [[-3.07777972 -7.69294776  1.87541451]], the gradient error reaches 0.10275376823870801
+2024-08-21 16:02:25 - Warning: at bead position [[-3.06971573 -7.68488377  1.8834785 ]], the gradient error reaches 0.10264883286720479
+2024-08-21 16:02:25 - Warning: at bead position [[-3.14589356 -7.76106161  1.80730067]], the gradient error reaches 0.10364447232679652
+2024-08-21 16:02:25 - Warning: at bead position [[-3.07872245 -7.69389049  1.87447178]], the gradient error reaches 0.10276605751236377
+2024-08-21 16:02:25 - Warning: at bead position [[-3.20351598 -7.81868402  1.74967825]], the gradient error reaches 0.10440365988459532
+2024-08-21 16:02:25 - Warning: at bead position [[-3.15522276 -7.7703908   1.79797147]], the gradient error reaches 0.10376703803584907
+2024-08-21 16:02:25 - Warning: at bead position [[-3.06334729 -7.67851533  1.88984694]], the gradient error reaches 0.10256605674727165
+2024-08-21 16:02:25 - Warning: at bead position [[-3.00014075 -7.61530879  1.95305348]], the gradient error reaches 0.10174849832952054
+2024-08-21 16:02:42 - Warning: at bead position [[-2.96030259 -7.89447601  1.64928936]], the gradient error reaches 0.10396277978461166
+2024-08-21 16:02:42 - Warning: at bead position [[-2.85026251 -7.78443592  1.75932944]], the gradient error reaches 0.10252937772683815
+2024-08-21 16:02:42 - Warning: at bead position [[-2.76021238 -7.69438579  1.84937957]], the gradient error reaches 0.1013706032251424
+2024-08-21 16:02:42 - Warning: at bead position [[-2.88052043 -7.81469384  1.72907152]], the gradient error reaches 0.10292177079318626
+2024-08-21 16:02:42 - Warning: at bead position [[-2.82317585 -7.75734926  1.7864161 ]], the gradient error reaches 0.10217936305880973
+2024-08-21 16:02:42 - Warning: at bead position [[-2.95648106 -7.89065447  1.65311089]], the gradient error reaches 0.10391272253754967
+2024-08-21 16:02:42 - Warning: at bead position [[-2.91110497 -7.84527838  1.69848698]], the gradient error reaches 0.10331979752849102
+2024-08-21 16:02:42 - Warning: at bead position [[-2.98037693 -7.91455034  1.62921502]], the gradient error reaches 0.10422604878412826
+2024-08-21 16:02:42 - Warning: at bead position [[-2.81407055 -7.74824397  1.7955214 ]], the gradient error reaches 0.10206198102735622
+2024-08-21 16:02:42 - Warning: at bead position [[-3.01579961 -7.94997303  1.59379234]], the gradient error reaches 0.10469176484847345
+2024-08-21 16:02:42 - Warning: at bead position [[-3.14763273 -8.08180614  1.46195922]], the gradient error reaches 0.10643596203376883
+2024-08-21 16:02:42 - Warning: at bead position [[-3.21852668 -8.1527001   1.39106527]], the gradient error reaches 0.10737923716052046
+2024-08-21 16:02:42 - Warning: at bead position [[-3.04426053 -7.97843394  1.56533142]], the gradient error reaches 0.10506694064069355
+2024-08-21 16:02:42 - Warning: at bead position [[-3.03661036 -7.97078377  1.5729816 ]], the gradient error reaches 0.10496603159429367
+2024-08-21 16:02:42 - Warning: at bead position [[-3.108879   -8.04305241  1.50071296]], the gradient error reaches 0.10592168645621161
+2024-08-21 16:02:42 - Warning: at bead position [[-3.04515488 -7.9793283   1.56443707]], the gradient error reaches 0.10507876206949937
+2024-08-21 16:02:42 - Warning: at bead position [[-3.16354442 -8.09771783  1.44604753]], the gradient error reaches 0.10664740369915085
+2024-08-21 16:02:42 - Warning: at bead position [[-3.11772944 -8.05190286  1.49186251]], the gradient error reaches 0.1060390374791195
+2024-08-21 16:02:42 - Warning: at bead position [[-3.03056873 -7.96474214  1.57902322]], the gradient error reaches 0.10488635745603535
+2024-08-21 16:02:42 - Warning: at bead position [[-2.97060574 -7.90477915  1.63898622]], the gradient error reaches 0.10409785260512606
+2024-08-21 16:03:03 - Warning: at bead position [[-3.72743483  3.17224267  6.66171175]], the gradient error reaches 0.10034435446201223
+2024-08-21 16:03:11 - Warning: at bead position [[-2.5105064   4.3790943   7.01799696]], the gradient error reaches 0.10489517032560021
+2024-08-21 16:03:11 - Warning: at bead position [[-2.51734536  4.37225533  7.011158  ]], the gradient error reaches 0.1048078782415272
+2024-08-21 16:03:11 - Warning: at bead position [[-2.42423253  4.46536817  7.10427083]], the gradient error reaches 0.10600629060919091
+2024-08-21 16:03:11 - Warning: at bead position [[-2.28060345  4.60899724  7.24789991]], the gradient error reaches 0.1078946273018562
+2024-08-21 16:03:11 - Warning: at bead position [[-2.17959958  4.71000111  7.34890378]], the gradient error reaches 0.10924908675706511
+2024-08-21 16:03:11 - Warning: at bead position [[-2.10144606  4.78815464  7.4270573 ]], the gradient error reaches 0.11031080612171294
+2024-08-21 16:03:11 - Warning: at bead position [[-2.0803439   4.80925679  7.44815946]], the gradient error reaches 0.11059940277106368
+2024-08-21 16:03:11 - Warning: at bead position [[-2.08116769  4.808433    7.44733566]], the gradient error reaches 0.11058812192584794
+2024-08-21 16:03:11 - Warning: at bead position [[-2.06761773  4.82198296  7.46088563]], the gradient error reaches 0.11077383207497454
+2024-08-21 16:03:11 - Warning: at bead position [[-2.02885244  4.86074825  7.49965092]], the gradient error reaches 0.11130687378146498
+2024-08-21 16:03:11 - Warning: at bead position [[-2.21100563  4.67859507  7.31749773]], the gradient error reaches 0.10882571697355958
+2024-08-21 16:03:11 - Warning: at bead position [[-2.34251346  4.54708723  7.1859899 ]], the gradient error reaches 0.10707501130925404
+2024-08-21 16:03:11 - Warning: at bead position [[-2.46921826  4.42038244  7.0592851 ]], the gradient error reaches 0.10542466059776721
+2024-08-21 16:03:11 - Warning: at bead position [[-2.53764082  4.35195987  6.99086253]], the gradient error reaches 0.10454952688789627
+2024-08-21 16:03:11 - Warning: at bead position [[-2.57651622  4.31308447  6.95198714]], the gradient error reaches 0.10405758489942533
+2024-08-21 16:03:11 - Warning: at bead position [[-2.35632006  4.53328063  7.1721833 ]], the gradient error reaches 0.10689338344683015
+2024-08-21 16:03:11 - Warning: at bead position [[-2.45272198  4.43687871  7.07578138]], the gradient error reaches 0.10563737410459555
+2024-08-21 16:03:11 - Warning: at bead position [[-2.50177873  4.38782196  7.02672463]], the gradient error reaches 0.10500673683926592
+2024-08-21 16:03:11 - Warning: at bead position [[-2.37713275  4.51246794  7.15137061]], the gradient error reaches 0.10662038433096423
+2024-08-21 16:03:11 - Warning: at bead position [[-2.48399808  4.40560261  7.04450528]], the gradient error reaches 0.10523463788983603
+2024-08-21 16:04:27 - Warning: at bead position [[-6.19729214  2.28781268  5.05572831]], the gradient error reaches 0.10009121622459227
+2024-08-21 16:05:28 - Warning: at bead position [[-5.14470085  4.7311818  -4.51779001]], the gradient error reaches 0.1001552918352107
+2024-08-21 16:05:35 - Warning: at bead position [[-7.5606921   3.46051269  4.66323226]], the gradient error reaches 0.11514984926854781
+2024-08-21 16:05:35 - Warning: at bead position [[-7.49469673  3.52650806  4.72922762]], the gradient error reaches 0.11516470576151085
+2024-08-21 16:05:35 - Warning: at bead position [[-7.53946203  3.48174276  4.68446233]], the gradient error reaches 0.11515280687261142
+2024-08-21 16:05:35 - Warning: at bead position [[-7.57988922  3.44131557  4.64403514]], the gradient error reaches 0.11514866057036859
+2024-08-21 16:05:35 - Warning: at bead position [[-7.41483051  3.60637428  4.80909384]], the gradient error reaches 0.11520544144855752
+2024-08-21 16:05:35 - Warning: at bead position [[-7.60054774  3.42065705  4.62337661]], the gradient error reaches 0.11514892751348026
+2024-08-21 16:05:35 - Warning: at bead position [[-7.44997134  3.57123345  4.77395302]], the gradient error reaches 0.11518439401976921
+2024-08-21 16:05:35 - Warning: at bead position [[-7.57154205  3.44966274  4.6523823 ]], the gradient error reaches 0.11514900609661109
+2024-08-21 16:05:35 - Warning: at bead position [[-7.440516    3.58068879  4.78340836]], the gradient error reaches 0.1151895897417658
+2024-08-21 16:05:35 - Warning: at bead position [[-7.66101409  3.3601907   4.56291026]], the gradient error reaches 0.11515881680736888
+2024-08-21 16:05:35 - Warning: at bead position [[-7.67656366  3.34464113  4.54736069]], the gradient error reaches 0.11516352082567627
+2024-08-21 16:05:35 - Warning: at bead position [[-7.49212554  3.52907925  4.73179881]], the gradient error reaches 0.11516562330947944
+2024-08-21 16:05:35 - Warning: at bead position [[-7.46949197  3.55171282  4.75443238]], the gradient error reaches 0.11517483806521779
+2024-08-21 16:05:35 - Warning: at bead position [[-7.53334846  3.48785633  4.69057589]], the gradient error reaches 0.1151539765522592
+2024-08-21 16:05:35 - Warning: at bead position [[-7.69713761  3.32406718  4.52678674]], the gradient error reaches 0.11517107421051385
+2024-08-21 16:05:35 - Warning: at bead position [[-7.7081359   3.31306889  4.51578845]], the gradient error reaches 0.11517574621314801
+2024-08-21 16:05:35 - Warning: at bead position [[-7.71328168  3.30792311  4.51064267]], the gradient error reaches 0.11517806963983879
+2024-08-21 16:05:35 - Warning: at bead position [[-7.6895596   3.33164519  4.53436475]], the gradient error reaches 0.11516812905599251
+2024-08-21 16:05:35 - Warning: at bead position [[-7.74606934  3.27513545  4.47785501]], the gradient error reaches 0.11519506764413913
+2024-08-21 16:05:35 - Warning: at bead position [[-7.73953398  3.28167081  4.48439037]], the gradient error reaches 0.115191397177824
+2024-08-21 16:05:36 - Warning: at bead position [[-6.34217262  2.74534589  6.41401745]], the gradient error reaches 0.11396176615778603
+2024-08-21 16:05:36 - Warning: at bead position [[-6.28428391  2.8032346   6.47190616]], the gradient error reaches 0.11420054764608278
+2024-08-21 16:05:36 - Warning: at bead position [[-6.25000759  2.83751091  6.50618248]], the gradient error reaches 0.11434871206900839
+2024-08-21 16:05:36 - Warning: at bead position [[-6.15848895  2.92902956  6.59770112]], the gradient error reaches 0.11476859390093104
+2024-08-21 16:05:36 - Warning: at bead position [[-6.11901725  2.96850126  6.63717282]], the gradient error reaches 0.11496037584358054
+2024-08-21 16:05:36 - Warning: at bead position [[-6.24614322  2.84137529  6.51004685]], the gradient error reaches 0.11436573022020503
+2024-08-21 16:05:36 - Warning: at bead position [[-6.15387123  2.93364728  6.60231884]], the gradient error reaches 0.1147906909105571
+2024-08-21 16:05:36 - Warning: at bead position [[-6.28018582  2.80733269  6.47600425]], the gradient error reaches 0.11421799446281646
+2024-08-21 16:05:36 - Warning: at bead position [[-6.34350492  2.74401358  6.41268514]], the gradient error reaches 0.11395643068935414
+2024-08-21 16:05:36 - Warning: at bead position [[-6.29278246  2.79473604  6.46340761]], the gradient error reaches 0.11416460002381967
+2024-08-21 16:05:36 - Warning: at bead position [[-6.53048558  2.55703292  6.22570449]], the gradient error reaches 0.11328685396290039
+2024-08-21 16:05:36 - Warning: at bead position [[-6.30245564  2.78506287  6.45373443]], the gradient error reaches 0.1141240356428267
+2024-08-21 16:05:36 - Warning: at bead position [[-6.2109643   2.8765542   6.54522576]], the gradient error reaches 0.11452355425922034
+2024-08-21 16:05:36 - Warning: at bead position [[-6.13386251  2.953656    6.62232756]], the gradient error reaches 0.11488749945942993
+2024-08-21 16:05:36 - Warning: at bead position [[-6.20282737  2.88469114  6.5533627 ]], the gradient error reaches 0.1145607989996099
+2024-08-21 16:05:36 - Warning: at bead position [[-6.30107631  2.7864422   6.45511376]], the gradient error reaches 0.11412979443177432
+2024-08-21 16:05:36 - Warning: at bead position [[-6.3693115   2.71820701  6.38687857]], the gradient error reaches 0.11385482856976904
+2024-08-21 16:05:36 - Warning: at bead position [[-6.3037714   2.78374711  6.45241867]], the gradient error reaches 0.11411854324393148
+2024-08-21 16:05:36 - Warning: at bead position [[-6.42113301  2.6663855   6.33505706]], the gradient error reaches 0.11365960572956936
+2024-08-21 16:05:36 - Warning: at bead position [[-6.34413684  2.74338167  6.41205323]], the gradient error reaches 0.11395391192910014
+2024-08-21 16:05:42 - (4.5) numAccept: {'CoM': 0.82177, 'Staging': 0.98841, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:44 - (2.0) numAccept: {'CoM': 0.73705, 'Staging': 0.97215, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:49 - (0.5) numAccept: {'CoM': 0.50675, 'Staging': 0.87003, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:52 - (4.0) numAccept: {'CoM': 0.81124, 'Staging': 0.98676, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:52 - (1.5) numAccept: {'CoM': 0.69758, 'Staging': 0.96186, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:53 - (1.0) numAccept: {'CoM': 0.63595, 'Staging': 0.94133, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:53 - (2.5) numAccept: {'CoM': 0.76266, 'Staging': 0.97807, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:53 - Warning: at bead position [[-6.97015867  3.38270865  4.33800366]], the gradient error reaches 0.10696375834538623
+2024-08-21 16:05:53 - Warning: at bead position [[-6.90754997  3.44531735  4.40061236]], the gradient error reaches 0.10700228717367301
+2024-08-21 16:05:53 - Warning: at bead position [[-6.95001806  3.40284926  4.35814427]], the gradient error reaches 0.10697418066076511
+2024-08-21 16:05:53 - Warning: at bead position [[-6.98837066  3.36449666  4.31979167]], the gradient error reaches 0.10695590917899114
+2024-08-21 16:05:53 - Warning: at bead position [[-6.83178222  3.5210851   4.47638011]], the gradient error reaches 0.10707302151164912
+2024-08-21 16:05:53 - Warning: at bead position [[-7.00796906  3.34489827  4.30019328]], the gradient error reaches 0.10694915825464195
+2024-08-21 16:05:53 - Warning: at bead position [[-6.86511974  3.48774759  4.4430426 ]], the gradient error reaches 0.10703864030718735
+2024-08-21 16:05:53 - Warning: at bead position [[-6.98045185  3.37241548  4.32771049]], the gradient error reaches 0.10695912437515612
+2024-08-21 16:05:53 - Warning: at bead position [[-6.85614962  3.49671771  4.45201272]], the gradient error reaches 0.10704738654673412
+2024-08-21 16:05:53 - Warning: at bead position [[-7.06533247  3.28753485  4.24282986]], the gradient error reaches 0.10693946678546801
+2024-08-21 16:05:53 - Warning: at bead position [[-7.08008409  3.27278324  4.22807824]], the gradient error reaches 0.1069393715842873
+2024-08-21 16:05:53 - Warning: at bead position [[-6.90511073  3.4477566   4.40305161]], the gradient error reaches 0.10700414466567366
+2024-08-21 16:05:53 - Warning: at bead position [[-6.88363864  3.46922869  4.42452369]], the gradient error reaches 0.1070217481582978
+2024-08-21 16:05:53 - Warning: at bead position [[-6.94421823  3.4086491   4.36394411]], the gradient error reaches 0.1069775436322817
+2024-08-21 16:05:53 - Warning: at bead position [[-7.09960225  3.25326507  4.20856008]], the gradient error reaches 0.10694075923247848
+2024-08-21 16:05:53 - Warning: at bead position [[-7.11003615  3.24283118  4.19812619]], the gradient error reaches 0.10694221341097637
+2024-08-21 16:05:53 - Warning: at bead position [[-7.11491787  3.23794946  4.19324447]], the gradient error reaches 0.10694304843472648
+2024-08-21 16:05:53 - Warning: at bead position [[-7.09241312  3.2604542   4.21574921]], the gradient error reaches 0.10694003643308081
+2024-08-21 16:05:53 - Warning: at bead position [[-7.14602297  3.20684435  4.16213936]], the gradient error reaches 0.1069509579453982
+2024-08-21 16:05:53 - Warning: at bead position [[-7.13982298  3.21304434  4.16833935]], the gradient error reaches 0.10694903363182352
+2024-08-21 16:05:53 - Warning: at bead position [[-5.7398098   2.67937124  6.10061825]], the gradient error reaches 0.10615337392496178
+2024-08-21 16:05:53 - Warning: at bead position [[-5.68489174  2.7342893   6.15553631]], the gradient error reaches 0.10641845162941972
+2024-08-21 16:05:53 - Warning: at bead position [[-5.65237438  2.76680667  6.18805367]], the gradient error reaches 0.10658166885414631
+2024-08-21 16:05:53 - Warning: at bead position [[-5.56555217  2.85362887  6.27487588]], the gradient error reaches 0.10703981345438153
+2024-08-21 16:05:53 - Warning: at bead position [[-5.52810602  2.89107502  6.31232203]], the gradient error reaches 0.10724730089924632
+2024-08-21 16:05:53 - Warning: at bead position [[-5.64870831  2.77047273  6.19171974]], the gradient error reaches 0.10660037367729276
+2024-08-21 16:05:53 - Warning: at bead position [[-5.56117141  2.85800963  6.27925664]], the gradient error reaches 0.10706378948724135
+2024-08-21 16:05:53 - Warning: at bead position [[-5.68100396  2.73817708  6.15942409]], the gradient error reaches 0.10643773419426111
+2024-08-21 16:05:53 - Warning: at bead position [[-5.74107373  2.67810731  6.09935432]], the gradient error reaches 0.1061474237316237
+2024-08-21 16:05:53 - Warning: at bead position [[-5.69295418  2.72622686  6.14747387]], the gradient error reaches 0.10637870898509962
+2024-08-21 16:05:53 - Warning: at bead position [[-5.91845916  2.50072188  5.92196889]], the gradient error reaches 0.10538491341630263
+2024-08-21 16:05:53 - Warning: at bead position [[-5.70213096  2.71705008  6.13829709]], the gradient error reaches 0.10633381537503278
+2024-08-21 16:05:53 - Warning: at bead position [[-5.61533466  2.80384638  6.22509339]], the gradient error reaches 0.10677316519227173
+2024-08-21 16:05:53 - Warning: at bead position [[-5.54218948  2.87699156  6.29823857]], the gradient error reaches 0.10716857419884236
+2024-08-21 16:05:53 - Warning: at bead position [[-5.60761529  2.81156575  6.23281276]], the gradient error reaches 0.10681381640896358
+2024-08-21 16:05:53 - Warning: at bead position [[-5.70082242  2.71835863  6.13960563]], the gradient error reaches 0.10634020094581155
+2024-08-21 16:05:53 - Warning: at bead position [[-5.765556    2.65362504  6.07487205]], the gradient error reaches 0.10603370474480081
+2024-08-21 16:05:53 - Warning: at bead position [[-5.7033792   2.71580184  6.13704885]], the gradient error reaches 0.10632773873406862
+2024-08-21 16:05:53 - Warning: at bead position [[-5.8147182   2.60446284  6.02570985]], the gradient error reaches 0.1058134666749571
+2024-08-21 16:05:53 - Warning: at bead position [[-5.74167322  2.67750782  6.09875483]], the gradient error reaches 0.10614461593717037
+2024-08-21 16:05:55 - (3.0) numAccept: {'CoM': 0.78299, 'Staging': 0.98196, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:56 - (5.0) numAccept: {'CoM': 0.83101, 'Staging': 0.98968, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:56 - (3.5) numAccept: {'CoM': 0.79832, 'Staging': 0.98502, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-21 16:05:57 - Some statistics on the energy estimator...
+2024-08-21 16:05:57 - (0.5) Mean: 1.7138318547006732(+/-)7.424490523617377e-05; Estimated Mean: 1.7143390598533945; Bias: 0.0005072051527212906
+2024-08-21 16:05:57 - (0.5) IAT: 1.21; (max_lag=30)
+2024-08-21 16:05:58 - (0.5) ESS/TOT: 1.01
+2024-08-21 16:05:58 - (1.0) Mean: 3.1280779341429974(+/-)0.0003162440981415075; Estimated Mean: 3.127476569547239; Bias: -0.0006013645957585467
+2024-08-21 16:05:58 - (1.0) IAT: 1.17; (max_lag=30)
+2024-08-21 16:05:58 - (1.0) ESS/TOT: 0.92
+2024-08-21 16:05:58 - (1.5) Mean: 4.597128116612602(+/-)0.000666655652720472; Estimated Mean: 4.597096668518506; Bias: -3.1448094095942736e-05
+2024-08-21 16:05:58 - (1.5) IAT: 1.15; (max_lag=30)
+2024-08-21 16:05:58 - (1.5) ESS/TOT: 0.86
+2024-08-21 16:05:58 - (2.0) Mean: 6.060462325615991(+/-)0.0011856112285972443; Estimated Mean: 6.060639233682367; Bias: 0.00017690806637560286
+2024-08-21 16:05:58 - (2.0) IAT: 1.35; (max_lag=30)
+2024-08-21 16:05:58 - (2.0) ESS/TOT: 0.80
+2024-08-21 16:05:58 - (2.5) Mean: 7.564866974211144(+/-)0.0018675780458249558; Estimated Mean: 7.566034012314411; Bias: 0.0011670381032669042
+2024-08-21 16:05:58 - (2.5) IAT: 1.69; (max_lag=30)
+2024-08-21 16:05:58 - (2.5) ESS/TOT: 0.70
+2024-08-21 16:05:58 - (3.0) Mean: 9.07841986652045(+/-)0.0030007408324392824; Estimated Mean: 9.078294622312201; Bias: -0.00012524420824888693
+2024-08-21 16:05:58 - (3.0) IAT: 1.88; (max_lag=30)
+2024-08-21 16:05:58 - (3.0) ESS/TOT: 0.61
+2024-08-21 16:05:58 - (3.5) Mean: 10.514189549135297(+/-)0.003941135332952235; Estimated Mean: 10.514295787288766; Bias: 0.00010623815346910703
+2024-08-21 16:05:58 - (3.5) IAT: 2.16; (max_lag=30)
+2024-08-21 16:05:58 - (3.5) ESS/TOT: 0.55
+2024-08-21 16:05:59 - (4.0) Mean: 12.040476964206954(+/-)0.005298720326105318; Estimated Mean: 12.042103581918854; Bias: 0.0016266177118993141
+2024-08-21 16:05:59 - (4.0) IAT: 2.57; (max_lag=30)
+2024-08-21 16:05:59 - (4.0) ESS/TOT: 0.51
+2024-08-21 16:05:59 - (4.5) Mean: 13.584082000317286(+/-)0.0059799321139328366; Estimated Mean: 13.582249154188908; Bias: -0.001832846128378307
+2024-08-21 16:05:59 - (4.5) IAT: 2.78; (max_lag=30)
+2024-08-21 16:05:59 - (4.5) ESS/TOT: 0.44
+2024-08-21 16:05:59 - (5.0) Mean: 15.060468624362365(+/-)0.00764469358708183; Estimated Mean: 15.063747074982082; Bias: 0.0032784506197174323
+2024-08-21 16:05:59 - (5.0) IAT: 2.92; (max_lag=30)
+2024-08-21 16:05:59 - (5.0) ESS/TOT: 0.42
+2024-08-21 16:05:59 - Convergance: R-hat = 1.54
+2024-08-21 16:05:59 - Population of the eStates
+2024-08-21 16:05:59 - (0.5) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (1.0) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (1.5) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (2.0) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (2.5) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (3.0) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (3.5) eState: 0.0, Populated: 100.00%
+2024-08-21 16:05:59 - (4.0) eState: 0.0, Populated: 100.00%
+2024-08-21 16:06:00 - (4.5) eState: 0.0, Populated: 100.00%
+2024-08-21 16:06:00 - (5.0) eState: 0.0, Populated: 100.00%

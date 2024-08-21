@@ -16,7 +16,7 @@ output_dim = 1  # Potential energy output
 
 # Load the trained model
 model = Molecule_NN(input_dim, hidden_dims, output_dim)
-model.load_state_dict(torch.load("NN/models/model.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("NN/models/model5.pth", map_location=torch.device('cpu')))
 model.to(device)  # Send model to the device
 
 # Load the scalers

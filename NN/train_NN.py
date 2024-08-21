@@ -13,6 +13,9 @@ from model_architechture import Molecule_NN
 
 #################### HYPERPARAMETERS #######################
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+num_NN = 5
+
 # Neural Network options
 input_dim = 3
 hidden_dims = [20]  # List of hidden layer dimensions
@@ -21,11 +24,11 @@ output_dim = 1  # Potential energy output
 # Training options
 learning_rate = 0.01
 num_epochs = 6000
-patience = 50
-batch_size = 500
+patience = 100
+batch_size = 1000
 
 # File paths
-model_path = "NN/models/model.pth"
+model_path = "NN/models/"
 scalers_path = "NN/models/scalers.pkl"  # Path to save scalers
 
 ################# DATA PREPARATION #####################
@@ -70,7 +73,7 @@ joblib.dump(scalers, scalers_path)
 
 ################## MODEL TRAINING ######################
 
-def train_model(model, X_train, Y_train, X_val, Y_val, num_epochs, learning_rate, patience, batch_size):
+def train_model(model, X_train, Y_train, X_val, Y_val, num_epochs, learning_rate, patience, batch_size, model_num):
     t0 = time()
     train_loss_per_epoch = []
     val_loss_per_epoch = []
@@ -107,36 +110,40 @@ def train_model(model, X_train, Y_train, X_val, Y_val, num_epochs, learning_rate
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 epochs_since_improvement = 0
-                torch.save(model.state_dict(), model_path)
+                torch.save(model.state_dict(), model_path+f'model{model_num}.pth')
             else:
                 epochs_since_improvement +=1
             if epochs_since_improvement > patience:
                 t1 = time()
-                print(f"Training stopped early. Total training time: {t1-t0}. Minimum validation loss: {best_val_loss}")
+                print(f"Training for model {model_num} stopped early. Total training time: {t1-t0}. Minimum validation loss: {best_val_loss}")
                 return train_loss_per_epoch, val_loss_per_epoch
         
         # Print average train and validation loss per epoch
         if epoch % 10 == 9:
-            print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {epoch_train_loss}, Val Loss: {val_loss.item()}')
+            print(f'Model {model_num} Epoch [{epoch+1}/{num_epochs}], Train Loss: {epoch_train_loss}, Val Loss: {val_loss.item()}')
 
     t1 = time()
     print(f"Training complete! Total training time: {t1-t0}")
     return train_loss_per_epoch, val_loss_per_epoch
 
-# Initialize the model
-model = Molecule_NN(input_dim, hidden_dims, output_dim).to(device)
+# Initialize the models
+models = [Molecule_NN(input_dim, hidden_dims, output_dim).to(device) for i in range(num_NN)]
 
-# Train the model
-train_loss_per_epoch, val_loss_per_epoch = train_model(model, X_train, Y_train, X_val, Y_val, num_epochs, learning_rate, patience, batch_size)
+model_num = 0
+train_loss_per_epoch, val_loss_per_epoch = [], []
+for model in models:
+    model_num += 1
+    # Train the models
+    t_l_p_e, v_l_p_e = train_model(model, X_train, Y_train, X_val, Y_val, num_epochs, learning_rate, patience, batch_size, model_num)
+    train_loss_per_epoch.append(t_l_p_e)
+    val_loss_per_epoch.append(v_l_p_e)
 
-# Save the trained model
-if(len(train_loss_per_epoch) == num_epochs):
-    torch.save(model.state_dict(), model_path)
 
 # Plot the validation and training loss
 plt.figure(figsize=(10, 5))
 plt.title("Loss per Epoch")
-plt.plot(train_loss_per_epoch, color='blue', label='Training Loss per epoch')
-plt.plot(val_loss_per_epoch, color='orange', label='Validation Loss per epoch')
+for i in range(len(train_loss_per_epoch)):
+    plt.plot(train_loss_per_epoch[i], label= f'Model {i} training Loss per epoch')
+    plt.plot(val_loss_per_epoch[i], label= f'Model {i} validation Loss per epoch')
 plt.legend()
 plt.show()

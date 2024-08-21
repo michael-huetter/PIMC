@@ -17,7 +17,7 @@ hidden_dims = [20]
 output_dim = 1  # Potential energy output
 
 # Model and scalers paths
-model_path = "NN/models/model.pth"
+model_path = "NN/models/model1.pth"
 scalers_path = "NN/models/scalers.pkl"  # Path to load scalers
 
 ####################### Data Preparation #####################

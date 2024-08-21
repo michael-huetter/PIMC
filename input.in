@@ -1,11 +1,11 @@
 [system]
 numParticles = 1
-T = 0.5, 2, 4
+T = 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5
 lam = 0.5
 n = 1
 
 [PIMC]
-numMCSteps = 300000
+numMCSteps = 100000
 numTimeSlices = 20
 m = 8  
 delta = 1.0
@@ -29,3 +29,5 @@ logging = False
 
 [NN]
 useBatchInput = True
+useEnsemble = True
+errorThreshold = 0.005

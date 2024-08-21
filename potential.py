@@ -3,7 +3,7 @@ Define your potential here. getV functino is calles from the main MCMC loop!!!
 """
 
 import numpy as np
-from numba import njit
+from numba import njit, jit
 import configparser
 import joblib
 import torch
@@ -13,11 +13,19 @@ from projToINRC import proj_main
 
 from NN.model_architechture import Molecule_NN
 from line_profiler import LineProfiler
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+import re
+from helpers import wOut
 
 config = configparser.ConfigParser()
 config.read('input.in')
 use_jit = config.getboolean("PIMC", "use_jit") 
 
+use_ensemble = config.getboolean("NN", "useEnsemble")
+err_threshold = config.getfloat("NN", "ErrorThreshold")
+
+############################ Hyperparameters ###########################
 # Device configuration
 device = "cpu"  # Change to "cuda" or "mps" if using GPU
 
@@ -26,10 +34,26 @@ input_dim = 3
 hidden_dims = [20]
 output_dim = 1  # Potential energy output
 
-# Load the trained model
-model = Molecule_NN(input_dim, hidden_dims, output_dim)
-model.load_state_dict(torch.load("NN/models/model.pth", map_location=torch.device('cpu')))
-model.to(device)  # Send model to the device
+# paths
+model_dir = "NN/models/"
+pattern = re.compile(r'^model\d+\.pth$')
+
+# List to store matching filenames
+matching_files = []
+
+
+# Iterate over all files in the directory
+for filename in os.listdir(model_dir):
+    if pattern.match(filename):
+        matching_files.append(filename)
+
+if use_ensemble:
+    models = [Molecule_NN(input_dim, hidden_dims, output_dim) for _ in matching_files]
+else:
+    models= [Molecule_NN(input_dim, hidden_dims, output_dim)]
+for i, model in enumerate(models):
+    model.load_state_dict(torch.load(model_dir+matching_files[i], map_location=torch.device('cpu')))
+    model.to(device)  # Send model to the device
 
 # Load the scalers
 scalers = joblib.load("NN/models/scalers.pkl")
@@ -73,13 +97,32 @@ def getV(R: np.array, eState: int) -> float:
     R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device)
     
-    with torch.no_grad():
-        E_scaled = model(R_tensor)
+    if use_ensemble:
+        E_ar = []
+        for model in models:
+            with torch.no_grad():
+                E_scaled = model(R_tensor)
+        
+                # Convert prediction back to original scale
+                E_out = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
+                E_ar.append(E_scaled.reshape(-1,1))
+
+        # Error calculation
+        errors = np.std(E_ar, axis=0)
+        for i, error in enumerate(errors):
+            if error>err_threshold:
+                wOut(f'Warning: at bead position {R[i]}, the error reaches {error}')
+        return E_out
     
-    # Convert mean prediction back to original scale
-    E = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
-    
-    return E
+    else:
+        with torch.no_grad():
+            E_scaled = models[0](R_tensor)
+        
+        # Convert prediction back to original scale
+        E = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
+        
+        return E
+        
 
     
 @cJIT   
@@ -88,18 +131,45 @@ def getGradV(R: np.array, eState: int) -> np.array:
 
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device, requires_grad=True)
     
-    # Forward pass to calculate the energy
-    E_scaled = model(R_tensor)
-    grad_outputs = torch.ones_like(E_scaled)
+    if use_ensemble:
+        gradients = []
+        for model in models:
+            # Forward pass to calculate the energy
+            E_scaled = model(R_tensor)
+            grad_outputs = torch.ones_like(E_scaled)
+
+            # Backward pass to calculate the gradient of the energy 
+            E_scaled.backward(grad_outputs)
+            grad_R_scaled = R_tensor.grad.cpu().numpy()
+            
+            gradient_out = grad_R_scaled / scaler_Y.scale_
+            gradients.append(np.copy(gradient_out))
+            
+
+        # Error calculation
+        norms = np.linalg.norm(gradients, axis=2)
+        errors = np.std(norms, axis=0)
+        for i, error in enumerate(errors):
+            if error>0.2:
+                wOut(f'Warning: at bead position {R[i]}, the gradient error reaches {error}')
+
+        return gradient_out
     
-    # Backward pass to calculate the gradient of the energy 
-    E_scaled.backward(grad_outputs)
-    grad_R_scaled = R_tensor.grad.cpu().numpy()
+    else:
+        # Forward pass to calculate the energy
+        E_scaled = models[0](R_tensor)
+        grad_outputs = torch.ones_like(E_scaled)
 
-    # Convert the output back to NumPy and inverse transform it to get the original scale
-    grad_R_original = grad_R_scaled / scaler_X.scale_
+        # Backward pass to calculate the gradient of the energy 
+        E_scaled.backward(grad_outputs)
+        grad_R_scaled = R_tensor.grad.cpu().numpy()
 
-    return grad_R_original
+        # Convert the output back to NumPy and inverse transform it to get the original scale
+        grad_R_original = grad_R_scaled / scaler_X.scale_
+
+        return grad_R_original
+
+
 
 
 @cJIT
@@ -110,9 +180,8 @@ def getDiabV(R: np.array) -> tuple:
 
     pass
 
-"""# Example data
-R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
-print(R.squeeze())
+# Example data
+""" R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
 eState = 1
 
 # Profile the functions
@@ -125,4 +194,4 @@ profiler.run('getV(R, eState)')
 profiler.run('getGradV(R, eState)')
 
 # Print the profiling results
-profiler.print_stats()"""
+profiler.print_stats() """
