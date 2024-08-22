@@ -135,6 +135,12 @@ def potEnergy(beads: np.array, numTimeSlices: int, eState: np.array) -> float:
     if use_batch_input:
         V_result = getV(beads, eState)
         PE = np.sum(V_result)
+    else:
+        PE = 0.0
+        for j in range(numTimeSlices):
+            R = beads[j,0:]
+            V_result = getV(R, eState[j])[0]
+            PE = PE + V_result
 
     return PE/(numTimeSlices) 
 
@@ -143,6 +149,12 @@ def potAction(beads: np.array, tau: float, numTimeSlices: int, n: int, eState: n
     if use_batch_input:
         V_result = getV(beads, eState)
         PE = np.sum(V_result)
+    else:
+        PE = 0.0
+        for j in range(numTimeSlices):
+            R = beads[j,0:]
+            V_result = getV(R,eState[j])[0]
+            PE = PE + V_result
 
     if non_adiabatic_coupling:
         phi = get_phi(beads, eState, numTimeSlices, n)
@@ -202,7 +214,7 @@ def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticl
             Rc = (1/numTimeSlices) * np.sum(beads[:, ptcl, :], axis=0)
             delR = beads[tslice,ptcl] - Rc
             if not use_batch_input:
-                dVdR = getGradV(beads[tslice,:], eState[tslice])
+                dVdR = getGradV(beads[tslice,:], eState[tslice]).flatten()
                 tot += np.dot(delR, dVdR)
             else:
                 delR_ar.append(delR)

@@ -22,7 +22,8 @@ config = configparser.ConfigParser()
 config.read('input.in')
 use_jit = config.getboolean("PIMC", "use_jit") 
 
-use_ensemble = config.getboolean("NN", "useEnsemble")
+calculate_errors = config.getboolean("NN", "calculateErrors")
+use_multiprocessing = config.getboolean("NN", "useMultiprocessing")
 err_threshold = config.getfloat("NN", "ErrorThreshold")
 
 ############################ Hyperparameters ###########################
@@ -32,7 +33,7 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 1  # Potential energy output
+output_dim = 2  # Potential energy output
 
 # paths
 model_dir = "NN/models/"
@@ -47,7 +48,7 @@ for filename in os.listdir(model_dir):
     if pattern.match(filename):
         matching_files.append(filename)
 
-if use_ensemble:
+if calculate_errors:
     models = [Molecule_NN(input_dim, hidden_dims, output_dim) for _ in matching_files]
 else:
     models= [Molecule_NN(input_dim, hidden_dims, output_dim)]
@@ -90,38 +91,50 @@ def H2_morse_grad(R):
 
     return 2 * A * alpha * (1 - np.exp(-alpha * (r - r_e))) * np.exp(-alpha * (r - r_e)) * (R/r)
 
-############Called from main code#######################
-    
+############ Additional functions #######################
+def evaluate_model(model, R_tensor):
+    with torch.no_grad():
+        E_scaled = model(R_tensor)
+        return E_scaled.numpy().reshape(-1, 1) if E_scaled.shape[1] == 1 else E_scaled
+
+############Called from main code#######################   
 @cJIT
+
 def getV(R: np.array, eState: int) -> float:
     R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device)
     
-    if use_ensemble:
-        E_ar = []
-        for model in models:
-            with torch.no_grad():
-                E_scaled = model(R_tensor)
-        
-                # Convert prediction back to original scale
-                E_out = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
-                E_ar.append(E_scaled.reshape(-1,1))
+    if calculate_errors:
+        if use_multiprocessing:
+            with ThreadPoolExecutor() as executor:
+                # Run models in parallel using ProcessPoolExecutor
+                results = list(executor.map(evaluate_model, models, [R_tensor]*len(models)))
+        else:
+            # Run models sequentially without multiprocessing
+            results = [evaluate_model(model, R_tensor) for model in models]
+
+        # Convert to a numpy array
+        E_ar = np.array(results)
 
         # Error calculation
         errors = np.std(E_ar, axis=0)
-        for i, error in enumerate(errors):
-            if error>err_threshold:
-                wOut(f'Warning: at bead position {R[i]}, the error reaches {error}')
-        return E_out
+        for i in range(errors.shape[0]):  # Loop over positions
+            for j in range(errors.shape[1]):  # Loop over energy states
+                error = errors[i, j]
+                if error > err_threshold:
+                    wOut(f'Warning: at bead position {R[i]} and eState {j}, the error reaches {error*100:.3f}%')
+
+        # Convert the first prediction back to the original scale
+        E_orig = scaler_Y.inverse_transform(E_ar[0])
     
     else:
-        with torch.no_grad():
-            E_scaled = models[0](R_tensor)
-        
+        E_scaled = evaluate_model(models[0], R_tensor)
         # Convert prediction back to original scale
-        E = scaler_Y.inverse_transform(E_scaled.reshape(-1, 1)).flatten()
-        
-        return E
+        E_orig = scaler_Y.inverse_transform(E_scaled)
+
+    E = E_orig[np.arange(E_orig.shape[0]), eState].flatten() if E_orig.shape[1] != 1 else E_orig.flatten()   
+    
+    return E
         
 
     
@@ -131,43 +144,18 @@ def getGradV(R: np.array, eState: int) -> np.array:
 
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device, requires_grad=True)
     
-    if use_ensemble:
-        gradients = []
-        for model in models:
-            # Forward pass to calculate the energy
-            E_scaled = model(R_tensor)
-            grad_outputs = torch.ones_like(E_scaled)
+    # Forward pass to calculate the energy
+    E_scaled = models[0](R_tensor)
 
-            # Backward pass to calculate the gradient of the energy 
-            E_scaled.backward(grad_outputs)
-            grad_R_scaled = R_tensor.grad.cpu().numpy()
-            
-            gradient_out = grad_R_scaled / scaler_Y.scale_
-            gradients.append(np.copy(gradient_out))
-            
+    grad_outputs = torch.ones_like(E_scaled)
 
-        # Error calculation
-        norms = np.linalg.norm(gradients, axis=2)
-        errors = np.std(norms, axis=0)
-        for i, error in enumerate(errors):
-            if error>0.2:
-                wOut(f'Warning: at bead position {R[i]}, the gradient error reaches {error}')
-
-        return gradient_out
+    # Backward pass to calculate the gradient of the energy 
+    E_scaled.backward(grad_outputs)
+    grad_R_scaled = R_tensor.grad.cpu().numpy()
     
-    else:
-        # Forward pass to calculate the energy
-        E_scaled = models[0](R_tensor)
-        grad_outputs = torch.ones_like(E_scaled)
-
-        # Backward pass to calculate the gradient of the energy 
-        E_scaled.backward(grad_outputs)
-        grad_R_scaled = R_tensor.grad.cpu().numpy()
-
-        # Convert the output back to NumPy and inverse transform it to get the original scale
-        grad_R_original = grad_R_scaled / scaler_X.scale_
-
-        return grad_R_original
+    # Convert the output back to NumPy and inverse transform it to get the original scale
+    grad_R_original = grad_R_scaled / scaler_X.scale_
+    return grad_R_original
 
 
 
@@ -180,8 +168,8 @@ def getDiabV(R: np.array) -> tuple:
 
     pass
 
-# Example data
-""" R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
+""" # Example data
+R = np.array([[1,2,3],[4,3,5],[1,6,2],[-5,3,-4],[-1,-2,-3],[4,-4,4],[5,-3,-1],[-6,7,1]])
 eState = 1
 
 # Profile the functions

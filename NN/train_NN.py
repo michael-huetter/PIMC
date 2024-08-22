@@ -14,12 +14,12 @@ from model_architechture import Molecule_NN
 #################### HYPERPARAMETERS #######################
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-num_NN = 5
+num_NN = 3
 
 # Neural Network options
 input_dim = 3
 hidden_dims = [20]  # List of hidden layer dimensions
-output_dim = 1  # Potential energy output
+output_dim = 2  # Potential energy output
 
 # Training options
 learning_rate = 0.01
@@ -45,7 +45,9 @@ def calculate_data(num_points: int) -> np.array:
 
     return Positions, potential_energies
 
-X, Energies = calculate_data(10000) 
+X, Energies = calculate_data(10000)
+Energies2 = Energies+2
+Energies = np.column_stack((Energies, Energies2))
 
 # Split data into training and validation sets
 X_train, X_val, Y_train, Y_val = train_test_split(X, Energies, test_size=0.2, random_state=42)
@@ -57,8 +59,8 @@ scaler_Y = StandardScaler()
 # Scale features and target
 X_train = scaler_X.fit_transform(X_train)
 X_val = scaler_X.transform(X_val)  # Use the same scaler for validation data
-Y_train = scaler_Y.fit_transform(np.array(Y_train).reshape(-1, 1))
-Y_val = scaler_Y.transform(np.array(Y_val).reshape(-1, 1))  # Scale validation targets
+Y_train = scaler_Y.fit_transform(np.array(Y_train).reshape(-1,1) if Y_train.ndim == 1 else np.array(Y_train)) # Scale training targets
+Y_val = scaler_Y.transform(np.array(Y_val).reshape(-1,1) if Y_val.ndim == 1 else np.array(Y_val))  # Scale validation targets
 
 
 # Convert to PyTorch tensors
@@ -66,6 +68,7 @@ X_train = torch.from_numpy(X_train.astype(np.float32)).to(device)
 Y_train = torch.from_numpy(Y_train.astype(np.float32)).to(device)
 X_val = torch.from_numpy(X_val.astype(np.float32)).to(device)
 Y_val = torch.from_numpy(Y_val.astype(np.float32)).to(device)
+
 
 # Save the scalers for future use
 scalers = {'scaler_X': scaler_X, 'scaler_Y': scaler_Y}

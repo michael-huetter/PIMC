@@ -12,11 +12,11 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 1  # Potential energy output
+output_dim = 2  # Potential energy output
 
 # Load the trained model
 model = Molecule_NN(input_dim, hidden_dims, output_dim)
-model.load_state_dict(torch.load("NN/models/model5.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("NN/models/model1.pth", map_location=torch.device('cpu')))
 model.to(device)  # Send model to the device
 
 # Load the scalers
@@ -88,10 +88,14 @@ for Pot in Pot_list:
 
 Tot_E = np.array(Kin_E)+np.array(Pot_E)
 
+T = np.linspace(0.1, 5, 500)
+exact = (3/2)/np.tanh(0.5/T) + 2 / (np.exp(2/T) + 1)
+
 plt.figure(figsize=(10, 5))
 plt.title("Potential Energy: Model Predictions vs. harmonic oscillator")
 plt.scatter(T_ar, Tot_E, color="red", label="Model Predictions")
 plt.plot(np.linspace(0.1, 5, 500), (3/2)/np.tanh(0.5/np.linspace(0.1, 5, 500)), color="black", label="harmonic oscillator")
+plt.plot(np.linspace(0.1, 5, 500), exact)
 plt.xlabel("Sample Index")
 plt.ylabel("Potential Energy")
 plt.legend()

@@ -149,5 +149,35 @@ python main.py
 ### Sample Input Files
 Sample input files for `input.in` and `potential.py` can be found in the `sample_input/` folder for the Harmonic Oscillator, a 1D model system composed of two harmonic diabats with an off-diagonal Gaussian diabatic couplin, and H2. The `test_script.py` automatically runs PIMC simulations for these input files and plots some of the results using matplotlib. 
 
+## Neural Network 
+# Input parameters for train_NN.py
 
+| Parameter                 | Value              | Description                                                  |
+|---------------------------|--------------------|--------------------------------------------------------------|
+| `numNN`                   | `1,3,...`          | Ammount of Networks that should be trained          |
+| `input_dim`               | `3,9,...`          | Input dimensions of the training data            |
+| `hidden_dims`             | `[20],[40, 30],...`| Architecture of the models' hidden layers                    |
+| `output_dim`              | `1, 2,...`         | Number of PES/eStates                                        |
+| `learning_rate`           | `0.1`              | How fast the models converge                                 |
+| `num_epochs`              | `6000`             | Maximum number of training iterations                        |
+| `patience`                | `100`              | N of iterations of no improvement before stopping training   |
+| `batch_size`              | `1000`             | Training Data batch size                                     | 
+| `X`                       | `[]`               | Atomic positions as cartesian coordinates                    |
+| `Energies`                | `[]`               | Corresponding potential energies                             |
 
+# Additional parameters in input.in
+
+| Parameter                 | Value              | Description                                                  |
+|---------------------------|--------------------|--------------------------------------------------------------|
+| `useBatchInput`           | `True/False`       | Pass all beads when calculating Energies (recommended)       |
+| `calculateErrors`         | `True/False`       | Error calculation using ensemble of trained models           |
+| `useMultiprocessing`      | `True/False`       | Use Multiprocessing for error calculation                    |
+| `errorThreshold`          | `0.005`            | At which threshold to output a warning about high error      |
+
+# Usage
+
+1) In 'train_NN.py', train your models (fine-tuning of learning rate, model architecture and batch size can greatly improve a model's performance. Using molecular polynomials to pay heed to molecular symmetries instead of using cartesian coordinates can also lead to better predictions)
+
+2) Set parameters in input.in
+
+3) use evaluate_NN.py and test.py to visualize the models' performance

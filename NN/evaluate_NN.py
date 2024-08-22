@@ -14,7 +14,7 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 1  # Potential energy output
+output_dim = 2  # Potential energy output
 
 # Model and scalers paths
 model_path = "NN/models/model1.pth"
@@ -35,6 +35,8 @@ def calculate_data(num_points: int) -> np.array:
     return Positions, potential_energies
 
 X, E = calculate_data(10000) 
+Energies2 = E+50
+E = np.column_stack((E, Energies2))
 
 ####################### Load Models and Scalers #######################
 
