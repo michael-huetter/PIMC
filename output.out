@@ -1,18 +1,44 @@
-2024-08-26 10:15:14 - PIMC V1.1
-2024-08-26 10:15:14 - Avalible CPUs: 12
-2024-08-26 10:15:14 - Used CPUs: 1
-2024-08-26 10:15:14 - JIT compiler: False
-2024-08-26 10:15:14 - Virial estimator: True
-2024-08-26 10:15:14 - T: [0.5]
-2024-08-26 10:15:14 - lam: [1.7019282e-05, 0.0002723085, 0.0002723085]
-2024-08-26 10:15:14 - rand_seed: 111
-2024-08-26 10:15:14 - numParticles: 3
-2024-08-26 10:15:14 - numTimeSlices: 20
-2024-08-26 10:15:14 - Stage length: 8
-2024-08-26 10:15:14 - Delta (CoM): 1.0
-2024-08-26 10:15:14 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
-2024-08-26 10:15:17 - Warning: Could not load shared library for PoE.
-2024-08-26 10:15:17 - (0.5) Input geometry:
- []
-2024-08-26 10:15:17 - Some statistics on the energy estimator...
-2024-08-26 10:15:17 - Error: No data found in output directory, make sure the potential is properly defined and appropriate input parameters are used. Alternatively, try the logging mode.
+2024-08-26 15:49:06 - PIMC V1.1
+2024-08-26 15:49:06 - Avalible CPUs: 12
+2024-08-26 15:49:06 - Used CPUs: 4
+2024-08-26 15:49:06 - JIT compiler: False
+2024-08-26 15:49:06 - Virial estimator: False
+2024-08-26 15:49:06 - T: [0.5, 1.0, 2.0, 4.0]
+2024-08-26 15:49:06 - lam: [0.5]
+2024-08-26 15:49:06 - rand_seed: 111
+2024-08-26 15:49:06 - numParticles: 1
+2024-08-26 15:49:06 - numTimeSlices: 20
+2024-08-26 15:49:06 - Stage length: 8
+2024-08-26 15:49:06 - Delta (CoM): 1.0
+2024-08-26 15:49:06 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
+2024-08-26 15:49:10 - Warning: Could not load shared library for PoE.
+2024-08-26 15:49:10 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-26 15:49:10 - Warning: Could not load shared library for PoE.
+2024-08-26 15:49:10 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-26 15:49:10 - Warning: Could not load shared library for PoE.
+2024-08-26 15:49:10 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-26 15:49:10 - Warning: Could not load shared library for PoE.
+2024-08-26 15:49:10 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-26 15:50:25 - (4.0) numAccept: {'CoM': 0.72642, 'Staging': 0.22982, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-26 15:50:25 - (1.0) numAccept: {'CoM': 0.610175, 'Staging': 0.393385, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-26 15:50:25 - (0.5) numAccept: {'CoM': 0.513835, 'Staging': 0.44046, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-26 15:50:25 - (2.0) numAccept: {'CoM': 0.67798, 'Staging': 0.312025, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-26 15:50:26 - Some statistics on the energy estimator...
+2024-08-26 15:50:26 - (0.5) Mean: -22.276833214844714(+/-)0.01649287517326455; Estimated Mean: -22.282686307719594; Bias: -0.005853092874879451
+2024-08-26 15:50:26 - (0.5) IAT: 1.17; (max_lag=30)
+2024-08-26 15:50:26 - (0.5) ESS/TOT: 0.88
+2024-08-26 15:50:26 - (1.0) Mean: -167.4951692798791(+/-)0.7148492559454369; Estimated Mean: -167.46248027601007; Bias: 0.032689003869023736
+2024-08-26 15:50:26 - (1.0) IAT: 1.43; (max_lag=30)
+2024-08-26 15:50:26 - (1.0) ESS/TOT: 0.69
+2024-08-26 15:50:26 - (2.0) Mean: -1613.4481053852762(+/-)53.649130024544405; Estimated Mean: -1613.3032661434495; Bias: 0.14483924182673036
+2024-08-26 15:50:26 - (2.0) IAT: 1.70; (max_lag=30)
+2024-08-26 15:50:26 - (2.0) ESS/TOT: 0.53
+2024-08-26 15:50:27 - (4.0) Mean: -16389.55112653845(+/-)4207.999362896658; Estimated Mean: -16386.50386202273; Bias: 3.047264515716961
+2024-08-26 15:50:27 - (4.0) IAT: 2.39; (max_lag=30)
+2024-08-26 15:50:27 - (4.0) ESS/TOT: 0.39
+2024-08-26 15:50:27 - Convergance: R-hat = 2.60
+2024-08-26 15:50:27 - Population of the eStates
+2024-08-26 15:50:27 - (0.5) eState: 0.0, Populated: 100.00%
+2024-08-26 15:50:27 - (1.0) eState: 0.0, Populated: 100.00%
+2024-08-26 15:50:27 - (2.0) eState: 0.0, Populated: 100.00%
+2024-08-26 15:50:27 - (4.0) eState: 0.0, Populated: 100.00%

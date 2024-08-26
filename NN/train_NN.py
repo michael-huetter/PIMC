@@ -19,7 +19,7 @@ num_NN = 3
 # Neural Network options
 input_dim = 3
 hidden_dims = [20]  # List of hidden layer dimensions
-output_dim = 2  # Potential energy output
+output_dim = 1  # Potential energy output
 
 # Training options
 learning_rate = 0.01
@@ -46,8 +46,6 @@ def calculate_data(num_points: int) -> np.array:
     return Positions, potential_energies
 
 X, Energies = calculate_data(10000)
-Energies2 = Energies+2
-Energies = np.column_stack((Energies, Energies2))
 
 # Split data into training and validation sets
 X_train, X_val, Y_train, Y_val = train_test_split(X, Energies, test_size=0.2, random_state=42)

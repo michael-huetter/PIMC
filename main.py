@@ -324,26 +324,65 @@ def bead_move(beads: np.array, ptcl: int, tau: float, delta: float, numTimeSlice
     else:
         return beads, False
 
+@log
+@cJIT
+def staging_transformation(beads, m, tau, lam, numTimeSlices):
+    # Copy the original bead positions
+    beads_new = np.copy(beads)
+    
+    # Calculate parameters
+    j = m - 2
+    l = np.random.randint(0, numTimeSlices)
+    mass = 1 / (2 * lam[0])
+    beta = tau * numTimeSlices
+    omega = np.sqrt(numTimeSlices) / beta
+
+    # Calculate staging variables
+    staging_var = np.array([
+        beads[(l + j) % numTimeSlices] - (k * beads[(l + k + 1) % numTimeSlices] - beads[l]) / (k + 1)
+        for k in range(1, j + 1)
+    ])
+    
+    # Generate new staging variables
+    new_staging_var = np.zeros_like(staging_var)
+    for k in range(1, j + 1):
+        sigma_k2 = k / (beta * (k + 1) * mass * omega**2)
+        
+        for d in range(beads.shape[1]):
+            # Sample from Gaussian distribution
+            gaussian_sample = np.random.normal(0, np.sqrt(sigma_k2))
+            new_staging_var[k - 1, d] = staging_var[k - 1, d] + gaussian_sample
+    
+    # Calculate new bead positions
+    for k in range(1, j + 1):
+        for d in range(beads.shape[1]):
+            beads_new[(l + k) % numTimeSlices, d] = (
+                new_staging_var[k - 1, d] + 
+                k / (k + 1) * beads[(l + k + 1) % numTimeSlices, d] +
+                1 / (k + 1) * beads[l, d]
+            )
+    
+    return beads_new
+
 @log  
 @cJIT
 def staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState):
    
     old_beads = np.copy(beads)
-    beads_new = np.copy(beads)
+    beads_new1 = np.copy(beads)
 
     alpha_start = np.random.randint(0,numTimeSlices)
     alpha_end = (alpha_start + m) % numTimeSlices
   
     oldAction = potAction(old_beads, tau, numTimeSlices, n, eState) 
-    
+    beads_new = staging_transformation(beads, m, tau, lam, numTimeSlices)
     for a in range(1,m):
         tslice = (alpha_start + a) % numTimeSlices
         tslicem1 = (tslice - 1) % numTimeSlices
         tau1 = (m-a)*tau
-        avex = (tau1*beads_new[tslicem1,ptcl] + tau*beads_new[alpha_end,ptcl]) / (tau + tau1)
+        avex = (tau1*beads_new1[tslicem1,ptcl] + tau*beads_new1[alpha_end,ptcl]) / (tau + tau1)
         sigma2 = 2.0*lam[ptcl] / (1.0 / tau + 1.0 / tau1)
-        beads_new[tslice,ptcl] = avex + np.sqrt(sigma2)*np.random.randn()
-
+        beads_new1[tslice,ptcl] = avex + np.sqrt(sigma2)*np.random.randn()
     newAction = potAction(beads_new, tau, numTimeSlices, n, eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):

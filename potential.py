@@ -101,7 +101,7 @@ def evaluate_model(model, R_tensor):
 @cJIT
 
 def getV(R: np.array, eState: int) -> float:
-    R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
+    """ R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device)
     
     if calculate_errors:
@@ -132,8 +132,8 @@ def getV(R: np.array, eState: int) -> float:
         # Convert prediction back to original scale
         E_orig = scaler_Y.inverse_transform(E_scaled)
 
-    E = E_orig[np.arange(E_orig.shape[0]), eState].flatten() if E_orig.shape[1] != 1 else E_orig.flatten()   
-    
+    E = E_orig[np.arange(E_orig.shape[0]), eState].flatten() if E_orig.shape[1] != 1 else E_orig.flatten() """
+    E = [0.5 * (R[0][0]**2 + R[0][1]**2 + R[0][2]**2)]
     return E
         
 

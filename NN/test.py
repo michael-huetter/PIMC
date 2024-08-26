@@ -12,7 +12,7 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 2  # Potential energy output
+output_dim = 1  # Potential energy output
 
 # Load the trained model
 model = Molecule_NN(input_dim, hidden_dims, output_dim)
@@ -88,6 +88,7 @@ for Pot in Pot_list:
 
 Tot_E = np.array(Kin_E)+np.array(Pot_E)
 
+
 T = np.linspace(0.1, 5, 500)
 exact = (3/2)/np.tanh(0.5/T) + 2 / (np.exp(2/T) + 1)
 
@@ -100,4 +101,12 @@ plt.xlabel("Sample Index")
 plt.ylabel("Potential Energy")
 plt.legend()
 plt.grid(True)
+plt.show()
+
+l = np.loadtxt("output/0.5_PositionTrace.csv")
+plt.hist(l,bins =50, color="red", alpha=.5)
+
+l = np.loadtxt("output/4.0_PositionTrace.csv")
+plt.hist(l,bins =50, color="blue", alpha=.5)
+
 plt.show()
