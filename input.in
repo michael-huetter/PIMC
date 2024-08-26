@@ -1,18 +1,18 @@
 [system]
-numParticles = 1
+numParticles = 3
 T = 0.5
-lam = 0.5
-n = 2
+lam = 0.000017019282, 0.0002723085, 0.0002723085
+n = 1
 
 [PIMC]
-numMCSteps = 2000
+numMCSteps = 200000
 numTimeSlices = 20
-m = 8  
+m = 8
 delta = 1.0
 delta_bead = 0.05 
 use_jit = False
 staging = True         
-echange = True
+echange = False
 non_adiabatic_coupling = False   
 PoE = False
 kin_virial = True
@@ -31,4 +31,4 @@ logging = True
 useBatchInput = True
 calculateErrors = False
 useMultiprocessing = False
-errorThreshold = 0.004
+errorThreshold = 0.005

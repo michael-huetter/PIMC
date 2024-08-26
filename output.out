@@ -1,24 +1,18 @@
-2024-08-22 16:50:26 - PIMC V1.1
-2024-08-22 16:50:26 - Avalible CPUs: 12
-2024-08-22 16:50:26 - Used CPUs: 1
-2024-08-22 16:50:26 - JIT compiler: False
-2024-08-22 16:50:26 - Virial estimator: True
-2024-08-22 16:50:26 - T: [0.5]
-2024-08-22 16:50:26 - lam: [0.5]
-2024-08-22 16:50:26 - rand_seed: 111
-2024-08-22 16:50:26 - numParticles: 1
-2024-08-22 16:50:26 - numTimeSlices: 20
-2024-08-22 16:50:26 - Stage length: 8
-2024-08-22 16:50:26 - Delta (CoM): 1.0
-2024-08-22 16:50:26 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
-2024-08-22 16:50:28 - Warning: Could not load shared library for PoE.
-2024-08-22 16:50:28 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-22 16:51:28 - (0.5) numAccept: {'CoM': 0.5275, 'Staging': 0.87, 'Bead': 0.0, 'eChange': 0.038}
-2024-08-22 16:51:28 - Some statistics on the energy estimator...
-2024-08-22 16:51:28 - (0.5) Mean: 1.7148426119887052(+/-)0.011967197683126542; Estimated Mean: 1.7092905389100628; Bias: -0.005552073078642472
-2024-08-22 16:51:28 - (0.5) IAT: -0.35; (max_lag=30)
-2024-08-22 16:51:29 - (0.5) ESS/TOT: 1.14
-2024-08-22 16:51:29 - Warning: GR statistic not possible to compute with one chain. Pleas check convergance manually.
-2024-08-22 16:51:29 - Population of the eStates
-2024-08-22 16:51:29 - (0.5) eState: 0.0, Populated: 95.92%
-2024-08-22 16:51:29 - (0.5) eState: 1.0, Populated: 4.08%
+2024-08-26 10:15:14 - PIMC V1.1
+2024-08-26 10:15:14 - Avalible CPUs: 12
+2024-08-26 10:15:14 - Used CPUs: 1
+2024-08-26 10:15:14 - JIT compiler: False
+2024-08-26 10:15:14 - Virial estimator: True
+2024-08-26 10:15:14 - T: [0.5]
+2024-08-26 10:15:14 - lam: [1.7019282e-05, 0.0002723085, 0.0002723085]
+2024-08-26 10:15:14 - rand_seed: 111
+2024-08-26 10:15:14 - numParticles: 3
+2024-08-26 10:15:14 - numTimeSlices: 20
+2024-08-26 10:15:14 - Stage length: 8
+2024-08-26 10:15:14 - Delta (CoM): 1.0
+2024-08-26 10:15:14 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
+2024-08-26 10:15:17 - Warning: Could not load shared library for PoE.
+2024-08-26 10:15:17 - (0.5) Input geometry:
+ []
+2024-08-26 10:15:17 - Some statistics on the energy estimator...
+2024-08-26 10:15:17 - Error: No data found in output directory, make sure the potential is properly defined and appropriate input parameters are used. Alternatively, try the logging mode.

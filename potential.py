@@ -33,7 +33,7 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 2  # Potential energy output
+output_dim = 1  # Potential energy output
 
 # paths
 model_dir = "NN/models/"
