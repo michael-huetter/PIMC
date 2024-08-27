@@ -114,12 +114,7 @@ Alternatively, try the logging mode.")
         # JKNF resampling
         true_mean, estimated_mean, adjusted_mean, bias, variance = _jackknife_after_bootstrap(kin+pot)
         wOut(f"({i}) Mean: {true_mean}(+/-){variance}; Estimated Mean: {estimated_mean}; Bias: {bias}")
-
-        # Compute IAT
-        iat = _integrated_autocorrelation_time(kin+pot)
-        wOut(f"({i}) IAT: {iat:.2f}; (max_lag=30)")
-        ess = az.ess(kin+pot)
-        wOut(f"({i}) ESS/TOT: {(ess/len(kin+pot)):.2f}")
+        
 
         E_trace.append(kin+pot)
         E.append([float(i), e])

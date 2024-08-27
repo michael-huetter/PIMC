@@ -7,8 +7,8 @@ n = 1
 [PIMC]
 numMCSteps = 200000
 numTimeSlices = 20
-m = 8
-delta = 1.0
+m = 16
+delta = 1.5
 delta_bead = 0.05
 use_jit = False
 staging = True         
@@ -19,8 +19,7 @@ kin_virial = False
 rand_seed = 111
 
 [convergence]
-thermSkip = 1000  
-corrSkip = 20      
+thermSkip = 1000
 eCG = 1
 eCL = 1 
 

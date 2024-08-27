@@ -12,9 +12,10 @@ from tqdm import tqdm
 
 from helpers import save_to_csv, wOut, remove_all_files_in_folder
 from potential import getV, getGradV, getDiabV
-from stats import rcc
+from stats import rcc, _integrated_autocorrelation_time
 from readGeom import getGeom
 
+import matplotlib.pyplot as plt
 """
 Read input parameters-----------------------------------------------------------------
 """
@@ -38,7 +39,6 @@ PoE = config.getboolean("PIMC", "PoE")
 rand_seed = config.getint("PIMC", "rand_seed")
 kinVirial = config.getboolean("PIMC", "kin_virial") 
 
-corrSkip = config.getint("convergence", "corrSkip")
 thermSkip = config.getint("convergence", "thermSkip")
 
 log_flag = config.getboolean("debug", "logging")
@@ -253,9 +253,9 @@ def bead_pos(beads: np.array, numTimeSlices: int) -> tuple[float, float, float]:
         x +=  beads[j][0][0]
         y +=  beads[j][0][1]
         z +=  beads[j][0][2]
-        r += np.sqrt(beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2)
+        #r += np.sqrt(beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2)
 
-    return r/numTimeSlices#x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
+    return x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
 
 @cJIT
 def bead_pos_1d(beads: np.array, numTimeSlices: int) -> float:
@@ -383,10 +383,10 @@ def staging_move(beads, ptcl, tau, lam, numTimeSlices, m, n, eState):
         avex = (tau1*beads_new1[tslicem1,ptcl] + tau*beads_new1[alpha_end,ptcl]) / (tau + tau1)
         sigma2 = 2.0*lam[ptcl] / (1.0 / tau + 1.0 / tau1)
         beads_new1[tslice,ptcl] = avex + np.sqrt(sigma2)*np.random.randn()
-    newAction = potAction(beads_new, tau, numTimeSlices, n, eState)
+    newAction = potAction(beads_new1, tau, numTimeSlices, n, eState)
 
     if np.random.random() < np.exp(-(newAction - oldAction)):
-        return beads_new, True
+        return beads_new1, True
     else:
         return old_beads, False
 
@@ -514,22 +514,24 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             eState, xi = PoE_move(eState, xi, xi_change_interval, numTimeSlices, n, k, xi_possible, beads, tau)   
 
         # keep track of observables
-        if k % corrSkip == 0 and k > thermSkip:
+        if k > thermSkip:
             potE = potEnergy(beads, numTimeSlices, eState)
-            dbK.append(dbetaK(beads, tau, lam, numTimeSlices, numParticles))
+            kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
+
             if kinVirial:
                 kinEvirial = virial_estimator(beads, tau, numTimeSlices, numParticles, eState)
-                kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo, kinEvirial])
             else:
-                kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo])
+
             eStateTrace.append(np.copy(eState))
             xiTrace.append([xi])
-            if numParticles == 1 and simulation_dim == 3:
-                PositionTrace.append(bead_pos(beads, numTimeSlices))
-            elif numParticles == 1 and simulation_dim == 1:
-                PositionTrace.append(bead_pos_1d(beads, numTimeSlices))
+
+            if numParticles == 1:
+                if simulation_dim == 3:
+                    PositionTrace.append(bead_pos(beads, numTimeSlices))
+                elif simulation_dim == 1:
+                    PositionTrace.append(bead_pos_1d(beads, numTimeSlices))
             else:
                 PositionTrace.append(beads)
 
@@ -584,7 +586,7 @@ def worker(args):
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     save_to_csv(xiTrace, f'{i}_xiTrace.csv')
-    save_to_csv(dBK, f'{i}_dBK.csv')
+    #save_to_csv(dBK, f'{i}_dBK.csv')
 
     for key in numAccept:
         numAccept[key] /= numMCSteps*numParticles
@@ -660,8 +662,6 @@ if __name__ == "__main__":
         exit() 
     if thermSkip < 1000:
         wOut(f"Warning: thermSkip is very low")
-    if corrSkip < 10:
-        wOut(f"Warning: corrSkip is very low")
     if echange and n<2:
         wOut(f"Error: echange is turned on but n < 2")
         exit(f"Error: echange is turned on but n < 2")

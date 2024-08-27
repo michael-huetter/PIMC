@@ -33,18 +33,36 @@ def get_filenames(directory):
     
     return files_path, files
 
+
 def save_to_csv(data, filename):
     """
-    Save resutls to /output/ with a unique filename if multiple T loops are used
+    Save results to /output/ with a unique filename if multiple T loops are used.
     """
-
-    unique_filename = _get_unique_filename("output/"+str(filename))
+    unique_filename = _get_unique_filename("output/" + str(filename))
+    
+    # Use numpy's savetxt if data is a numpy array
+    if isinstance(data, np.ndarray):
+        np.savetxt(unique_filename, data, delimiter=",")
+        return
+    
+    # Open file once
     with open(unique_filename, 'w', newline='') as file:
         writer = csv.writer(file)
-        if isinstance(data, (list, np.ndarray)):  # If data is a list or numpy array
-            for row in data:
-                writer.writerow([row] if isinstance(row, np.float64) else row)
-        else:  # If data is a single value
+        
+        # Check data type and write accordingly
+        if isinstance(data, list):
+            # Process list data
+            is_list_of_lists = all(isinstance(row, list) for row in data)
+            
+            if is_list_of_lists:
+                # Efficiently write all rows in one call if data is list of lists
+                writer.writerows(data)
+            else:
+                # Write each row individually if it's not a list of lists
+                for row in data:
+                    writer.writerow([row] if isinstance(row, (np.float64, float)) else row)
+        else:
+            # Write a single value
             writer.writerow([data])
 
 def wOut(message, filename='output.out'):
