@@ -42,7 +42,7 @@ def save_to_csv(data, filename):
     
     # Use numpy's savetxt if data is a numpy array
     if isinstance(data, np.ndarray):
-        np.savetxt(unique_filename, data, delimiter=",")
+        np.savetxt(unique_filename, data.reshape(data.shape[0], -1), delimiter=",")
         return
     
     # Open file once

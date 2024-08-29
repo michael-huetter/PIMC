@@ -14,7 +14,7 @@ from model_architechture import Molecule_NN
 #################### HYPERPARAMETERS #######################
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-num_NN = 3
+num_NN = 5
 
 # Neural Network options
 input_dim = 3
@@ -30,22 +30,51 @@ batch_size = 1000
 # File paths
 model_path = "NN/models/"
 scalers_path = "NN/models/scalers.pkl"  # Path to save scalers
+energies_path = "NN/data/energies.dat"
+positions_path = "NN/data/movie.xyz"
 
 ################# DATA PREPARATION #####################
 
-def calculate_data(num_points: int) -> np.array:
-    x = np.random.uniform(-10, 10, num_points)
-    y = np.random.uniform(-10, 10, num_points)
-    z = np.random.uniform(-10, 10, num_points)
+def read_energies(file_path):
+    lines = np.loadtxt(file_path)
+    ar = lines[:,1]
+    return ar
 
-    PE = 0.5 * (x**2 + y**2 + z**2)
+def read_positions(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-    Positions = np.column_stack((x, y, z))
-    potential_energies = PE
+    # Process the file lines to extract the coordinates
+    data = []
+    for i, line in enumerate(lines):
+        if line.strip().startswith(('O', 'H')):
+            data.append([float(x) for x in line.split()[1:]])
 
-    return Positions, potential_energies
+    # Convert the data into a NumPy array and reshape it
+    num_time_steps = len(data) // 3  # Each time step has 3 coordinate sets (O, H, H)
+    ar = np.array(data).reshape((num_time_steps, 3, 3))
+    return ar
 
-X, Energies = calculate_data(10000)
+Energies = read_energies(energies_path)[::20]
+Positions = np.array(read_positions(positions_path)[::20])*1.88973
+r_H, avg_OH, prod_OH = [], [], []
+for coords in Positions:
+    O, H1, H2 = coords[0], coords[1], coords[2]
+    d_HH = np.linalg.norm(H1 - H2)
+    d_OH1 = np.linalg.norm(O - H1)
+    d_OH2 = np.linalg.norm(O - H2)
+
+    r_H.append(d_HH)
+    avg_OH.append((d_OH1+d_OH2)/2)
+    prod_OH.append(d_OH1*d_OH2)
+
+# Convert to numpy arrays
+r_H = np.array(r_H).reshape(-1, 1)
+avg_OH = np.array(avg_OH).reshape(-1, 1)
+prod_OH = np.array(prod_OH).reshape(-1, 1)
+
+# Feature matrix
+X = np.hstack((r_H, avg_OH, prod_OH))
 
 # Split data into training and validation sets
 X_train, X_val, Y_train, Y_val = train_test_split(X, Energies, test_size=0.2, random_state=42)
@@ -57,8 +86,8 @@ scaler_Y = StandardScaler()
 # Scale features and target
 X_train = scaler_X.fit_transform(X_train)
 X_val = scaler_X.transform(X_val)  # Use the same scaler for validation data
-Y_train = scaler_Y.fit_transform(np.array(Y_train).reshape(-1,1) if Y_train.ndim == 1 else np.array(Y_train)) # Scale training targets
-Y_val = scaler_Y.transform(np.array(Y_val).reshape(-1,1) if Y_val.ndim == 1 else np.array(Y_val))  # Scale validation targets
+Y_train = scaler_Y.fit_transform(np.array(Y_train).reshape(-1, 1))
+Y_val = scaler_Y.transform(np.array(Y_val).reshape(-1, 1))  # Scale validation targets
 
 
 # Convert to PyTorch tensors
@@ -66,7 +95,6 @@ X_train = torch.from_numpy(X_train.astype(np.float32)).to(device)
 Y_train = torch.from_numpy(Y_train.astype(np.float32)).to(device)
 X_val = torch.from_numpy(X_val.astype(np.float32)).to(device)
 Y_val = torch.from_numpy(Y_val.astype(np.float32)).to(device)
-
 
 # Save the scalers for future use
 scalers = {'scaler_X': scaler_X, 'scaler_Y': scaler_Y}

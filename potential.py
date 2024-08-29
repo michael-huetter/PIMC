@@ -101,7 +101,26 @@ def evaluate_model(model, R_tensor):
 @cJIT
 
 def getV(R: np.array, eState: int) -> float:
-    """ R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
+    r_H, avg_OH, prod_OH = [], [], []
+    for coords in R:
+        O, H1, H2 = coords[0], coords[1], coords[2]
+        d_HH = np.linalg.norm(H1 - H2)
+        d_OH1 = np.linalg.norm(O - H1)
+        d_OH2 = np.linalg.norm(O - H2)
+
+        r_H.append(d_HH)
+        avg_OH.append((d_OH1+d_OH2)/2)
+        prod_OH.append(d_OH1*d_OH2)
+
+    # Convert to numpy arrays
+    r_H = np.array(r_H).reshape(-1, 1)
+    avg_OH = np.array(avg_OH).reshape(-1, 1)
+    prod_OH = np.array(prod_OH).reshape(-1, 1)
+
+    # Feature matrix
+    X = np.hstack((r_H, avg_OH, prod_OH))
+
+    R_scaled = scaler_X.transform(X.reshape(-1, R.shape[-1]))
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device)
     
     if calculate_errors:
@@ -132,16 +151,35 @@ def getV(R: np.array, eState: int) -> float:
         # Convert prediction back to original scale
         E_orig = scaler_Y.inverse_transform(E_scaled)
 
-    E = E_orig[np.arange(E_orig.shape[0]), eState].flatten() if E_orig.shape[1] != 1 else E_orig.flatten() """
-    E = [0.5 * (R[0][0]**2 + R[0][1]**2 + R[0][2]**2)]
+    E = E_orig[np.arange(E_orig.shape[0]), eState].flatten() if E_orig.shape[1] != 1 else E_orig.flatten()
+    if(E[0]>-76 or E[0]<-77):
+        print(E)
     return E
         
 
     
 @cJIT   
 def getGradV(R: np.array, eState: int) -> np.array:
-    R_scaled = scaler_X.transform(R.reshape(-1, R.shape[-1]))
+    r_H, avg_OH, prod_OH = [], [], []
+    for coords in R:
+        O, H1, H2 = coords[0], coords[1], coords[2]
+        d_HH = np.linalg.norm(H1 - H2)
+        d_OH1 = np.linalg.norm(O - H1)
+        d_OH2 = np.linalg.norm(O - H2)
 
+        r_H.append(d_HH)
+        avg_OH.append((d_OH1+d_OH2)/2)
+        prod_OH.append(d_OH1*d_OH2)
+
+    # Convert to numpy arrays
+    r_H = np.array(r_H).reshape(-1, 1)
+    avg_OH = np.array(avg_OH).reshape(-1, 1)
+    prod_OH = np.array(prod_OH).reshape(-1, 1)
+
+    # Feature matrix
+    X = np.hstack((r_H, avg_OH, prod_OH))
+
+    R_scaled = scaler_X.transform(X.reshape(-1, R.shape[-1]))
     R_tensor = torch.tensor(R_scaled, dtype=torch.float32, device=device, requires_grad=True)
     
     # Forward pass to calculate the energy

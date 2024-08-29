@@ -78,6 +78,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+
 def log(func):
 
     if log_flag:
@@ -245,17 +246,9 @@ def bond_length(beads: np.array, numTimeSlices: int) -> float:
     return x/numTimeSlices
 
 @cJIT
-def bead_pos(beads: np.array, numTimeSlices: int) -> tuple[float, float, float]:
-
-    x, y, z = 0, 0, 0
-    r = 0
-    for j in range(numTimeSlices):
-        x +=  beads[j][0][0]
-        y +=  beads[j][0][1]
-        z +=  beads[j][0][2]
-        #r += np.sqrt(beads[j][0][0]**2 + beads[j][0][1]**2 + beads[j][0][2]**2)
-
-    return x/numTimeSlices, y/numTimeSlices, z/numTimeSlices
+def bead_pos(beads: np.array, numTimeSlices: int):
+    coords=np.mean(beads, axis=0)
+    return coords/numTimeSlices
 
 @cJIT
 def bead_pos_1d(beads: np.array, numTimeSlices: int) -> float:
@@ -522,19 +515,17 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 kinEvirial = virial_estimator(beads, tau, numTimeSlices, numParticles, eState)
                 EnergyTrace.append([potE, kinEthermo, kinEvirial])
             else:
-                EnergyTrace.append([potE, kinEthermo])
-
-            eStateTrace.append(np.copy(eState))
+                EnergyTrace.append([potE, kinEthermo])#
+            eStateTrace.append(list(np.copy(eState)))
             xiTrace.append([xi])
-
+            
             if numParticles == 1:
                 if simulation_dim == 3:
-                    PositionTrace.append(bead_pos(beads, numTimeSlices))
+                    PositionTrace.append(beads)
                 elif simulation_dim == 1:
                     PositionTrace.append(bead_pos_1d(beads, numTimeSlices))
             else:
-                PositionTrace.append(beads)
-
+                PositionTrace.append(bead_pos(beads, numTimeSlices))
     return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace), np.array(xiTrace), np.array(dbK)
 
 """
@@ -542,7 +533,6 @@ Run multiple T loops in parallel  ----------------------------------------------
 """
 
 def main(T, n, echange, eCL, eCG, rSeed):
-
     np.random.seed(rSeed)
 
     tau = 1.0/(T*numTimeSlices)
@@ -562,10 +552,9 @@ def main(T, n, echange, eCL, eCG, rSeed):
         for i in range(numParticles):
             for j in range(numTimeSlices):
                 beads[j, i] = coord[i] + np.random.rand(simulation_dim)*0.1
-
+            
     # initialize e-states (cold start, may also be tried differantly) 
-    eState = np.zeros(numTimeSlices, dtype=np.int32)    
-
+    eState = np.zeros(numTimeSlices, dtype=np.int32)
     Position, Energy, numAccept, eState, xiTrace, dBK = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG)
     
     return Energy, Position, eState, numAccept, xiTrace, dBK
@@ -582,7 +571,6 @@ def worker(args):
         save_to_csv(Energy[:,1], f'{i}_KinThermoEnergyTrace.csv')
     else:
         save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
-
     save_to_csv(Position, f'{i}_PositionTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     save_to_csv(xiTrace, f'{i}_xiTrace.csv')

@@ -1,36 +1,27 @@
-2024-08-27 15:26:03 - PIMC V1.1
-2024-08-27 15:26:03 - Avalible CPUs: 12
-2024-08-27 15:26:03 - Used CPUs: 4
-2024-08-27 15:26:03 - JIT compiler: False
-2024-08-27 15:26:03 - Virial estimator: False
-2024-08-27 15:26:03 - T: [0.5, 1.0, 2.0, 4.0]
-2024-08-27 15:26:03 - lam: [0.5]
-2024-08-27 15:26:03 - rand_seed: 111
-2024-08-27 15:26:03 - numParticles: 1
-2024-08-27 15:26:03 - numTimeSlices: 20
-2024-08-27 15:26:03 - Stage length: 16
-2024-08-27 15:26:03 - Delta (CoM): 1.5
-2024-08-27 15:26:03 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
-2024-08-27 15:26:06 - Warning: Could not load shared library for PoE.
-2024-08-27 15:26:06 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-27 15:26:06 - Warning: Could not load shared library for PoE.
-2024-08-27 15:26:06 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-27 15:26:06 - Warning: Could not load shared library for PoE.
-2024-08-27 15:26:06 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-27 15:26:06 - Warning: Could not load shared library for PoE.
-2024-08-27 15:26:06 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
-2024-08-27 15:28:16 - (4.0) numAccept: {'CoM': 0.721205, 'Staging': 0.959055, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-27 15:28:16 - (1.0) numAccept: {'CoM': 0.48112, 'Staging': 0.83844, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-27 15:28:16 - (2.0) numAccept: {'CoM': 0.61452, 'Staging': 0.91881, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-27 15:28:16 - (0.5) numAccept: {'CoM': 0.32943, 'Staging': 0.68286, 'Bead': 0.0, 'eChange': 0.0}
-2024-08-27 15:28:17 - Some statistics on the energy estimator...
-2024-08-27 15:28:19 - (0.5) Mean: 2.3478487131932577(+/-)9.755166957031467e-05; Estimated Mean: 2.3483130444088713; Bias: 0.00046433121561362256
-2024-08-27 15:28:21 - (1.0) Mean: 3.4685027447008165(+/-)0.0004115458476385118; Estimated Mean: 3.4681066209231375; Bias: -0.00039612377767905826
-2024-08-27 15:28:24 - (2.0) Mean: 6.247726819333944(+/-)0.0017134549167961495; Estimated Mean: 6.250269701417734; Bias: 0.0025428820837900545
-2024-08-27 15:28:26 - (4.0) Mean: 12.10159724797873(+/-)0.007231760502358367; Estimated Mean: 12.098772184042932; Bias: -0.002825063935798511
-2024-08-27 15:28:26 - Convergance: R-hat = 1.02
-2024-08-27 15:28:26 - Population of the eStates
-2024-08-27 15:28:29 - (0.5) eState: 0.0, Populated: 100.00%
-2024-08-27 15:28:31 - (1.0) eState: 0.0, Populated: 100.00%
-2024-08-27 15:28:33 - (2.0) eState: 0.0, Populated: 100.00%
-2024-08-27 15:28:35 - (4.0) eState: 0.0, Populated: 100.00%
+2024-08-29 11:05:13 - PIMC V1.1
+2024-08-29 11:05:13 - Avalible CPUs: 12
+2024-08-29 11:05:13 - Used CPUs: 1
+2024-08-29 11:05:13 - JIT compiler: False
+2024-08-29 11:05:13 - Virial estimator: False
+2024-08-29 11:05:13 - T: [3.1e-05]
+2024-08-29 11:05:13 - lam: [1.71441932e-05, 0.00027230851, 0.00027230851]
+2024-08-29 11:05:13 - rand_seed: 111
+2024-08-29 11:05:13 - numParticles: 3
+2024-08-29 11:05:13 - numTimeSlices: 20
+2024-08-29 11:05:13 - Stage length: 16
+2024-08-29 11:05:13 - Delta (CoM): 0.05
+2024-08-29 11:05:13 - Delta (Bead): 0.005
+2024-08-29 11:05:13 - Warning: Staging is turned off
+2024-08-29 11:05:13 - Only global e-changes: Adiabatic limit (ecL: inf, eCG: 1)
+2024-08-29 11:05:17 - Warning: Could not load shared library for PoE.
+2024-08-29 11:05:17 - (3.1e-05) Input geometry:
+ [[ 3.41613893 -2.79281111 -5.97993112]
+ [ 4.69313978 -2.20826595 -4.839531  ]
+ [ 2.54693263 -4.03997111 -5.02027138]]
+2024-08-29 11:05:17 - xi_possible: [ 0  2  4  6  8 10 12 14 16 18 20]
+2024-08-29 11:40:59 - (3.1e-05) numAccept: {'CoM': 0.16313, 'Staging': 0.9640366666666667, 'Bead': 0.0, 'eChange': 0.0}
+2024-08-29 11:40:59 - Some statistics on the energy estimator...
+2024-08-29 11:41:01 - (3.1e-05) Mean: -76.33404170717043(+/-)3.3120085627136986e-13; Estimated Mean: -76.33404171250014; Bias: -5.3297100066629355e-09
+2024-08-29 11:41:01 - Warning: GR statistic not possible to compute with one chain. Pleas check convergance manually.
+2024-08-29 11:41:01 - Population of the eStates
+2024-08-29 11:41:04 - (3.1e-05) eState: 0.0, Populated: 100.00%

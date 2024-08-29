@@ -103,10 +103,15 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-l = np.loadtxt("output/0.5_PositionTrace.csv")
-plt.hist(l,bins =50, color="red", alpha=.5)
 
-l = np.loadtxt("output/4.0_PositionTrace.csv")
-plt.hist(l,bins =50, color="blue", alpha=.5)
+
+l = np.loadtxt("output/3.1e-05_PositionTrace.csv", delimiter=',')
+print(l[:,0])
+for i in range(3):
+    plt.hist(l[:,i].flatten(),bins =50, alpha=.5)
 
 plt.show()
+
+
+E = Tot_E 
+print(E)

@@ -14,29 +14,56 @@ device = "cpu"  # Change to "cuda" or "mps" if using GPU
 # Neural network architecture
 input_dim = 3
 hidden_dims = [20]
-output_dim = 2  # Potential energy output
+output_dim = 1  # Potential energy output
 
 # Model and scalers paths
-model_path = "NN/models/model1.pth"
+model_path = "NN/models/model2.pth"
 scalers_path = "NN/models/scalers.pkl"  # Path to load scalers
+energies_path = "NN/data/energies_300K.dat"
+positions_path = "NN/data/movie_300K.xyz"
 
 ####################### Data Preparation #####################
+#Positions = [[[0,0,0], [1.4335500179, 0.000000, 0.95295864922], [1.4335500179, 0.000000, -0.95295864922]]]
+def read_energies(file_path):
+    lines = np.loadtxt(file_path)
+    ar = lines[:,1]
+    return ar
 
-def calculate_data(num_points: int) -> np.array:
-    x = np.linspace(0, 0, num_points)
-    y = np.linspace(0, 0, num_points)
-    z = np.linspace(-10, 10, num_points)
+def read_positions(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-    PE = 0.5 * (x**2 + y**2 + z**2)
+    # Process the file lines to extract the coordinates
+    data = []
+    for i, line in enumerate(lines):
+        if line.strip().startswith(('O', 'H')):
+            data.append([float(x) for x in line.split()[1:]])
 
-    Positions = np.column_stack((x, y, z))
-    potential_energies = PE
+    # Convert the data into a NumPy array and reshape it
+    num_time_steps = len(data) // 3  # Each time step has 3 coordinate sets (O, H, H)
+    ar = np.array(data).reshape((num_time_steps, 3, 3))
+    return ar
 
-    return Positions, potential_energies
+Energies = read_energies(energies_path)
+Positions = np.array(read_positions(positions_path))*1.88973
+r_H, avg_OH, prod_OH = [], [], []
+for coords in Positions:
+    O, H1, H2 = np.array(coords[0]), np.array(coords[1]), np.array(coords[2])
+    d_HH = np.linalg.norm(H1 - H2)
+    d_OH1 = np.linalg.norm(O - H1)
+    d_OH2 = np.linalg.norm(O - H2)
 
-X, E = calculate_data(10000) 
-Energies2 = E+50
-E = np.column_stack((E, Energies2))
+    r_H.append(d_HH)
+    avg_OH.append((d_OH1+d_OH2)/2)
+    prod_OH.append(d_OH1*d_OH2)
+
+# Convert to numpy arrays
+r_H = np.array(r_H).reshape(-1, 1)
+avg_OH = np.array(avg_OH).reshape(-1, 1)
+prod_OH = np.array(prod_OH).reshape(-1, 1)
+
+# Feature matrix
+X = np.hstack((r_H, avg_OH, prod_OH))
 
 ####################### Load Models and Scalers #######################
 
@@ -70,15 +97,15 @@ predictions = evaluate_model(model, X_new_tensor)
 
 ####################### Plotting #######################
 
-def plot_potential(predictions, E):
+def plot_potential(predictions):
     plt.figure(figsize=(10, 5))
     plt.title("Potential Energy: Model Predictions vs. harmonic oscillator")
-    plt.plot(np.linspace(-10,10, 10000), predictions, color="red", label="Model Predictions")
-    plt.plot(np.linspace(-10,10, 10000), E, color="black", label="harmonic oscillator")
+    plt.plot(predictions, color="red", label="Model Predictions")
+    plt.plot(Energies, color="blue", label="actual Data")
     plt.xlabel("Sample Index")
     plt.ylabel("Potential Energy")
     plt.legend()
     plt.grid(True)
     plt.show()
 
-plot_potential(predictions, E)
+plot_potential(predictions)
