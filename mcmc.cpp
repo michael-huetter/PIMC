@@ -1,0 +1,110 @@
+#include "Beads.hpp"
+#include "Energy.hpp"
+#include "mcmc.hpp"
+#include <iostream>
+#include <fstream>
+#include <indicators/cursor_control.hpp>
+#include <indicators/progress_bar.hpp>
+
+MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
+    double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
+    double step_size_sbm, bool echange, std::size_t eCL, std::size_t eCG, std::size_t therm_skip, 
+    std::size_t corr_skip, bool staging, std::size_t stage_length)
+    :   num_beads_(num_beads),
+        num_particles_(num_particles),
+        simulation_dimension_(simulation_dimension),
+        temperature_(temperature),
+        num_steps_(num_steps),
+        step_size_com_(step_size_com),
+        step_size_sbm_(step_size_sbm),
+        echange_(echange),
+        eCL_(eCL),
+        eCG_(eCG),
+        therm_skip_(therm_skip),
+        corr_skip_(corr_skip),
+        staging_(staging),
+        stage_length_(stage_length),
+        energy_trace_(std::vector<double>())
+{
+    mass_ = mass;
+    rejected_com_ = 0;
+    rejected_sbm_ = 0;
+    if (num_beads_ == 0 || num_particles_ == 0 || simulation_dimension_ == 0) {
+        throw std::invalid_argument("Number of beads, number of particles, and simulation dimension must be positive");
+    }
+    if (mass_.size() != num_particles_) {
+        throw std::invalid_argument("Mass vector has incorrect size");
+    }
+}
+
+void MCMC::write_to_csv(const std::vector<double>& array, const std::string& filename) const {
+    std::ofstream file(filename);  
+    if (file.is_open()) {
+        for (const auto& ele : array) {
+            file << ele << '\n'; 
+        }
+        file.close();  
+    } else {
+        std::cerr << "Failed to open file for writing." << std::endl;
+    }
+}
+
+std::vector<double> MCMC::get_energy_trace() const {
+    return energy_trace_;
+}
+
+void MCMC::print_parameters() const {
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_);
+    beads.print_parameters();
+    std::cout << "Number of steps: " << num_steps_ << std::endl;
+    std::cout << "Thermalization steps: " << therm_skip_ << std::endl;
+    std::cout << "Correlation steps: " << corr_skip_ << std::endl;
+    std::cout << "Staging: " << staging_ << std::endl;
+    std::cout << "Stage length: " << stage_length_ << std::endl;
+}
+
+std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const {
+    std::vector<std::tuple<std::string, double>> acceptance_rates;
+    double acceptance_com = 1.0 - (static_cast<double>(rejected_com_) / static_cast<double>(num_steps_));
+    double acceptance_sbm = 1.0 - (static_cast<double>(rejected_sbm_) / static_cast<double>(num_steps_));
+    acceptance_rates.push_back(std::make_tuple("Center of mass moves", acceptance_com));
+    acceptance_rates.push_back(std::make_tuple("Single bead moves", acceptance_sbm));
+    return acceptance_rates;
+}
+
+void MCMC::run() {
+
+    using namespace indicators;
+    show_console_cursor(false);
+    indicators::ProgressBar bar{
+        option::BarWidth{50},
+        option::Start{" ["},
+        option::Fill{"█"},
+        option::Lead{"█"},
+        option::Remainder{"-"},
+        option::End{"]"},
+        option::PrefixText{"MCMC Progress"},
+        option::ForegroundColor{Color::yellow},
+        option::ShowElapsedTime{true},
+        option::ShowRemainingTime{true},
+        option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+    };
+
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_);
+
+    for (std::size_t i = 0; i < num_steps_; ++i) {
+        beads.center_of_mass_move();
+        beads.single_bead_move();
+
+        if (i % corr_skip_ == 0 & i > therm_skip_) {
+            energy_trace_.push_back(beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states()));
+        }
+        if (i % 10'000 == 0) {
+            bar.set_progress((static_cast<double>(i) / static_cast<double>(num_steps_))*100);
+        }
+    }
+
+    show_console_cursor(true);
+    rejected_com_ = beads.get_rejected_com();
+    rejected_sbm_ = beads.get_rejected_sbm();
+}

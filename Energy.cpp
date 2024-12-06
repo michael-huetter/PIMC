@@ -1,0 +1,76 @@
+#include "Energy.hpp"
+#include <cmath>
+#include <iostream>
+
+Energy::Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension)
+    :   temperature_(temperature),
+        step_size_com_(step_size_com),
+        step_size_sbm_(step_size_sbm),
+        numTimeSlices_(numTimeSlices),
+        numParticles_(numParticles),
+        simulation_dimension_(simulation_dimension),
+        rng_(std::random_device()()),
+        uniform_dist_mcmc_move_(-1.0, 1.0),
+        uniform_dist_metropolis_(0.0, 1.0),
+        timeSlice_dist_(0, numTimeSlices - 1),
+        particle_dist_(0, numParticles - 1)
+{
+    mass_ = mass;
+} 
+
+double Energy::compute_potential_energy(const std::vector<Eigen::MatrixXd>& positions,
+                                        const std::vector<int>& e_states) const
+{
+    double total_energy = 0.0;
+
+    for (std::size_t t = 0; t < numTimeSlices_; ++t) {
+        const Eigen::MatrixXd& pos = positions[t];
+        int e_state = e_states[t];
+        for (std::size_t p = 0; p < numParticles_; ++p) { // TODO: not just sum over particles
+            Eigen::RowVectorXd position = pos.row(p);
+            double harmonic_energy = 0.5 * position.squaredNorm();
+            total_energy += harmonic_energy;
+        }
+    }
+    return total_energy/numTimeSlices_;
+}
+
+double Energy::thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& positions) const
+{
+    double total_energy = 0.0;
+    for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
+        std::size_t neighbour = (bead + 1) % numTimeSlices_;
+        for (std::size_t particle = 0; particle < numParticles_; ++particle) {
+            double norm = 0.5 * mass_[particle] * temperature_ * temperature_ * numTimeSlices_;
+            Eigen::RowVectorXd delR = positions[bead].row(particle) - positions[neighbour].row(particle);
+            total_energy -= norm * delR.squaredNorm();
+        }
+    }
+    return 0.5 * simulation_dimension_ * numParticles_ * numTimeSlices_ * temperature_ + total_energy;
+}
+
+double Energy::compute_kinetic_action(const std::vector<Eigen::MatrixXd>& positions) const
+{
+    double total_energy = 0.0;
+    for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
+        std::size_t neighbour = (bead + 1) % numTimeSlices_;
+        for (std::size_t particle = 0; particle < numParticles_; ++particle) {
+            double norm = 0.5 * mass_[particle] * temperature_ * temperature_ * numTimeSlices_;
+            Eigen::RowVectorXd delR = positions[bead].row(particle) - positions[neighbour].row(particle);
+            total_energy += norm * delR.squaredNorm();
+        }
+    }
+    return total_energy / (temperature_); // *numTimeslices_
+}
+
+double Energy::compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixXd>& positions,
+                                                const std::vector<int>& e_states) const
+{
+    return compute_potential_energy(positions, e_states) + thermodynamic_estimator(positions);
+}
+
+double Energy::compute_tot_action(const std::vector<Eigen::MatrixXd>& positions,
+                                  const std::vector<int>& e_states) const
+{
+    return compute_potential_energy(positions, e_states) / temperature_ + compute_kinetic_action(positions);
+}

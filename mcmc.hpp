@@ -1,0 +1,40 @@
+#pragma once
+
+#include <vector>
+#include <functional>
+#include <random>
+#include <iostream>
+
+class MCMC {
+public:
+    MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
+        double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
+        double step_size_sbm, bool echange, std::size_t eCL, std::size_t eCG, std::size_t therm_skip, 
+        std::size_t corr_skip, bool staging, std::size_t stage_length);
+
+    void run();                
+    void write_to_csv(const std::vector<double>& array, const std::string& filename) const;
+    std::vector<double> get_energy_trace() const;
+    void print_parameters() const;
+    std::vector<std::tuple<std::string, double>> get_acceptance_rates() const;
+
+private:
+    std::size_t num_beads_;
+    std::size_t num_particles_;
+    std::size_t  simulation_dimension_;
+    double temperature_;
+    std::vector<double> mass_;
+    std::size_t  num_steps_;
+    double  step_size_com_;
+    double  step_size_sbm_;
+    bool echange_;
+    std::size_t  eCL_;
+    std::size_t  eCG_;
+    std::size_t  therm_skip_;
+    std::size_t  corr_skip_;
+    bool staging_;
+    std::size_t stage_length_;
+    std::vector<double> energy_trace_;
+    std::size_t rejected_com_;
+    std::size_t rejected_sbm_;
+};
