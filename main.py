@@ -34,6 +34,7 @@ import multiprocessing
 import numpy as np
 import matplotlib.pyplot as plt
 
+# -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 beads = 20
 particles = 1
 dim = 3
@@ -50,6 +51,7 @@ staging = False
 stage_length = 8
 T = np.linspace(0.3, 5.0, 4)
 num_CPU = 4
+# -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 
 def run_sim(T):
     wOut(f"Running simulation for T = {T}")
