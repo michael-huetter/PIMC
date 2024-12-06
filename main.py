@@ -14,7 +14,7 @@ Includes:
 - Non-adiabatic couplings in the diabatic representation
 - Staging
 - Virial and Thermodynamic estimators
-- Arbetrary defined potential energy surfaces
+- Arbitrary defined potential energy surfaces
 Usage:
 - Compile PIMC locally with: pip install .
 - Specify the simulation parameters
