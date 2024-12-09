@@ -39,8 +39,9 @@ protected:
     std::mt19937 rng_;
     std::uniform_real_distribution<double> uniform_dist_mcmc_move_;
     std::uniform_real_distribution<double> uniform_dist_metropolis_;
-    std::uniform_int_distribution<size_t> timeSlice_dist_;
+    std::uniform_int_distribution<std::size_t> timeSlice_dist_;
     std::uniform_int_distribution<std::size_t> particle_dist_;
+    std::uniform_int_distribution<std::size_t> e_state_dist_;
 };
 
 

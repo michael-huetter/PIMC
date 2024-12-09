@@ -25,15 +25,18 @@ public:
     // MCMC update Methods
     void center_of_mass_move();
     void single_bead_move();
+    void global_e_state_move();
 
     // Helper functions
     void print_parameters() const;
     std::size_t get_rejected_com() const;
     std::size_t get_rejected_sbm() const;
+    std::size_t get_rejected_global_e_state() const;
 
 protected:
     std::vector<Eigen::MatrixXd> positions_;
     std::vector<int> e_states_;
     std::size_t rejected_com_;
     std::size_t rejected_sbm_;
+    std::size_t rejected_global_e_state_;
 };

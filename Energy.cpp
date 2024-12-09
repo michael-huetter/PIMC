@@ -9,11 +9,12 @@ Energy::Energy(std::vector<double> mass, double temperature, double step_size_co
         numTimeSlices_(numTimeSlices),
         numParticles_(numParticles),
         simulation_dimension_(simulation_dimension),
-        rng_(std::random_device()()),
+        rng_(std::random_device()()), // TODO: seed this
         uniform_dist_mcmc_move_(-1.0, 1.0),
         uniform_dist_metropolis_(0.0, 1.0),
         timeSlice_dist_(0, numTimeSlices - 1),
-        particle_dist_(0, numParticles - 1)
+        particle_dist_(0, numParticles - 1),
+        e_state_dist_(0, 2 - 1) // TODO: create input parameter for number of electronic states
 {
     mass_ = mass;
 } 
@@ -25,11 +26,11 @@ double Energy::compute_potential_energy(const std::vector<Eigen::MatrixXd>& posi
 
     for (std::size_t t = 0; t < numTimeSlices_; ++t) {
         const Eigen::MatrixXd& pos = positions[t];
-        int e_state = e_states[t];
+        std::size_t e_state = e_states[t];
         for (std::size_t p = 0; p < numParticles_; ++p) { // TODO: not just sum over particles
             Eigen::RowVectorXd position = pos.row(p);
-            double harmonic_energy = 0.5 * position.squaredNorm();
-            total_energy += harmonic_energy;
+            double energy = 0.5 * position.squaredNorm();
+            total_energy += energy;
         }
     }
     return total_energy/numTimeSlices_;

@@ -29,6 +29,7 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
     mass_ = mass;
     rejected_com_ = 0;
     rejected_sbm_ = 0;
+    rejected_global_e_state_ = 0;
     if (num_beads_ == 0 || num_particles_ == 0 || simulation_dimension_ == 0) {
         throw std::invalid_argument("Number of beads, number of particles, and simulation dimension must be positive");
     }
@@ -67,8 +68,10 @@ std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const 
     std::vector<std::tuple<std::string, double>> acceptance_rates;
     double acceptance_com = 1.0 - (static_cast<double>(rejected_com_) / static_cast<double>(num_steps_));
     double acceptance_sbm = 1.0 - (static_cast<double>(rejected_sbm_) / static_cast<double>(num_steps_));
+    double acceptance_global_e_state = 1.0 - (static_cast<double>(rejected_global_e_state_) / static_cast<double>(num_steps_));
     acceptance_rates.push_back(std::make_tuple("Center of mass moves", acceptance_com));
     acceptance_rates.push_back(std::make_tuple("Single bead moves", acceptance_sbm));
+    acceptance_rates.push_back(std::make_tuple("Global electronic state moves", acceptance_global_e_state));
     return acceptance_rates;
 }
 
@@ -107,4 +110,5 @@ void MCMC::run() {
     show_console_cursor(true);
     rejected_com_ = beads.get_rejected_com();
     rejected_sbm_ = beads.get_rejected_sbm();
+    rejected_global_e_state_ = beads.get_rejected_global_e_state();
 }

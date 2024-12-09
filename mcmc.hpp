@@ -37,4 +37,5 @@ private:
     std::vector<double> energy_trace_;
     std::size_t rejected_com_;
     std::size_t rejected_sbm_;
+    std::size_t rejected_global_e_state_;
 };

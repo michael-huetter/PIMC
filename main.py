@@ -60,10 +60,10 @@ def run_sim(T):
     wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")
     return np.mean(sim.get_energy_trace())
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     if os.cpu_count() < num_CPU:
-        Warning("Number of CPUs is larger than available CPUs.")
+        Warning("Number of used CPUs is larger than available CPUs.")
     initialize_output_file()
     wOut(f"PIMC V1.2")
 

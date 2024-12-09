@@ -11,6 +11,7 @@ Beads::Beads(std::vector<double> mass, double temperature, double step_size_com,
 {
     rejected_com_ = 0;
     rejected_sbm_ = 0;
+    rejected_global_e_state_ = 0;
 }
 
 std::size_t Beads::get_num_time_slices() const {
@@ -85,6 +86,9 @@ std::size_t Beads::get_rejected_com() const {
 std::size_t Beads::get_rejected_sbm() const {
     return rejected_sbm_;
 }
+std::size_t Beads::get_rejected_global_e_state() const {
+    return rejected_global_e_state_;
+}
 
 // MCMC moves
 
@@ -111,7 +115,7 @@ void Beads::center_of_mass_move() {
 
 void Beads::single_bead_move() {
     std::vector<Eigen::MatrixXd> positions_old = positions_;
-    double action_old = Beads::compute_tot_action(positions_old, e_states_);
+    double action_old = compute_tot_action(positions_old, e_states_);
 
     std::size_t timeSlice = timeSlice_dist_(rng_);
     std::size_t particle = particle_dist_(rng_);
@@ -121,12 +125,30 @@ void Beads::single_bead_move() {
     }
     positions_[timeSlice].row(particle) += displacement.transpose();
 
-    double action_new = Beads::compute_tot_action(positions_, e_states_);
+    double action_new = compute_tot_action(positions_, e_states_);
     double metropolis_ratio = std::exp(action_old - action_new);
     double random_number = uniform_dist_metropolis_(rng_);
     if (random_number > metropolis_ratio) {
         positions_ = positions_old;
         rejected_sbm_++;
+    }
+}
+
+void Beads::global_e_state_move() {
+    std::vector<int> e_states_old = e_states_;
+    double action_old = compute_potential_energy(positions_, e_states_old) / temperature_;
+
+    std::size_t rand_e_state = e_state_dist_(rng_);
+    for (std::size_t t = 0; t < numTimeSlices_; ++t) {
+        e_states_[t] = rand_e_state;
+    }
+
+    double action_new = compute_potential_energy(positions_, e_states_) / temperature_;
+    double metropolis_ratio = std::exp(action_old - action_new);
+    double random_number = uniform_dist_metropolis_(rng_);
+    if (random_number > metropolis_ratio) {
+        e_states_ = e_states_old;
+        rejected_global_e_state_++;
     }
 }
 
