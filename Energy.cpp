@@ -1,4 +1,5 @@
 #include "Energy.hpp"
+#include <Eigen/Dense>
 #include <cmath>
 #include <iostream>
 
@@ -12,15 +13,17 @@ Energy::Energy(std::vector<double> mass, double temperature, double step_size_co
         rng_(std::random_device()()), // TODO: seed this
         uniform_dist_mcmc_move_(-1.0, 1.0),
         uniform_dist_metropolis_(0.0, 1.0),
+        normal_dist_(0.0, 1.0), // normal dist with mean 0 and std 1
         timeSlice_dist_(0, numTimeSlices - 1),
         particle_dist_(0, numParticles - 1),
-        e_state_dist_(0, 2 - 1) // TODO: create input parameter for number of electronic states
+        e_state_dist_(0, 2 - 1), // TODO: create input parameter for number of electronic states
+        potential_matrix_(2) // TODO: create input parameter for number of electronic states
 {
     mass_ = mass;
 } 
 
 double Energy::compute_potential_energy(const std::vector<Eigen::MatrixXd>& positions,
-                                        const std::vector<int>& e_states) const
+                                        const std::vector<std::size_t>& e_states) const
 {
     double total_energy = 0.0;
 
@@ -29,8 +32,8 @@ double Energy::compute_potential_energy(const std::vector<Eigen::MatrixXd>& posi
         std::size_t e_state = e_states[t];
         for (std::size_t p = 0; p < numParticles_; ++p) { // TODO: not just sum over particles
             Eigen::RowVectorXd position = pos.row(p);
-            double energy = 0.5 * position.squaredNorm();
-            total_energy += energy;
+            Eigen::MatrixXd pot_mat = potential_matrix_.compute(position);
+            total_energy += pot_mat(e_state, e_state);
         }
     }
     return total_energy/numTimeSlices_;
@@ -65,13 +68,13 @@ double Energy::compute_kinetic_action(const std::vector<Eigen::MatrixXd>& positi
 }
 
 double Energy::compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixXd>& positions,
-                                                const std::vector<int>& e_states) const
+                                                const std::vector<std::size_t>& e_states) const
 {
     return compute_potential_energy(positions, e_states) + thermodynamic_estimator(positions);
 }
 
 double Energy::compute_tot_action(const std::vector<Eigen::MatrixXd>& positions,
-                                  const std::vector<int>& e_states) const
+                                  const std::vector<std::size_t>& e_states) const
 {
     return compute_potential_energy(positions, e_states) / temperature_ + compute_kinetic_action(positions);
 }

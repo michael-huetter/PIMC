@@ -4,7 +4,7 @@ import pybind11
 ext_modules = [
     Extension(
         'PIMC',
-        ['binding.cpp', 'mcmc.cpp', 'Beads.cpp', 'Energy.cpp'],
+        ['binding.cpp', 'mcmc.cpp', 'Beads.cpp', 'Energy.cpp', 'Potential.cpp'],
         include_dirs=[
             pybind11.get_include(),
             '/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3',  

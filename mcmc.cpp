@@ -23,13 +23,14 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
         therm_skip_(therm_skip),
         corr_skip_(corr_skip),
         staging_(staging),
-        stage_length_(stage_length),
-        energy_trace_(std::vector<double>())
+        stage_length_(stage_length)
 {
     mass_ = mass;
     rejected_com_ = 0;
     rejected_sbm_ = 0;
     rejected_global_e_state_ = 0;
+    energy_trace_ = std::vector<double>();
+    e_state_trace_ = std::vector<std::vector<std::size_t>>();
     if (num_beads_ == 0 || num_particles_ == 0 || simulation_dimension_ == 0) {
         throw std::invalid_argument("Number of beads, number of particles, and simulation dimension must be positive");
     }
@@ -54,14 +55,21 @@ std::vector<double> MCMC::get_energy_trace() const {
     return energy_trace_;
 }
 
+std::vector<std::vector<std::size_t>> MCMC::get_e_state_trace() const {
+    return e_state_trace_;
+}
+
+std::vector<double> MCMC::get_position_trace() const {
+    return position_trace_;
+}
+
 void MCMC::print_parameters() const {
-    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_);
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_);
     beads.print_parameters();
     std::cout << "Number of steps: " << num_steps_ << std::endl;
     std::cout << "Thermalization steps: " << therm_skip_ << std::endl;
     std::cout << "Correlation steps: " << corr_skip_ << std::endl;
     std::cout << "Staging: " << staging_ << std::endl;
-    std::cout << "Stage length: " << stage_length_ << std::endl;
 }
 
 std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const {
@@ -70,13 +78,14 @@ std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const 
     double acceptance_sbm = 1.0 - (static_cast<double>(rejected_sbm_) / static_cast<double>(num_steps_));
     double acceptance_global_e_state = 1.0 - (static_cast<double>(rejected_global_e_state_) / static_cast<double>(num_steps_));
     acceptance_rates.push_back(std::make_tuple("Center of mass moves", acceptance_com));
-    acceptance_rates.push_back(std::make_tuple("Single bead moves", acceptance_sbm));
+    acceptance_rates.push_back(std::make_tuple("Single bead/staging moves", acceptance_sbm));
     acceptance_rates.push_back(std::make_tuple("Global electronic state moves", acceptance_global_e_state));
     return acceptance_rates;
 }
 
 void MCMC::run() {
 
+    // initialize progress bar
     using namespace indicators;
     show_console_cursor(false);
     indicators::ProgressBar bar{
@@ -86,23 +95,28 @@ void MCMC::run() {
         option::Lead{"█"},
         option::Remainder{"-"},
         option::End{"]"},
-        option::PrefixText{"MCMC Progress"},
+        option::PrefixText{"MCMC Progress:"},
         option::ForegroundColor{Color::yellow},
         option::ShowElapsedTime{true},
         option::ShowRemainingTime{true},
         option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
     };
 
-    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_);
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_);
 
+    // MCMC loop
     for (std::size_t i = 0; i < num_steps_; ++i) {
         beads.center_of_mass_move();
-        beads.single_bead_move();
-
+        staging_ ? beads.staging_move() : beads.single_bead_move();
+        if (echange_ && i % eCG_ == 0) {
+            beads.global_e_state_move();
+        }
         if (i % corr_skip_ == 0 & i > therm_skip_) {
             energy_trace_.push_back(beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states()));
+            e_state_trace_.push_back(beads.get_all_e_states());
+            position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
         }
-        if (i % 10'000 == 0) {
+        if (i % 100'000 == 0) {
             bar.set_progress((static_cast<double>(i) / static_cast<double>(num_steps_))*100);
         }
     }

@@ -42,6 +42,8 @@ PYBIND11_MODULE(PIMC, m) {
         )
         .def("run", &MCMC::run)
         .def("get_energy_trace", &MCMC::get_energy_trace)
+        .def("get_e_state_trace", &MCMC::get_e_state_trace)
+        .def("get_position_trace", &MCMC::get_position_trace)
         .def("print_parameters", &MCMC::print_parameters)
         .def("get_acceptance_rates", &MCMC::get_acceptance_rates);
 }

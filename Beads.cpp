@@ -4,10 +4,11 @@
 #include <random>
 #include <iostream>
 
-Beads::Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension)
+Beads::Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension, std::size_t stage_length)
     :   Energy(mass, temperature, step_size_com, step_size_sbm, numTimeSlices, numParticles, simulation_dimension),
         positions_(numTimeSlices, Eigen::MatrixXd::Zero(numParticles, simulation_dimension)),
-        e_states_(numTimeSlices, 0)
+        e_states_(numTimeSlices, 0),
+        stage_length_(stage_length)
 {
     rejected_com_ = 0;
     rejected_sbm_ = 0;
@@ -47,22 +48,30 @@ const std::vector<Eigen::MatrixXd>& Beads::get_all_positions() const {
     return positions_;
 }
 
-int Beads::get_e_state(std::size_t timeSlice) const {
+std::size_t Beads::get_e_state(std::size_t timeSlice) const {
     if (timeSlice >= numTimeSlices_) {
         throw std::out_of_range("Time slice index out of bounds");
     }
     return e_states_[timeSlice];
 }
 
-void Beads::set_e_state(std::size_t timeSlice, int e_state) {
+void Beads::set_e_state(std::size_t timeSlice, std::size_t e_state) {
     if (timeSlice >= numTimeSlices_) {
         throw std::invalid_argument("Time slice index out of bounds");
     }
     e_states_[timeSlice] = e_state;
 }
 
-const std::vector<int>& Beads::get_all_e_states() const {
+const std::vector<std::size_t>& Beads::get_all_e_states() const {
     return e_states_;
+}
+
+double Beads::pos_estimator(const std::vector<Eigen::MatrixXd>& positions, std::size_t dim, std::size_t ptcl) const {
+    double q = 0.0;
+    for (std::size_t t = 0; t < numTimeSlices_; ++t) {
+        q += positions[t](ptcl, dim);
+    }
+    return q / numTimeSlices_;
 }
 
 // Helper functions
@@ -74,6 +83,7 @@ void Beads::print_parameters() const {
     std::cout << "Temperature: " << temperature_ << std::endl;
     std::cout << "Step size for center of mass moves: " << step_size_com_ << std::endl;
     std::cout << "Step size for single bead moves: " << step_size_sbm_ << std::endl;
+    std::cout << "Stage length: " << stage_length_ << std::endl;
     std::cout << "Masses: ";
     for (const auto& m : mass_) {
         std::cout << m << " ";
@@ -134,8 +144,38 @@ void Beads::single_bead_move() {
     }
 }
 
+// TODO: implement checks 0 < stage_length_ < numTimeSlices_
+void Beads::staging_move() {
+    std::size_t alpha_start = timeSlice_dist_(rng_);
+    std::size_t alpha_end = (alpha_start + stage_length_) % numTimeSlices_;
+    std::vector<Eigen::MatrixXd> positions_old = positions_;
+    double action_old = compute_potential_energy(positions_old, e_states_) / temperature_;
+    double tau = 1 / (temperature_ * numTimeSlices_);
+    std::size_t ptcl = particle_dist_(rng_); // apply staging move to a random particle
+
+    for (std::size_t a = 1; a < stage_length_; ++a) {
+        std::size_t tslice = (alpha_start + a) % numTimeSlices_;
+        std::size_t tslicem1 = (tslice == 0) ? (numTimeSlices_ - 1) : (tslice - 1);
+        double tau1 = static_cast<double>(stage_length_ - a) * tau;
+        Eigen::RowVectorXd avex = (tau1 * positions_[tslicem1].row(ptcl) + tau * positions_[alpha_end].row(ptcl)) / (tau + tau1); 
+        double sigma2 = mass_[ptcl] / (1.0 / tau + 1.0 / tau1);
+        Eigen::RowVectorXd noise = Eigen::RowVectorXd::NullaryExpr(avex.size(), [&]() {
+            return std::sqrt(sigma2) * normal_dist_(rng_);
+        });
+        positions_[tslice].row(ptcl) = avex + noise;
+    }
+
+    double action_new = compute_potential_energy(positions_, e_states_) / temperature_;
+    double metropolis_ratio = std::exp(action_old - action_new);
+    double random_number = uniform_dist_metropolis_(rng_);
+    if (random_number > metropolis_ratio) {
+        positions_ = positions_old;
+        rejected_sbm_++;
+    }
+}
+
 void Beads::global_e_state_move() {
-    std::vector<int> e_states_old = e_states_;
+    std::vector<std::size_t> e_states_old = e_states_;
     double action_old = compute_potential_energy(positions_, e_states_old) / temperature_;
 
     std::size_t rand_e_state = e_state_dist_(rng_);
