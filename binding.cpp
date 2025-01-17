@@ -1,7 +1,10 @@
+#define PYBIND11_DETAILED_ERROR_MESSAGES
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
+#include <pybind11/eigen.h>
 #include "mcmc.hpp"
+#include "Potential.hpp"
 
 namespace py = pybind11;
 
@@ -46,4 +49,13 @@ PYBIND11_MODULE(PIMC, m) {
         .def("get_position_trace", &MCMC::get_position_trace)
         .def("print_parameters", &MCMC::print_parameters)
         .def("get_acceptance_rates", &MCMC::get_acceptance_rates);
+    m.def("set_potential", [](py::object py_func) {
+        PotentialMatrix::setComputeFunction(
+            [py_func](const Eigen::RowVectorXd& position, std::size_t dim) {
+                py::gil_scoped_acquire gil;
+                py::object result = py_func(position, dim);
+                return result.cast<Eigen::MatrixXd>();
+            }
+        );
+    });
 }

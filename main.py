@@ -59,7 +59,6 @@ def run_sim(T):
     #sim.print_parameters()
     sim.run()
     wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")
-    #pos = sim.get_position_trace()
     return sim.get_energy_trace()
 
 if __name__ == "__main__":
@@ -84,4 +83,6 @@ if __name__ == "__main__":
     plt.ylabel("Energy")
     plt.legend()
     plt.show()
+
+    
 

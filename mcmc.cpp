@@ -124,9 +124,9 @@ void MCMC::run() {
             e_state_trace_.push_back(beads.get_all_e_states());
             position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
         }
-        if (i % 100'000 == 0) {
-            bar.set_progress((static_cast<double>(i) / static_cast<double>(num_steps_))*100);
-        }
+        //if (i % 100'000 == 0) {
+        //    bar.set_progress((static_cast<double>(i) / static_cast<double>(num_steps_))*100);
+        //}
     }
 
     show_console_cursor(true);
