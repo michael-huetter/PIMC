@@ -13,6 +13,7 @@ Beads::Beads(std::vector<double> mass, double temperature, double step_size_com,
     rejected_com_ = 0;
     rejected_sbm_ = 0;
     rejected_global_e_state_ = 0;
+    rejected_local_e_state_ = 0;
 }
 
 std::size_t Beads::get_num_time_slices() const {
@@ -99,6 +100,9 @@ std::size_t Beads::get_rejected_sbm() const {
 std::size_t Beads::get_rejected_global_e_state() const {
     return rejected_global_e_state_;
 }
+std::size_t Beads::get_rejected_local_e_state() const {
+    return rejected_local_e_state_;
+}
 
 // MCMC moves
 
@@ -174,6 +178,7 @@ void Beads::staging_move() {
     }
 }
 
+//TODO: only accept if proposed e_state is different from current e_state
 void Beads::global_e_state_move() {
     std::vector<std::size_t> e_states_old = e_states_;
     double action_old = compute_potential_energy(positions_, e_states_old) / temperature_;
@@ -189,6 +194,23 @@ void Beads::global_e_state_move() {
     if (random_number > metropolis_ratio) {
         e_states_ = e_states_old;
         rejected_global_e_state_++;
+    }
+}
+
+//TODO: only accept if proposed e_state is different from current e_state
+void Beads::local_e_state_move(){
+    std::size_t timeSlice = timeSlice_dist_(rng_);
+    std::size_t rand_e_state = e_state_dist_(rng_);
+    std::size_t e_states_old = e_states_[timeSlice];
+    double action_old = compute_potential_energy(positions_, e_states_) / temperature_;
+    e_states_[timeSlice] = rand_e_state;
+    double action_new = compute_potential_energy(positions_, e_states_) / temperature_;
+
+    double metropolis_ratio = std::exp(action_old - action_new);
+    double random_number = uniform_dist_metropolis_(rng_);
+    if (random_number > metropolis_ratio) {
+        e_states_[timeSlice] = e_states_old;
+        rejected_local_e_state_++;
     }
 }
 

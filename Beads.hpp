@@ -28,12 +28,14 @@ public:
     void single_bead_move();
     void staging_move();
     void global_e_state_move();
+    void local_e_state_move();
 
     // Helper functions
     void print_parameters() const;
     std::size_t get_rejected_com() const;
     std::size_t get_rejected_sbm() const;
     std::size_t get_rejected_global_e_state() const;
+    std::size_t get_rejected_local_e_state() const;
 
 protected:
     std::vector<Eigen::MatrixXd> positions_;
@@ -41,5 +43,6 @@ protected:
     std::size_t rejected_com_;
     std::size_t rejected_sbm_;
     std::size_t rejected_global_e_state_;
+    std::size_t rejected_local_e_state_;
     std::size_t stage_length_;
 };

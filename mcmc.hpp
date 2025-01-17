@@ -42,4 +42,5 @@ private:
     std::size_t rejected_com_;
     std::size_t rejected_sbm_;
     std::size_t rejected_global_e_state_;
+    std::size_t rejected_local_e_state_;
 };

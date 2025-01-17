@@ -3,7 +3,8 @@
 #include <cmath>
 #include <iostream>
 
-Energy::Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension)
+Energy::Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, 
+               std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension)
     :   temperature_(temperature),
         step_size_com_(step_size_com),
         step_size_sbm_(step_size_sbm),
@@ -38,6 +39,31 @@ double Energy::compute_potential_energy(const std::vector<Eigen::MatrixXd>& posi
     }
     return total_energy/numTimeSlices_;
 }
+
+// NOTE: Currently only implemented for diatomics (particles=1)
+double Energy::compute_pseudopotential(const std::vector<Eigen::MatrixXd>& positions,
+                                       const std::vector<std::size_t>& e_states) const
+{
+    std::size_t n = 2; // TODO: create input parameter for number of electronic states
+    std::vector<Eigen::MatrixXd> S(numTimeSlices_, Eigen::MatrixXd(n, n));
+    for (std::size_t j = 0; j < numTimeSlices_; ++j) {
+        const Eigen::MatrixXd& pos = positions[j].row(0);
+        Eigen::MatrixXd V = potential_matrix_.compute(pos);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> es(V);
+        S[j] = es.eigenvectors();
+    }
+    double phi = 1.0;
+    for (std::size_t i = 0; i < numTimeSlices_; ++i) {
+        std::size_t currentEState = e_states[i];
+        std::size_t nextEState    = e_states[(i + 1) % numTimeSlices_];
+        Eigen::VectorXd current_vector = S[i].col(currentEState);
+        Eigen::VectorXd next_vector    = S[(i + 1) % numTimeSlices_].col(nextEState);
+        double dot_product = current_vector.dot(next_vector);
+        phi *= dot_product;
+    }
+    return std::log(std::abs(phi+1.0e-10));
+}
+
 
 double Energy::thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& positions) const
 {

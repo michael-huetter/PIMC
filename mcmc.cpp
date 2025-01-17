@@ -29,6 +29,7 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
     rejected_com_ = 0;
     rejected_sbm_ = 0;
     rejected_global_e_state_ = 0;
+    rejected_local_e_state_ = 0;
     energy_trace_ = std::vector<double>();
     e_state_trace_ = std::vector<std::vector<std::size_t>>();
     if (num_beads_ == 0 || num_particles_ == 0 || simulation_dimension_ == 0) {
@@ -77,13 +78,17 @@ std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const 
     double acceptance_com = 1.0 - (static_cast<double>(rejected_com_) / static_cast<double>(num_steps_));
     double acceptance_sbm = 1.0 - (static_cast<double>(rejected_sbm_) / static_cast<double>(num_steps_));
     double acceptance_global_e_state = 1.0 - (static_cast<double>(rejected_global_e_state_) / static_cast<double>(num_steps_));
+    double acceptance_local_e_state = 1.0 - (static_cast<double>(rejected_local_e_state_) / static_cast<double>(num_steps_));
     acceptance_rates.push_back(std::make_tuple("Center of mass moves", acceptance_com));
     acceptance_rates.push_back(std::make_tuple("Single bead/staging moves", acceptance_sbm));
     acceptance_rates.push_back(std::make_tuple("Global electronic state moves", acceptance_global_e_state));
+    acceptance_rates.push_back(std::make_tuple("Local electronic state moves", acceptance_local_e_state));
     return acceptance_rates;
 }
 
 void MCMC::run() {
+
+    bool non_adiabatic_effects = false;
 
     // initialize progress bar
     using namespace indicators;
@@ -111,6 +116,9 @@ void MCMC::run() {
         if (echange_ && i % eCG_ == 0) {
             beads.global_e_state_move();
         }
+        if (echange_ && non_adiabatic_effects && i % eCL_ == 0) {
+            beads.local_e_state_move();
+        }
         if (i % corr_skip_ == 0 & i > therm_skip_) {
             energy_trace_.push_back(beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states()));
             e_state_trace_.push_back(beads.get_all_e_states());
@@ -125,4 +133,5 @@ void MCMC::run() {
     rejected_com_ = beads.get_rejected_com();
     rejected_sbm_ = beads.get_rejected_sbm();
     rejected_global_e_state_ = beads.get_rejected_global_e_state();
+    rejected_local_e_state_ = beads.get_rejected_local_e_state();
 }
