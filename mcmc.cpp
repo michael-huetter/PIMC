@@ -120,7 +120,7 @@ void MCMC::run() {
             beads.local_e_state_move();
         }
         if (i % corr_skip_ == 0 & i > therm_skip_) {
-            energy_trace_.push_back(beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states()));
+            energy_trace_.push_back(beads.compute_tot_energy_virial(beads.get_all_positions(), beads.get_all_e_states()));
             e_state_trace_.push_back(beads.get_all_e_states());
             position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
         }

@@ -13,9 +13,12 @@ public:
     double compute_potential_energy(const std::vector<Eigen::MatrixXd>& positions,
                                     const std::vector<std::size_t>& e_states) const;
     double thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& positions) const;
+    double virial_estimator(const std::vector<Eigen::MatrixXd>& positions) const;
     double compute_kinetic_action(const std::vector<Eigen::MatrixXd>& positions) const;
     double compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixXd>& positions,
                                             const std::vector<std::size_t>& e_states) const;
+    double compute_tot_energy_virial(const std::vector<Eigen::MatrixXd>& positions,
+                                     const std::vector<std::size_t>& e_states) const;
     double compute_tot_action(const std::vector<Eigen::MatrixXd>& positions,
                               const std::vector<std::size_t>& e_states) const;
     double compute_pseudopotential(const std::vector<Eigen::MatrixXd>& positions,

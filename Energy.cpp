@@ -72,11 +72,37 @@ double Energy::thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& posit
         std::size_t neighbour = (bead + 1) % numTimeSlices_;
         for (std::size_t particle = 0; particle < numParticles_; ++particle) {
             double norm = 0.5 * mass_[particle] * temperature_ * temperature_ * numTimeSlices_;
-            Eigen::RowVectorXd delR = positions[bead].row(particle) - positions[neighbour].row(particle);
+            Eigen::RowVectorXd delR = positions[bead].row(particle) - positions[neighbour].row(particle); //check, does order make a diff (see old python code)
             total_energy -= norm * delR.squaredNorm();
         }
     }
     return 0.5 * simulation_dimension_ * numParticles_ * numTimeSlices_ * temperature_ + total_energy;
+}
+
+double Energy::virial_estimator(const std::vector<Eigen::MatrixXd>& positions) const
+{
+    std::vector<Eigen::RowVectorXd> Rc(numParticles_, Eigen::RowVectorXd::Zero(simulation_dimension_));
+    for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
+        for (std::size_t particle = 0; particle < numParticles_; ++particle) {
+            Rc[particle] += positions[bead].row(particle);
+        }
+    }
+    for (std::size_t particle = 0; particle < numParticles_; ++particle) {
+        Rc[particle] /= numTimeSlices_;
+    }
+
+    double total_energy = 0.0;
+    for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
+        for (std::size_t particle = 0; particle < numParticles_; ++particle) {
+            Eigen::RowVectorXd delR = positions[bead].row(particle) - Rc[particle];
+            Eigen::RowVectorXd dVdR = positions[bead].row(particle); // Only implemented for harmonic oscillator
+            total_energy += delR.dot(dVdR);
+        }
+    }
+    total_energy *= 0.5 / numTimeSlices_;
+    double final = 0.5 * simulation_dimension_ * numParticles_ * temperature_ + total_energy;
+    //std::cout << "Virial estimator: " << final << std::endl;
+    return final;
 }
 
 double Energy::compute_kinetic_action(const std::vector<Eigen::MatrixXd>& positions) const
@@ -97,6 +123,11 @@ double Energy::compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixX
                                                 const std::vector<std::size_t>& e_states) const
 {
     return compute_potential_energy(positions, e_states) + thermodynamic_estimator(positions);
+}
+double Energy::compute_tot_energy_virial(const std::vector<Eigen::MatrixXd>& positions,
+                                         const std::vector<std::size_t>& e_states) const
+{
+    return compute_potential_energy(positions, e_states) + virial_estimator(positions);
 }
 
 double Energy::compute_tot_action(const std::vector<Eigen::MatrixXd>& positions,
