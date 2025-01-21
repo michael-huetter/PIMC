@@ -9,7 +9,7 @@
 MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
     double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
     double step_size_sbm, bool echange, std::size_t eCL, std::size_t eCG, std::size_t therm_skip, 
-    std::size_t corr_skip, bool staging, std::size_t stage_length)
+    std::size_t corr_skip, bool staging, std::size_t stage_length, bool virial_estimator)
     :   num_beads_(num_beads),
         num_particles_(num_particles),
         simulation_dimension_(simulation_dimension),
@@ -23,7 +23,8 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
         therm_skip_(therm_skip),
         corr_skip_(corr_skip),
         staging_(staging),
-        stage_length_(stage_length)
+        stage_length_(stage_length),
+        virial_estimator_(virial_estimator)
 {
     mass_ = mass;
     rejected_com_ = 0;
@@ -71,6 +72,7 @@ void MCMC::print_parameters() const {
     std::cout << "Thermalization steps: " << therm_skip_ << std::endl;
     std::cout << "Correlation steps: " << corr_skip_ << std::endl;
     std::cout << "Staging: " << staging_ << std::endl;
+    std::cout << "Virial estimator: " << virial_estimator_ << std::endl;
 }
 
 std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const {
@@ -120,7 +122,8 @@ void MCMC::run() {
             beads.local_e_state_move();
         }
         if (i % corr_skip_ == 0 & i > therm_skip_) {
-            energy_trace_.push_back(beads.compute_tot_energy_virial(beads.get_all_positions(), beads.get_all_e_states()));
+            double tot_energy = virial_estimator_ ? beads.compute_tot_energy_virial(beads.get_all_positions(), beads.get_all_e_states()) : beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states());
+            energy_trace_.push_back(tot_energy);
             e_state_trace_.push_back(beads.get_all_e_states());
             position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
         }

@@ -64,7 +64,6 @@ double Energy::compute_pseudopotential(const std::vector<Eigen::MatrixXd>& posit
     return std::log(std::abs(phi+1.0e-10));
 }
 
-
 double Energy::thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& positions) const
 {
     double total_energy = 0.0;

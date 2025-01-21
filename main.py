@@ -33,6 +33,7 @@ import os
 import multiprocessing 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 # -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 beads = 20
@@ -51,17 +52,20 @@ staging = True
 stage_length = 18
 T = np.linspace(0.3, 5.0, 4)
 num_CPU = 4
+virial = True
 # -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 
 def run_sim(T):
     wOut(f"Running simulation for T = {T}")
-    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length)
+    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial)
     #sim.print_parameters()
     sim.run()
     wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")
     return sim.get_energy_trace()
 
 if __name__ == "__main__":
+
+    start_time = time.time()
 
     if os.cpu_count() < num_CPU:
         Warning("Number of used CPUs is larger than available CPUs.")
@@ -74,6 +78,8 @@ if __name__ == "__main__":
     E = np.zeros(len(T))
     for i in range(len(T)):
         E[i] = np.mean(E_trace[i])
+
+    wOut(f"Total runtime: {time.time()-start_time} s")
 
     plt.plot(T, E, "o", label="PIMC")
     T = np.linspace(0.1, 5.0, 100)

@@ -10,7 +10,7 @@ public:
     MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
         double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
         double step_size_sbm, bool echange, std::size_t eCL, std::size_t eCG, std::size_t therm_skip, 
-        std::size_t corr_skip, bool staging, std::size_t stage_length);
+        std::size_t corr_skip, bool staging, std::size_t stage_length, bool virial_estimator);
 
     void run();                
     void write_to_csv(const std::vector<double>& array, const std::string& filename) const;
@@ -43,4 +43,5 @@ private:
     std::size_t rejected_sbm_;
     std::size_t rejected_global_e_state_;
     std::size_t rejected_local_e_state_;
+    bool virial_estimator_;
 };
