@@ -3,8 +3,6 @@
 #include "mcmc.hpp"
 #include <iostream>
 #include <fstream>
-#include <indicators/cursor_control.hpp>
-#include <indicators/progress_bar.hpp>
 
 MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
     double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
@@ -89,25 +87,9 @@ std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const 
 }
 
 void MCMC::run() {
-
+    
+    std::cout << "\033[1;32m";
     bool non_adiabatic_effects = false;
-
-    // initialize progress bar
-    using namespace indicators;
-    show_console_cursor(false);
-    indicators::ProgressBar bar{
-        option::BarWidth{50},
-        option::Start{" ["},
-        option::Fill{"█"},
-        option::Lead{"█"},
-        option::Remainder{"-"},
-        option::End{"]"},
-        option::PrefixText{"MCMC Progress:"},
-        option::ForegroundColor{Color::yellow},
-        option::ShowElapsedTime{true},
-        option::ShowRemainingTime{true},
-        option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
-    };
 
     Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_);
 
@@ -127,14 +109,15 @@ void MCMC::run() {
             e_state_trace_.push_back(beads.get_all_e_states());
             position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
         }
-        //if (i % 100'000 == 0) {
-        //    bar.set_progress((static_cast<double>(i) / static_cast<double>(num_steps_))*100);
-        //}
+        if (i % 10'000 == 0) {
+            std::cout << "\r" << "MCMC Progress: " << (static_cast<double>(i) / static_cast<double>(num_steps_)) * 100 << "%" << std::flush;
+        }
     }
 
-    show_console_cursor(true);
     rejected_com_ = beads.get_rejected_com();
     rejected_sbm_ = beads.get_rejected_sbm();
     rejected_global_e_state_ = beads.get_rejected_global_e_state();
     rejected_local_e_state_ = beads.get_rejected_local_e_state();
+
+    std::cout << "\033[0m";
 }
