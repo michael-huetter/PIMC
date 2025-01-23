@@ -1,6 +1,6 @@
 #pragma once
 
-#include "analyticPotential.hpp"
+//#include "analyticPotential.hpp"
 #include <cstddef>
 #include <functional>
 #include <tuple>
@@ -14,6 +14,20 @@ using namespace autodiff;
 template <int i, int j, typename T>
 struct U;
 
+template <typename T>
+struct U<0, 0, T> {
+    static T compute(T x, T y, T z) {
+        return 0.5 * (x * x + y * y + z * z);
+    }
+};
+
+template <typename T>
+struct U<1, 1, T> {
+    static T compute(T x, T y, T z) {
+        return 0.5 * (x * x + y * y + z * z) + T(1.0);
+    }
+};
+
 template <typename T, int i, int j>
 struct FunctionEntry {
     static constexpr int row = i;
@@ -23,6 +37,13 @@ struct FunctionEntry {
         return &U<i, j, T>::compute;
     }
 };
+template <typename T>
+constexpr auto getUFunctions() {
+    return std::make_tuple(
+        FunctionEntry<T, 0, 0>(),
+        FunctionEntry<T, 1, 1>()
+    );
+}
 template <typename T, typename Tuple, std::size_t... Is>
 void setMatrixElements(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& mat,
                        const Tuple& funcs,
