@@ -7,7 +7,8 @@ ext_modules = [
         ['binding.cpp', 'mcmc.cpp', 'Beads.cpp', 'Energy.cpp', 'Potential.cpp'],
         include_dirs=[
             pybind11.get_include(),
-            '/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3',  
+            '/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3',
+            '/opt/homebrew/Cellar/autodiff/1.1.2', 
         ],
         language='c++',
         extra_compile_args = ['-O3', '-std=c++17', '-Wall', '-Wextra'], 

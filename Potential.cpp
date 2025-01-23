@@ -3,17 +3,7 @@
 
 PotentialMatrix::ComputeFunction PotentialMatrix::computeFunction_ = 
     [](const Eigen::RowVectorXd& position, std::size_t dim) {
-        double x = position[0];
-        double y = position[1];
-        double z = position[2];
-
-        // Define the potential matrix here (recompile if you want to change the potential)
-        Eigen::MatrixXd pot_mat = Eigen::MatrixXd::Zero(dim, dim);
-
-        pot_mat(0,0) = 0.5 * (x*x + y*y + z*z);
-        pot_mat(1,1) = 0.5 * (x*x + y*y + z*z) + 1.0;
-
-        return pot_mat;
+        return potFunctionT<double>(position);
     };
 
 PotentialMatrix::PotentialMatrix(std::size_t dim)
@@ -29,4 +19,25 @@ Eigen::MatrixXd PotentialMatrix::compute(const Eigen::RowVectorXd& position) con
 void PotentialMatrix::setComputeFunction(ComputeFunction f)
 {
     computeFunction_ = f;
+}
+
+Eigen::RowVectorXd PotentialMatrix::gradAutoDiff(const Eigen::RowVectorXd& position, 
+                                                 std::size_t i, 
+                                                 std::size_t j) const
+{
+    dual x = position[0];
+    dual y = position[1];
+    dual z = position[2];
+
+    constexpr auto uFuncs = getUFunctions<dual>();
+    auto computeFunc = findComputeFunction<dual>(i, j, uFuncs);
+
+    std::size_t dim = position.size();
+    Eigen::RowVectorXd grad(dim);
+    
+    grad(0) = derivative(computeFunc, wrt(x), at(x, y, z));
+    grad(1) = derivative(computeFunc, wrt(y), at(x, y, z));
+    grad(2) = derivative(computeFunc, wrt(z), at(x, y, z));
+
+    return grad;
 }

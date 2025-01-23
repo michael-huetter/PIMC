@@ -4,7 +4,8 @@
 #include <iostream>
 
 Energy::Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, 
-               std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension)
+               std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension,
+               std::size_t n_estates)
     :   temperature_(temperature),
         step_size_com_(step_size_com),
         step_size_sbm_(step_size_sbm),
@@ -17,8 +18,9 @@ Energy::Energy(std::vector<double> mass, double temperature, double step_size_co
         normal_dist_(0.0, 1.0), // normal dist with mean 0 and std 1
         timeSlice_dist_(0, numTimeSlices - 1),
         particle_dist_(0, numParticles - 1),
-        e_state_dist_(0, 2 - 1), // TODO: create input parameter for number of electronic states
-        potential_matrix_(2) // TODO: create input parameter for number of electronic states
+        n_estates_(n_estates),
+        e_state_dist_(0, n_estates - 1), 
+        potential_matrix_(n_estates) 
 {
     mass_ = mass;
 } 
@@ -78,7 +80,8 @@ double Energy::thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& posit
     return 0.5 * simulation_dimension_ * numParticles_ * numTimeSlices_ * temperature_ + total_energy;
 }
 
-double Energy::virial_estimator(const std::vector<Eigen::MatrixXd>& positions) const
+double Energy::virial_estimator(const std::vector<Eigen::MatrixXd>& positions,
+                                const std::vector<std::size_t>& e_states) const
 {
     std::vector<Eigen::RowVectorXd> Rc(numParticles_, Eigen::RowVectorXd::Zero(simulation_dimension_));
     for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
@@ -94,13 +97,13 @@ double Energy::virial_estimator(const std::vector<Eigen::MatrixXd>& positions) c
     for (std::size_t bead = 0; bead < numTimeSlices_; ++bead) {
         for (std::size_t particle = 0; particle < numParticles_; ++particle) {
             Eigen::RowVectorXd delR = positions[bead].row(particle) - Rc[particle];
-            Eigen::RowVectorXd dVdR = positions[bead].row(particle); // Only implemented for harmonic oscillator
+            Eigen::RowVectorXd dVdR = potential_matrix_.gradAutoDiff(positions[bead].row(particle), e_states[0], e_states[0]);
+            positions[bead].row(particle); // Hardcoded for harmonic oscillator atm
             total_energy += delR.dot(dVdR);
         }
     }
     total_energy *= 0.5 / numTimeSlices_;
     double final = 0.5 * simulation_dimension_ * numParticles_ * temperature_ + total_energy;
-    //std::cout << "Virial estimator: " << final << std::endl;
     return final;
 }
 
@@ -126,7 +129,7 @@ double Energy::compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixX
 double Energy::compute_tot_energy_virial(const std::vector<Eigen::MatrixXd>& positions,
                                          const std::vector<std::size_t>& e_states) const
 {
-    return compute_potential_energy(positions, e_states) + virial_estimator(positions);
+    return compute_potential_energy(positions, e_states) + virial_estimator(positions, e_states);
 }
 
 double Energy::compute_tot_action(const std::vector<Eigen::MatrixXd>& positions,

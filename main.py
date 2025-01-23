@@ -53,11 +53,12 @@ stage_length = 18
 T = np.linspace(0.3, 5.0, 4)
 num_CPU = 4
 virial = True
+n_estates = 2
 # -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 
 def run_sim(T):
     wOut(f"Running simulation for T = {T}")
-    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial)
+    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial, n_estates)
     #sim.print_parameters()
     sim.run()
     wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")

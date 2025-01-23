@@ -8,12 +8,15 @@
 
 class Energy {
 public:
-    Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension);
+    Energy(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, 
+           std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension,
+           std::size_t n_estates);
 
     double compute_potential_energy(const std::vector<Eigen::MatrixXd>& positions,
                                     const std::vector<std::size_t>& e_states) const;
     double thermodynamic_estimator(const std::vector<Eigen::MatrixXd>& positions) const;
-    double virial_estimator(const std::vector<Eigen::MatrixXd>& positions) const;
+    double virial_estimator(const std::vector<Eigen::MatrixXd>& positions,
+                            const std::vector<std::size_t>& e_states) const;
     double compute_kinetic_action(const std::vector<Eigen::MatrixXd>& positions) const;
     double compute_tot_energy_thermodynamic(const std::vector<Eigen::MatrixXd>& positions,
                                             const std::vector<std::size_t>& e_states) const;
@@ -51,6 +54,7 @@ protected:
 private:
     // Potential matrix
     PotentialMatrix potential_matrix_;
+    std::size_t n_estates_;
 };
 
 

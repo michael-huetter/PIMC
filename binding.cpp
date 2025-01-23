@@ -26,7 +26,8 @@ PYBIND11_MODULE(PIMC, m) {
             std::size_t,                // corr_skip
             bool,                       // staging
             std::size_t,                // stage_length
-            bool                        // virial_estimator
+            bool,                       // virial_estimator
+            std::size_t                 // n_estates
         >(),
         py::arg("num_beads"),
         py::arg("num_particles"),
@@ -43,7 +44,8 @@ PYBIND11_MODULE(PIMC, m) {
         py::arg("corr_skip"),
         py::arg("staging"),
         py::arg("stage_length"),
-        py::arg("virial_estimator")
+        py::arg("virial_estimator"),
+        py::arg("n_estates")
         )
         .def("run", &MCMC::run)
         .def("get_energy_trace", &MCMC::get_energy_trace)

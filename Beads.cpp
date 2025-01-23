@@ -4,11 +4,14 @@
 #include <random>
 #include <iostream>
 
-Beads::Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension, std::size_t stage_length)
-    :   Energy(mass, temperature, step_size_com, step_size_sbm, numTimeSlices, numParticles, simulation_dimension),
+Beads::Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, 
+             std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension, 
+             std::size_t stage_length, std::size_t n_estates)
+    :   Energy(mass, temperature, step_size_com, step_size_sbm, numTimeSlices, numParticles, simulation_dimension, n_estates),
         positions_(numTimeSlices, Eigen::MatrixXd::Zero(numParticles, simulation_dimension)),
         e_states_(numTimeSlices, 0),
-        stage_length_(stage_length)
+        stage_length_(stage_length),
+        n_estates_(n_estates)
 {
     rejected_com_ = 0;
     rejected_sbm_ = 0;

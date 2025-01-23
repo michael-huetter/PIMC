@@ -8,7 +8,9 @@
 
 class Beads : public Energy {
 public:
-    Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension, std::size_t stage_length);
+    Beads(std::vector<double> mass, double temperature, double step_size_com, double step_size_sbm, 
+          std::size_t numTimeSlices, std::size_t numParticles, std::size_t simulation_dimension, 
+          std::size_t stage_length, std::size_t n_estates);
 
     std::size_t get_num_time_slices() const;
     std::size_t get_num_particles() const;
@@ -45,4 +47,5 @@ protected:
     std::size_t rejected_global_e_state_;
     std::size_t rejected_local_e_state_;
     std::size_t stage_length_;
+    std::size_t n_estates_;
 };

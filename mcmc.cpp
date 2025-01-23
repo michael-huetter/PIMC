@@ -7,7 +7,8 @@
 MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulation_dimension, 
     double temperature, std::vector<double> mass, std::size_t num_steps, double step_size_com, 
     double step_size_sbm, bool echange, std::size_t eCL, std::size_t eCG, std::size_t therm_skip, 
-    std::size_t corr_skip, bool staging, std::size_t stage_length, bool virial_estimator)
+    std::size_t corr_skip, bool staging, std::size_t stage_length, bool virial_estimator,
+    std::size_t n_estates)
     :   num_beads_(num_beads),
         num_particles_(num_particles),
         simulation_dimension_(simulation_dimension),
@@ -22,7 +23,8 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
         corr_skip_(corr_skip),
         staging_(staging),
         stage_length_(stage_length),
-        virial_estimator_(virial_estimator)
+        virial_estimator_(virial_estimator),
+        n_estates_(n_estates)
 {
     mass_ = mass;
     rejected_com_ = 0;
@@ -64,13 +66,14 @@ std::vector<double> MCMC::get_position_trace() const {
 }
 
 void MCMC::print_parameters() const {
-    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_);
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_, n_estates_);
     beads.print_parameters();
     std::cout << "Number of steps: " << num_steps_ << std::endl;
     std::cout << "Thermalization steps: " << therm_skip_ << std::endl;
     std::cout << "Correlation steps: " << corr_skip_ << std::endl;
     std::cout << "Staging: " << staging_ << std::endl;
     std::cout << "Virial estimator: " << virial_estimator_ << std::endl;
+    std::cout << "Number of electronic states: " << n_estates_ << std::endl;
 }
 
 std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const {
@@ -91,7 +94,7 @@ void MCMC::run() {
     std::cout << "\033[1;32m";
     bool non_adiabatic_effects = false;
 
-    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_);
+    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_, n_estates_);
 
     // MCMC loop
     for (std::size_t i = 0; i < num_steps_; ++i) {
