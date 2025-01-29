@@ -4,6 +4,7 @@
 #include <functional>
 #include <random>
 #include <iostream>
+#include "Beads.hpp"
 
 class MCMC {
 public:
@@ -20,6 +21,7 @@ public:
     std::vector<double> get_position_trace() const;
     void print_parameters() const;
     std::vector<std::tuple<std::string, double>> get_acceptance_rates() const;
+    void set_initial_positions(const std::vector<Eigen::MatrixXd>& positions);
 
 private:
     std::size_t num_beads_;
@@ -46,4 +48,5 @@ private:
     std::size_t rejected_local_e_state_;
     bool virial_estimator_;
     std::size_t n_estates_;
+    Beads beads_;
 };

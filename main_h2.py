@@ -36,33 +36,45 @@ import matplotlib.pyplot as plt
 import time
 
 # -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
+# Input parameter examples, H2 potential
 beads = 20
 particles = 1
 dim = 3
-mass = [1.0]
-num_steps = 500_000
-step_size_com = 1.0
-step_size_sbm = 0.1
-echange = True
+mass = [918.076336713]
+num_steps = 3_000_000
+step_size_com = 0.1
+step_size_sbm = 0.05
+echange = False
 eCL = 1
 eCG = 1
 therm_skip = 1000
 corr_skip = 20
-staging = True
-stage_length = 18
-T = np.linspace(0.3, 5.0, 4)
-num_CPU = 4
+staging = False # Not working atm :/ whyyyyyyyyyyyyyyyyy?
+stage_length = 10
+T = [0.00095]
+num_CPU = 1
 virial = True
-n_estates = 2
+n_estates = 1
 # -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
 
 def run_sim(T):
     wOut(f"Running simulation for T = {T}")
     sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial, n_estates)
     #sim.print_parameters()
+    sim.set_initial_positions(np.zeros((beads, particles, dim)) + 1.0)
     sim.run()
     wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")
-    return sim.get_energy_trace()
+    pos = sim.get_position_trace()
+    e = sim.get_energy_trace()
+    e = np.array(e)
+    pos = np.array(pos)
+    #sim.print_parameters()
+    pos = pos*0.529177
+    e = e*27.211
+    print(np.mean(e))
+    print(np.mean(pos))
+    plt.hist(pos, bins=100)
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -74,19 +86,6 @@ if __name__ == "__main__":
     wOut(f"PIMC V1.2")
 
     pool = multiprocessing.Pool(processes=num_CPU)
-    E_trace = pool.map(run_sim, T)
-
-    E = np.zeros(len(T))
-    for i in range(len(T)):
-        E[i] = np.mean(E_trace[i])
+    pool.map(run_sim, T)
 
     wOut(f"Total runtime: {time.time()-start_time} s")
-
-    plt.plot(T, E, "o", label="PIMC")
-    T = np.linspace(0.1, 5.0, 100)
-    plt.plot(T ,(3/2)/np.tanh(0.5/T), label="Analytical")
-    plt.plot(T, (3/2)/np.tanh(0.5/T) + 1 / (np.exp(1/T) + 1))
-    plt.xlabel("Temperature")
-    plt.ylabel("Energy")
-    plt.legend()
-    plt.show()

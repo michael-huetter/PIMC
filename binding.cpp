@@ -5,6 +5,8 @@
 #include <pybind11/eigen.h>
 #include "mcmc.hpp"
 #include "Potential.hpp"
+#include "Beads.hpp"
+//#include "nn_potential.hpp"
 
 namespace py = pybind11;
 
@@ -52,7 +54,8 @@ PYBIND11_MODULE(PIMC, m) {
         .def("get_e_state_trace", &MCMC::get_e_state_trace)
         .def("get_position_trace", &MCMC::get_position_trace)
         .def("print_parameters", &MCMC::print_parameters)
-        .def("get_acceptance_rates", &MCMC::get_acceptance_rates);
+        .def("get_acceptance_rates", &MCMC::get_acceptance_rates)
+        .def("set_initial_positions", &MCMC::set_initial_positions);
     m.def("set_potential", [](py::object py_func) {
         PotentialMatrix::setComputeFunction(
             [py_func](const Eigen::RowVectorXd& position, std::size_t dim) {

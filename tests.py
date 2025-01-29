@@ -34,10 +34,10 @@ def HO3D(pos, dim):
 
 def PIMC_HO_3D(beads = 20, particles = 1, dim = 3, mass = [1.0], num_steps = 50_000, 
                step_size_com = 1.0, step_size_sbm = 0.1, echange = False, eCL = 1, eCG = 1, 
-               therm_skip = 1000, corr_skip = 20, staging = True, stage_length = 18, T = 0.3):
+               therm_skip = 1000, corr_skip = 20, staging = True, stage_length = 18, T = 0.3, virial = False, n_estates = 2):
     
     PIMC.set_potential(HO3D)
-    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length)
+    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial, n_estates)
     sim.run()
     E_trace = sim.get_energy_trace()
     accept_rates = sim.get_acceptance_rates()

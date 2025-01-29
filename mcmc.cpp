@@ -24,7 +24,8 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
         staging_(staging),
         stage_length_(stage_length),
         virial_estimator_(virial_estimator),
-        n_estates_(n_estates)
+        n_estates_(n_estates),
+        beads_(mass, temperature, step_size_com, step_size_sbm, num_beads, num_particles, simulation_dimension, stage_length, n_estates)
 {
     mass_ = mass;
     rejected_com_ = 0;
@@ -33,11 +34,15 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
     rejected_local_e_state_ = 0;
     energy_trace_ = std::vector<double>();
     e_state_trace_ = std::vector<std::vector<std::size_t>>();
+
     if (num_beads_ == 0 || num_particles_ == 0 || simulation_dimension_ == 0) {
         throw std::invalid_argument("Number of beads, number of particles, and simulation dimension must be positive");
     }
     if (mass_.size() != num_particles_) {
         throw std::invalid_argument("Mass vector has incorrect size");
+    }
+    if (virial_estimator_) {
+        std::cout << "NOTE: Virial estimator gives incorrect results if potential is defined via Python, make sure to define it in Potential.hpp." << std::endl;
     }
 }
 
@@ -89,38 +94,41 @@ std::vector<std::tuple<std::string, double>> MCMC::get_acceptance_rates() const 
     return acceptance_rates;
 }
 
+void MCMC::set_initial_positions(const std::vector<Eigen::MatrixXd>& positions) {
+    beads_.set_all_positions(positions);
+}
+
 void MCMC::run() {
     
-    std::cout << "\033[1;32m";
-    bool non_adiabatic_effects = false;
+    std::cout << "\033[1;32m";    
 
-    Beads beads(mass_, temperature_, step_size_com_, step_size_sbm_, num_beads_, num_particles_, simulation_dimension_, stage_length_, n_estates_);
+    bool non_adiabatic_effects = false;
 
     // MCMC loop
     for (std::size_t i = 0; i < num_steps_; ++i) {
-        beads.center_of_mass_move();
-        staging_ ? beads.staging_move() : beads.single_bead_move();
+        beads_.center_of_mass_move();
+        staging_ ? beads_.staging_move() : beads_.single_bead_move();
         if (echange_ && i % eCG_ == 0) {
-            beads.global_e_state_move();
+            beads_.global_e_state_move();
         }
         if (echange_ && non_adiabatic_effects && i % eCL_ == 0) {
-            beads.local_e_state_move();
+            beads_.local_e_state_move();
         }
         if (i % corr_skip_ == 0 & i > therm_skip_) {
-            double tot_energy = virial_estimator_ ? beads.compute_tot_energy_virial(beads.get_all_positions(), beads.get_all_e_states()) : beads.compute_tot_energy_thermodynamic(beads.get_all_positions(), beads.get_all_e_states());
+            double tot_energy = virial_estimator_ ? beads_.compute_tot_energy_virial(beads_.get_all_positions(), beads_.get_all_e_states()) : beads_.compute_tot_energy_thermodynamic(beads_.get_all_positions(), beads_.get_all_e_states());
             energy_trace_.push_back(tot_energy);
-            e_state_trace_.push_back(beads.get_all_e_states());
-            position_trace_.push_back(beads.pos_estimator(beads.get_all_positions(), 2, 0));
+            e_state_trace_.push_back(beads_.get_all_e_states());
+            position_trace_.push_back(beads_.pos_estimator(beads_.get_all_positions(), simulation_dimension_, 0)); // Hardcoded for prtc 0
         }
         if (i % 10'000 == 0) {
             std::cout << "\r" << "MCMC Progress: " << (static_cast<double>(i) / static_cast<double>(num_steps_)) * 100 << "%" << std::flush;
         }
     }
 
-    rejected_com_ = beads.get_rejected_com();
-    rejected_sbm_ = beads.get_rejected_sbm();
-    rejected_global_e_state_ = beads.get_rejected_global_e_state();
-    rejected_local_e_state_ = beads.get_rejected_local_e_state();
+    rejected_com_ = beads_.get_rejected_com();
+    rejected_sbm_ = beads_.get_rejected_sbm();
+    rejected_global_e_state_ = beads_.get_rejected_global_e_state();
+    rejected_local_e_state_ = beads_.get_rejected_local_e_state();
 
     std::cout << "\033[0m";
 }

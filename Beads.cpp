@@ -1,6 +1,7 @@
 #include "Beads.hpp"
 #include "Energy.hpp"
 #include <stdexcept>
+#include <cmath>
 #include <random>
 #include <iostream>
 
@@ -48,6 +49,18 @@ void Beads::set_positions(std::size_t timeSlice, const Eigen::MatrixXd& position
     positions_[timeSlice] = positions;
 }
 
+void Beads::set_all_positions(const std::vector<Eigen::MatrixXd>& positions) {
+    if (positions.size() != numTimeSlices_) {
+        throw std::invalid_argument("Positions vector has incorrect size");
+    }
+    for (std::size_t t = 0; t < numTimeSlices_; ++t) {
+        if (positions[t].rows() != numParticles_ || positions[t].cols() != simulation_dimension_) {
+            throw std::invalid_argument("Positions matrix has incorrect dimensions");
+        }
+    }
+    positions_ = positions;
+}
+
 const std::vector<Eigen::MatrixXd>& Beads::get_all_positions() const {
     return positions_;
 }
@@ -70,10 +83,16 @@ const std::vector<std::size_t>& Beads::get_all_e_states() const {
     return e_states_;
 }
 
+// Other estimators
+
 double Beads::pos_estimator(const std::vector<Eigen::MatrixXd>& positions, std::size_t dim, std::size_t ptcl) const {
     double q = 0.0;
     for (std::size_t t = 0; t < numTimeSlices_; ++t) {
-        q += positions[t](ptcl, dim);
+        double dq = 0.0;
+        for (std::size_t d = 0; d < dim; ++d) {
+            dq += positions[t](ptcl, d) * positions[t](ptcl, d);
+        }
+        q += std::sqrt(dq);
     }
     return q / numTimeSlices_;
 }
@@ -111,7 +130,7 @@ std::size_t Beads::get_rejected_local_e_state() const {
 
 void Beads::center_of_mass_move() {
     std::vector<Eigen::MatrixXd> positions_old = positions_;
-    double action_old = compute_potential_energy(positions_old, e_states_) / temperature_;
+    double action_old = compute_tot_action(positions_old, e_states_);
 
     Eigen::VectorXd displacement(simulation_dimension_);
     for (std::size_t d = 0; d < simulation_dimension_; ++d) {
@@ -121,7 +140,7 @@ void Beads::center_of_mass_move() {
         positions_[t].rowwise() += displacement.transpose();
     }
 
-    double action_new = compute_potential_energy(positions_, e_states_) / temperature_;
+    double action_new = compute_tot_action(positions_, e_states_);
     double metropolis_ratio = std::exp(action_old - action_new);
     double random_number = uniform_dist_metropolis_(rng_);
     if (random_number > metropolis_ratio) {

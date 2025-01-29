@@ -20,6 +20,7 @@ public:
     double pos_estimator(const std::vector<Eigen::MatrixXd>& positions, std::size_t dim, std::size_t ptcl) const;
     void set_positions(std::size_t timeSlice, const Eigen::MatrixXd& positions);
     const std::vector<Eigen::MatrixXd>& get_all_positions() const;
+    void set_all_positions(const std::vector<Eigen::MatrixXd>& positions);
 
     std::size_t get_e_state(std::size_t timeSlice) const;
     void set_e_state(std::size_t timeSlice, std::size_t e_state);

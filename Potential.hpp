@@ -2,6 +2,7 @@
 
 //#include "analyticPotential.hpp"
 #include <cstddef>
+#include <cmath>
 #include <functional>
 #include <tuple>
 #include <utility>
@@ -17,14 +18,11 @@ struct U;
 template <typename T>
 struct U<0, 0, T> {
     static T compute(T x, T y, T z) {
-        return 0.5 * (x * x + y * y + z * z);
-    }
-};
-
-template <typename T>
-struct U<1, 1, T> {
-    static T compute(T x, T y, T z) {
-        return 0.5 * (x * x + y * y + z * z) + T(1.0);
+        T r = sqrt(x * x + y * y + z * z);
+        T alpha = 2.02881752 / 1.8897268777744;
+        T r_e = 0.76345602 * 1.8897268777744;
+        T A = 0.17089793;
+        return A * (1 - exp(-alpha * (r - r_e))) * (1 - exp(-alpha * (r - r_e))); 
     }
 };
 
@@ -40,8 +38,7 @@ struct FunctionEntry {
 template <typename T>
 constexpr auto getUFunctions() {
     return std::make_tuple(
-        FunctionEntry<T, 0, 0>(),
-        FunctionEntry<T, 1, 1>()
+        FunctionEntry<T, 0, 0>()
     );
 }
 template <typename T, typename Tuple, std::size_t... Is>
