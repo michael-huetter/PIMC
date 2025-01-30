@@ -42,7 +42,7 @@ MCMC::MCMC(std::size_t num_beads, std::size_t num_particles, std::size_t simulat
         throw std::invalid_argument("Mass vector has incorrect size");
     }
     if (virial_estimator_) {
-        std::cout << "NOTE: Virial estimator gives incorrect results if potential is defined via Python, make sure to define it in Potential.hpp." << std::endl;
+        std::cout << "NOTE: Virial estimator gives incorrect results if potential is provided via Python, make sure to define it in Potential.hpp." << std::endl;
     }
 }
 

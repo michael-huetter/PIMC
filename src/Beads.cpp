@@ -43,7 +43,7 @@ void Beads::set_positions(std::size_t timeSlice, const Eigen::MatrixXd& position
     if (timeSlice >= numTimeSlices_) {
         throw std::out_of_range("Time slice index out of bounds");
     }
-    if (positions.rows() != numParticles_ || positions.cols() != simulation_dimension_) {
+    if (static_cast<std::size_t>(positions.rows()) != numParticles_ || static_cast<std::size_t>(positions.cols()) != simulation_dimension_) {
         throw std::invalid_argument("Positions matrix has incorrect dimensions");
     }
     positions_[timeSlice] = positions;
@@ -54,7 +54,7 @@ void Beads::set_all_positions(const std::vector<Eigen::MatrixXd>& positions) {
         throw std::invalid_argument("Positions vector has incorrect size");
     }
     for (std::size_t t = 0; t < numTimeSlices_; ++t) {
-        if (positions[t].rows() != numParticles_ || positions[t].cols() != simulation_dimension_) {
+        if (static_cast<std::size_t>(positions[t].rows()) != numParticles_ || static_cast<std::size_t>(positions[t].cols()) != simulation_dimension_) {
             throw std::invalid_argument("Positions matrix has incorrect dimensions");
         }
     }

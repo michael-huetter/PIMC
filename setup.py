@@ -10,7 +10,6 @@ ext_modules = [
             "/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3",
             "/opt/homebrew/Cellar/autodiff/1.1.2", 
             "include"
-            
         ],
         language="c++",
         extra_compile_args = ["-O3", "-std=c++17", "-Wall", "-Wextra"], 

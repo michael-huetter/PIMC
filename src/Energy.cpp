@@ -15,12 +15,13 @@ Energy::Energy(std::vector<double> mass, double temperature, double step_size_co
         rng_(std::random_device()()), // TODO: seed this
         uniform_dist_mcmc_move_(-1.0, 1.0),
         uniform_dist_metropolis_(0.0, 1.0),
-        normal_dist_(0.0, 1.0), // normal dist with mean 0 and std 1
         timeSlice_dist_(0, numTimeSlices - 1),
         particle_dist_(0, numParticles - 1),
-        n_estates_(n_estates),
         e_state_dist_(0, n_estates - 1), 
-        potential_matrix_(n_estates) 
+        normal_dist_(0.0, 1.0), // normal dist with mean 0 and std 1
+        potential_matrix_(n_estates),
+        n_estates_(n_estates)
+
 {
     mass_ = mass;
 } 
