@@ -9,84 +9,44 @@
 -----------------------------------------------------
 PIMC - Path Integral Monte Carlo Simulation
 -----------------------------------------------------
-Includes:
-- Multiple electronic states
-- Non-adiabatic couplings in the diabatic representation
-- Staging
-- Virial and Thermodynamic estimators
-- Arbitrary defined potential energy surfaces
+Known issues:
+- Staging is not working
+- Non-adiabatic couplings are not implemented yet
+- Virial estimator only available if potential is defined and compiled in the C++ code
+- Hardcoded absolute path to the setup.py file
+-----------------------------------------------------
 Usage:
 - Compile PIMC locally with: pip install .
-- Specify the simulation parameters
-- Specify the potential energy surfaces
-- Run the simulation
-see below for an example.
+- Initialize the simulation parameters: input = input_parameters()
+- Costume analytic potential can be defined from python with: input_parameters.set_potential(input, my_potential)
+  or costume analytic potential can be defined in C++ and compiled (Potential.hpp) -> much faster
+- Initial positions can be set with: input_parameters.initial_positions(input, [[0.0, 0.0, 0.0], ...])
+- Initialize the simulation: sim = input.initialize_simulation()
+- Run the simulation: sim.run()
 Note:
-- The main simulation class is MCMC which is a wrapper for the C++ code.
-- Non-adiabatic couplings are currently only implemented for 1D PES.
-- The primitive approximation to the path integral is used.
+- Natural units are used: hbar = 1, m = 1, e = 1
 -----------------------------------------------------
 """
-import PIMC
 from helpers.files import wOut, initialize_output_file
-import os
-import multiprocessing 
+from helpers.initialize import input_parameters
+from helpers.units import c
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
-# -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
-beads = 20
-particles = 1
-dim = 3
-mass = [1.0]
-num_steps = 500_000
-step_size_com = 1.0
-step_size_sbm = 0.1
-echange = True
-eCL = 1
-eCG = 1
-therm_skip = 1000
-corr_skip = 20
-staging = True
-stage_length = 18
-T = np.linspace(0.3, 5.0, 4)
-num_CPU = 4
-virial = False
-n_estates = 2
-# -.-. .... --- --- ... .    .-- .. ... . .-.. -.-- 
+input = input_parameters(particles=1, mass=[c.PROTON_MASS_IN_AU/2], T=300*c.K_TO_HARTREE, beads=20, n_estates=1, num_steps=2_000_000, step_size_com=0.1, step_size_sbm=0.02)
+input_parameters.initial_positions(input, [[1.0, 0.0, 0.0]])
+sim = input.initialize_simulation()
+sim.run()
 
-def run_sim(T):
-    wOut(f"Running simulation for T = {T}")
-    sim = PIMC.MCMC(beads, particles, dim, T, mass, num_steps, step_size_com, step_size_sbm, echange, eCL, eCG, therm_skip, corr_skip, staging, stage_length, virial, n_estates)
-    #sim.print_parameters()
-    sim.run()
-    wOut(f"Simulation for T = {T} finished. Acceptance rate: {sim.get_acceptance_rates()}. Mean energy: {np.mean(sim.get_energy_trace())}")
-    return sim.get_energy_trace()
+E_trace = sim.get_energy_trace()
+E_trace = np.array(E_trace)*c.HARTREE_TO_EV
+pos_trace = sim.get_position_trace()
+pos_trace = np.array(pos_trace)*c.BOHR_TO_AMSTRONG
 
-if __name__ == "__main__":
+print(f"Acceptance rate: {sim.get_acceptance_rates()}")
+print(f"Mean energy: {np.mean(E_trace)} eV")
+print(f"Mean position: {np.mean(pos_trace)} A")
 
-    start_time = time.time()
+plt.hist(np.array(pos_trace), bins=100)
+plt.show()
 
-    if os.cpu_count() < num_CPU:
-        Warning("Number of used CPUs is larger than available CPUs.")
-    initialize_output_file()
-    wOut(f"PIMC V1.2")
-
-    pool = multiprocessing.Pool(processes=num_CPU)
-    E_trace = pool.map(run_sim, T)
-
-    E = np.zeros(len(T))
-    for i in range(len(T)):
-        E[i] = np.mean(E_trace[i])
-
-    wOut(f"Total runtime: {time.time()-start_time} s")
-
-    plt.plot(T, E, "o", label="PIMC")
-    T = np.linspace(0.1, 5.0, 100)
-    plt.plot(T ,(3/2)/np.tanh(0.5/T), label="Analytical")
-    plt.plot(T, (3/2)/np.tanh(0.5/T) + 1 / (np.exp(1/T) + 1))
-    plt.xlabel("Temperature")
-    plt.ylabel("Energy")
-    plt.legend()
-    plt.show()
