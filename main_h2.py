@@ -28,7 +28,7 @@ Note:
 -----------------------------------------------------
 """
 import PIMC
-from helpers import wOut, initialize_output_file
+from helpers.files import wOut, initialize_output_file
 import os
 import multiprocessing 
 import numpy as np

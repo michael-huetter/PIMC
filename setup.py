@@ -9,7 +9,7 @@ ext_modules = [
             pybind11.get_include(),
             "/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3",
             "/opt/homebrew/Cellar/autodiff/1.1.2", 
-            "/include"
+            "include"
             
         ],
         language="c++",
