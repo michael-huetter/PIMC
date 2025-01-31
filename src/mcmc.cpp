@@ -114,7 +114,7 @@ void MCMC::run() {
         if (echange_ && non_adiabatic_effects && i % eCL_ == 0) {
             beads_.local_e_state_move();
         }
-        if (i % corr_skip_ == 0 & i > therm_skip_) {
+        if ((i % corr_skip_ == 0) & i > therm_skip_) {
             double tot_energy = virial_estimator_ ? beads_.compute_tot_energy_virial(beads_.get_all_positions(), beads_.get_all_e_states()) : beads_.compute_tot_energy_thermodynamic(beads_.get_all_positions(), beads_.get_all_e_states());
             energy_trace_.push_back(tot_energy);
             e_state_trace_.push_back(beads_.get_all_e_states());

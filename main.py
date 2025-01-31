@@ -13,7 +13,6 @@ Known issues:
 - Staging is not working
 - Non-adiabatic couplings are not implemented yet
 - Virial estimator only available if potential is defined and compiled in the C++ code
-- Hardcoded absolute path to the setup.py file
 -----------------------------------------------------
 Usage:
 - Compile PIMC locally with: pip install .
