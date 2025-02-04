@@ -8,4 +8,4 @@ The following packages are required to build the project:
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make
+    cmake --build . --config Release
