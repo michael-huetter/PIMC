@@ -5,7 +5,7 @@ The following packages are required to build the project:
 * eigen and autodiff (installed automatically with FetchContent)
 
 # Build
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
