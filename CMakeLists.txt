@@ -19,6 +19,8 @@ set(AUTODIFF_BUILD_EXAMPLES OFF CACHE BOOL "Disable autodiff examples" FORCE)
 FetchContent_MakeAvailable(eigen autodiff)
 
 find_package(pybind11 REQUIRED)
+set(Torch_DIR "/Users/michaelhuetter/Downloads/libtorch") # Change this to your libtorch path
+find_package(Torch REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
