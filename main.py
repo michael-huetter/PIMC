@@ -48,4 +48,3 @@ print(f"Mean position: {np.mean(pos_trace)} A")
 
 plt.hist(np.array(pos_trace), bins=100)
 plt.show()
-
