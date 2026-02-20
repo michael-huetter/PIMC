@@ -23,7 +23,7 @@ config = configparser.ConfigParser()
 config.read('input.in')
 
 numParticles = config.getint("system", "numParticles")  
-lam = str(config["system"]["lam"]); lam_list = lam.split(','); lam = [float(item) for item in lam_list]  
+lam = str(config["system"]["lam"]); lam_list = lam.split(','); lam = [float(item) for item in lam_list]
 
 numMCSteps = config.getint("PIMC", "numMCSteps")
 staging = config.getboolean("PIMC", "staging") 
@@ -195,11 +195,12 @@ def kinetic_action(beads: np.array, tau: float, lam: float, numTimeSlices: int, 
         
     return tot*tau 
 
+@log
 @cJIT
 def virial_estimator(beads: np.array, tau: float, numTimeSlices: int, numParticles: int, eState: np.array) -> float:
     """
     Virial estimator for the kinetic energy.
-    """
+    """    
 
     tot = 0.0
     for tslice in range(numTimeSlices):
@@ -409,6 +410,49 @@ def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: 
     else:
         return eState_old, xi_old
 
+"""
+Correlation Functions  -----------------------------------------------------------------
+"""
+
+@cJIT
+def displacement_corr(beads: np.array, numTimeSlices: int, numParticles: int) -> np.array:
+    """
+    displacement mean correlation
+    D[n] = (1/N) * (1/P) * sum_{ptcl} sum_{j} |r_{j+n} - r_j|^2
+    """
+    max_n = numTimeSlices // 2
+    D = np.zeros(max_n + 1)
+
+    for nsep in range(max_n + 1):
+        tot = 0.0
+        for ptcl in range(numParticles):
+            for j in range(numTimeSlices):
+                jp = (j + nsep) % numTimeSlices
+                dr = beads[jp, ptcl] - beads[j, ptcl]
+                tot += np.dot(dr, dr)
+        D[nsep] = tot / (numParticles * numTimeSlices)
+
+    return D
+
+@cJIT
+def imaginary_time_corr(beads: np.array, numTimeSlices: int, numParticles: int) -> np.array:
+    """
+    C[n] = (1/N) * (1/P) * sum_{ptcl} sum_{j} (r_{j+n} * r_j)
+    """
+    max_n = numTimeSlices #// 2  # Since C(n) = C(P - n)
+    C = np.zeros(max_n + 1)
+
+    for nsep in range(max_n + 1):
+        tot = 0.0
+        for ptcl in range(numParticles):
+            for j in range(numTimeSlices):
+                jp = (j + nsep) % numTimeSlices
+                r = np.dot(beads[jp, ptcl], beads[j, ptcl])
+                tot += r
+        C[nsep] = tot / (numParticles * numTimeSlices)
+
+    return C
+
 
 """
 Main MC loop  -----------------------------------------------------------------
@@ -419,9 +463,12 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     
     EnergyTrace = []
     PositionTrace = []
+    PositionObsTrace = []
     eStateTrace = []
     xiTrace = []
     dbK = []
+    DTrace = []
+    CTrace = []
     numAccept = {"CoM":0, "Staging":0, "Bead": 0, "eChange": 0}
 
     if use_jit:
@@ -462,8 +509,12 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
         # keep track of observables
         if k % corrSkip == 0 and k > thermSkip:
+
             potE = potEnergy(beads, numTimeSlices, eState)
             dbK.append(dbetaK(beads, tau, lam, numTimeSlices, numParticles))
+            DTrace.append(displacement_corr(beads, numTimeSlices, numParticles))
+            CTrace.append(imaginary_time_corr(beads, numTimeSlices, numParticles))
+
             if kinVirial:
                 kinEvirial = virial_estimator(beads, tau, numTimeSlices, numParticles, eState)
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
@@ -471,16 +522,17 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             else:
                 kinEthermo = kinetic_estimator(beads, tau, lam, numTimeSlices, numParticles)
                 EnergyTrace.append([potE, kinEthermo])
+
             eStateTrace.append(np.copy(eState))
             xiTrace.append([xi])
             if numParticles == 1 and simulation_dim == 3:
-                PositionTrace.append(bead_pos(beads, numTimeSlices))
+                PositionObsTrace.append(bead_pos(beads, numTimeSlices))
             elif numParticles == 1 and simulation_dim == 1:
-                PositionTrace.append(bead_pos_1d(beads, numTimeSlices))
-            else:
-                PositionTrace.append(beads)
+                PositionObsTrace.append(bead_pos_1d(beads, numTimeSlices))
+            
+            PositionTrace.append(beads)
 
-    return np.array(PositionTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace), np.array(xiTrace), np.array(dbK)
+    return np.array(PositionTrace), np.array(PositionObsTrace), np.array(EnergyTrace), numAccept, np.array(eStateTrace), np.array(xiTrace), np.array(dbK), np.array(DTrace), np.array(CTrace)
 
 """
 Run multiple T loops in parallel  -----------------------------------------------------------------
@@ -498,7 +550,7 @@ def main(T, n, echange, eCL, eCG, rSeed):
     if numParticles == 1:
         # If only one particle randomly distribute them
         for tslice in range(numTimeSlices):
-            for ptcl in range(numParticles):
+            for ptcl in range(numParticles):  # Redundant?
                 beads[tslice,ptcl] = 0.5*(-1.0 + 2.0*np.random.random(simulation_dim)) # [-0.5, 0.5)
     elif numParticles > 1:
         # If more than one particle is use distribute them according to the input geometry in geom.in
@@ -511,14 +563,14 @@ def main(T, n, echange, eCL, eCG, rSeed):
     # initialize e-states (cold start, may also be tried differantly) 
     eState = np.zeros(numTimeSlices, dtype=np.int32)    
 
-    Position, Energy, numAccept, eState, xiTrace, dBK = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG)
+    Position, PostionObs, Energy, numAccept, eState, xiTrace, dBK, DTrace, CTrace = MCMC(numMCSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG)
     
-    return Energy, Position, eState, numAccept, xiTrace, dBK
+    return Energy, Position, PostionObs, eState, numAccept, xiTrace, dBK, DTrace, CTrace
 
 def worker(args):
 
     i, n, echange, eCL, eCG, rSeed = args
-    Energy, Position, eState, numAccept, xiTrace, dBK = main(i, n, echange, eCL, eCG, rSeed)
+    Energy, Position, PositionObs, eState, numAccept, xiTrace, dBK, DTrace, CTrace = main(i, n, echange, eCL, eCG, rSeed)
 
     save_to_csv(Energy[:,0], f'{i}_PotEnergyTrace.csv')
 
@@ -528,10 +580,14 @@ def worker(args):
     else:
         save_to_csv(Energy[:,1], f'{i}_KinEnergyTrace.csv')
 
-    save_to_csv(Position, f'{i}_PositionTrace.csv')
+    # save_to_csv(Position, f'{i}_PositionTrace.csv')
+    np.save(f'output/{i}_PositionTrace.npy', Position)
+    save_to_csv(PositionObs, f'{i}_PositionObsTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     save_to_csv(xiTrace, f'{i}_xiTrace.csv')
     save_to_csv(dBK, f'{i}_dBK.csv')
+    save_to_csv(DTrace, f'{i}_DTrace.csv')
+    save_to_csv(CTrace, f'{i}_CTrace.csv')
 
     for key in numAccept:
         numAccept[key] /= numMCSteps*numParticles

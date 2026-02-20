@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# Mac system file
+.DS_Store
+
+# Simulation outputs
+output/
+output.out
+
+# compiled libs
+*.so
