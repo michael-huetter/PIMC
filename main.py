@@ -439,7 +439,7 @@ def imaginary_time_corr(beads: np.array, numTimeSlices: int, numParticles: int) 
     """
     C[n] = (1/N) * (1/P) * sum_{ptcl} sum_{j} (r_{j+n} * r_j)
     """
-    max_n = numTimeSlices #// 2  # Since C(n) = C(P - n)
+    max_n = numTimeSlices // 2  # Since C(n) = C(P - n)
     C = np.zeros(max_n + 1)
 
     for nsep in range(max_n + 1):
