@@ -642,7 +642,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 PositionObsTrace.append(bead_pos_1d(beads, numTimeSlices))
 
             PositionTrace.append(beads)
-
+    print(Akzeptanz_counter)
     return np.array(PositionTrace), np.array(PositionObsTrace), np.array(EnergyTrace), numAccept, np.array(
         eStateTrace), np.array(xiTrace), np.array(dbK), np.array(DTrace), np.array(CTrace)
 
