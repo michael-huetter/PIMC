@@ -10,7 +10,7 @@ from numba import njit, typed
 import configparser
 from tqdm import tqdm
 
-from Tests.numyptest import Impulse
+
 from helpers import save_to_csv, wOut, remove_all_files_in_folder
 from potential import getV, getGradV, getDiabV
 from stats import rcc
@@ -31,7 +31,7 @@ lam = [float(item) for item in lam_list]
 mu = config.getfloat("HMC", "mu") #fiktive Masse
 dt = config.getfloat("HMC", "dt")  #zeitintervall für hamiltonentwicklung
 L = config.getint("HMC","L")  #Anzahl der dt schritte in einem MC schritt
-HMC = config.getint("HMC","HMC") #HMC = 1 -> HMC wird verwendet, sonst PIMC
+HMC = config.getint("HMC","HMC") #HMC = 1 -> HMC    HMC = 0 -> PIMC
 
 numMCSteps = config.getint("PIMC", "numMCSteps")
 staging = config.getboolean("PIMC", "staging")
@@ -300,12 +300,12 @@ def Hext(beads,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu):
 
 #fiktive Impulse aus Maxwell Bolzmann ziehen
 @cJIT
-def get_fimpuls(numParticles,numTimeSlices,simulation_dim,mu):
-    Impulse = np.zeros((numParticles,numTimeSlices,simulation_dim))
+def get_fimpuls(numTimeSlices,numParticles,simulation_dim,mu):
+    Impulse = np.zeros((numTimeSlices,numParticles,simulation_dim))
     sigma = np.sqrt(mu)
-    for I in range(numParticles):
-        for P in range(numTimeSlices):
-            Impulse[I,P] = np.random.randn(simulation_dim) * sigma #np.randon.randn() entspricht einer Gaußverteilung mit sigma 1
+    for P in range(numTimeSlices):
+        for I in range(numParticles):
+            Impulse[P,I] = np.random.randn(simulation_dim) * sigma #np.randon.randn() entspricht einer Gaußverteilung mit sigma 1
     return Impulse
 
 # Hamiltion Gleichungen aufstellen
@@ -585,7 +585,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 else:
                     Impulse += 0.5 * dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)
 
-            if np.random.random() < np.exp(-(Hext(beads,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu) - Hext(beads_old,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu))):
+            if np.random.random() < np.exp(-(Hext(beads,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu) - Hext(beads_old,Impulse_old, tau, lam, numTimeSlices, numParticles, n, eState,mu))):
                 Akzeptanz_counter +=1
             else:
                 beads = np.copy(beads_old)
@@ -685,9 +685,10 @@ def main(T, n, echange, eCL, eCG, rSeed):
 
 
 def worker(args):
-    i, n, echange, eCL, eCG, rSeed = args
+    i, n, echange, eCL, eCG, rSeed, hmc = args
     Energy, Position, PositionObs, eState, numAccept, xiTrace, dBK, DTrace, CTrace = main(i, n, echange, eCL, eCG,
                                                                                           rSeed)
+
 
     save_to_csv(Energy[:, 0], f'{i}_PotEnergyTrace.csv')
 
@@ -698,7 +699,7 @@ def worker(args):
         save_to_csv(Energy[:, 1], f'{i}_KinEnergyTrace.csv')
 
     # save_to_csv(Position, f'{i}_PositionTrace.csv')
-    np.save(f'output/{i}_PositionTrace.npy', Position)
+    np.save(f'output_{hmc}/{i}_PositionTrace.npy', Position)
     save_to_csv(PositionObs, f'{i}_PositionObsTrace.csv')
     save_to_csv(eState, f'{i}_eStatTrace.csv')
     save_to_csv(xiTrace, f'{i}_xiTrace.csv')
@@ -723,20 +724,29 @@ Initialize  -----------------------------------------------------------------
 
 if __name__ == "__main__":
 
-    if not os.path.exists("output"):
-        os.makedirs("output")
+    if HMC == 1:
+        if not os.path.exists("output_1"):
+            os.makedirs("output_1")
 
-    remove_all_files_in_folder("output")
+        remove_all_files_in_folder("output_1")
 
-    if os.path.exists("output.out"):
-        os.remove("output.out")
+        if os.path.exists("output_1.out"):
+            os.remove("output_1.out")
+    else:
+        if not os.path.exists("output_0"):
+            os.makedirs("output_0")
+
+        remove_all_files_in_folder("output_0")
+
+        if os.path.exists("output_0.out"):
+            os.remove("output_0.out")
 
     # Read in temperature loops
     T = str(config["system"]["T"])
     T_list = T.split(',')
     T = [float(item) for item in T_list]
 
-    # Write some input parameters to output file
+    # Write some input parameters to output_1 file
     wOut(f"PIMC V1.1")
     wOut(f"Avalible CPUs: {os.cpu_count()}")
     wOut(f"Used CPUs: {len(T)}")
@@ -790,6 +800,6 @@ if __name__ == "__main__":
     rSeed = rand_seed
     # run PIMC simulations
     for i in T:
-        worker((i, n, echange, eCL, eCG, rSeed))
-    # some basic statistics on the output is written to output.out
+        worker((i, n, echange, eCL, eCG, rSeed,HMC))
+    # some basic statistics on the output_1 is written to output_1.out
     rcc()
