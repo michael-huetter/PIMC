@@ -1,3 +1,4 @@
+import time
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
@@ -334,7 +335,7 @@ def pot_part(beads, numTimeSlices, numParticles, simulation_dim, tau, eState):
             pot_list[K, I] = -grad[I] * tau
     return pot_list
 
-    return pot_list
+
 @cJIT
 def dP_dt(beads,numTimeSlices,numParticles,simulation_dim,lam,tau,eState):
     return  kin_part(beads,numTimeSlices,numParticles,simulation_dim,lam,tau) + pot_part(beads,numTimeSlices,numParticles,simulation_dim,tau, eState)
@@ -552,7 +553,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     dbK = []
     DTrace = []
     CTrace = []
-    numAccept = {"CoM": 0, "Staging": 0, "Bead": 0, "eChange": 0}
+    numAccept = {"CoM": 0, "Staging": 0, "Bead": 0, "eChange": 0, "HMC":0}
 
     if use_jit:
         lam = typed.List(lam)
@@ -568,6 +569,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
     Impulse = np.zeros([numTimeSlices, numParticles, simulation_dim])
     Akzeptanz_counter = 0
+    start_time = time.perf_counter()
 
     for k in tqdm(range(numSteps), ascii=" >=", desc="MC steps"):
 
@@ -586,7 +588,8 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                     Impulse += 0.5 * dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)
 
             if np.random.random() < np.exp(-(Hext(beads,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu) - Hext(beads_old,Impulse_old, tau, lam, numTimeSlices, numParticles, n, eState,mu))):
-                Akzeptanz_counter +=1
+                Akzeptanz_counter += 1
+                numAccept["HMC"] += 1
             else:
                 beads = np.copy(beads_old)
                 Impulse = np.copy(Impulse_old)
@@ -642,6 +645,8 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
                 PositionObsTrace.append(bead_pos_1d(beads, numTimeSlices))
 
             PositionTrace.append(beads)
+    end_time = time.perf_counter()
+    print(end_time-start_time)
     print(Akzeptanz_counter)
     return np.array(PositionTrace), np.array(PositionObsTrace), np.array(EnergyTrace), numAccept, np.array(
         eStateTrace), np.array(xiTrace), np.array(dbK), np.array(DTrace), np.array(CTrace)
@@ -746,7 +751,7 @@ if __name__ == "__main__":
     T_list = T.split(',')
     T = [float(item) for item in T_list]
 
-    # Write some input parameters to output_1 file
+    # Write some input parameters to output file
     wOut(f"PIMC V1.1")
     wOut(f"Avalible CPUs: {os.cpu_count()}")
     wOut(f"Used CPUs: {len(T)}")
