@@ -1,3 +1,11 @@
+# Ignore plot folders
+backtransform_plots/
+shape_plots/
+spectrum_plots/
+
+# Ignore images
+*.png
+
 # Python
 __pycache__/
 *.pyc

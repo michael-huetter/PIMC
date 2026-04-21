@@ -6,11 +6,13 @@ import numpy as np
 from statsmodels.tsa.stattools import acf
 import arviz as az
 import configparser
+from pathlib import Path
 
 from helpers import get_filenames, wOut
 
 config = configparser.ConfigParser()
-config.read('input.in')
+here = Path(__file__).resolve().parent 
+config.read(here / "input.in")
 use_jit = str(config["PIMC"]["use_jit"]) 
 numParticles = int(config["system"]["numParticles"])  
 kinVir = str(config["PIMC"]["kin_virial"]) 
@@ -118,10 +120,15 @@ Alternatively, try the logging mode.")
         # Compute IAT
         iat = _integrated_autocorrelation_time(kin+pot)
         wOut(f"({i}) IAT: {iat:.2f}; (max_lag=30)")
-        ess = az.ess(kin+pot)
-        wOut(f"({i}) ESS/TOT: {(ess/len(kin+pot)):.2f}")
-
-        E_trace.append(kin+pot)
+        # ess = az.ess(kin+pot)
+        ##############################################
+        samples = np.asarray(kin) + np.asarray(pot)
+        samples_2d = samples[np.newaxis, :]
+        ess = az.ess(samples_2d, chain_axis=0, draw_axis=1)
+        wOut(f"({i}) ESS/TOT: {(ess/len(samples)):.2f}")
+        ##############################################
+        
+        E_trace.append(samples)
         E.append([float(i), e])
 
     E = np.array(E)

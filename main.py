@@ -8,6 +8,7 @@ import logging
 import numpy as np
 from numba import njit, typed
 import configparser
+from pathlib import Path
 from tqdm import tqdm
 
 from helpers import save_to_csv, wOut, remove_all_files_in_folder
@@ -20,7 +21,8 @@ Read input parameters-----------------------------------------------------------
 """
 
 config = configparser.ConfigParser()
-config.read('input.in')
+here = Path(__file__).resolve().parent
+config.read(here / "input.in")
 
 numParticles = config.getint("system", "numParticles")  
 lam = str(config["system"]["lam"]); lam_list = lam.split(','); lam = [float(item) for item in lam_list]
@@ -596,8 +598,14 @@ def worker(args):
    
 def parallel_main(T, n, echange, eCL, eCG, rSeed):
 
+    # with ProcessPoolExecutor() as executor:
+    #     executor.map(worker, [(i, n, echange, eCL, eCG, rSeed) for i in T])
+    
+    # Debug
     with ProcessPoolExecutor() as executor:
-        executor.map(worker, [(i, n, echange, eCL, eCG, rSeed) for i in T])
+        futures = [executor.submit(worker, (i, n, echange, eCL, eCG, rSeed)) for i in T]
+        for f in futures:
+            f.result()
 
 """
 Initialize  -----------------------------------------------------------------

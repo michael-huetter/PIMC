@@ -5,14 +5,19 @@ Define your potential here. getV functino is calles from the main MCMC loop!!!
 import numpy as np
 from numba import njit
 import configparser
+from pathlib import Path
 import joblib
 
 from projToINRC import proj_main
 
 
 config = configparser.ConfigParser()
-config.read('input.in')
+here = Path(__file__).resolve().parent
+config.read(here / "input.in")
 use_jit = config.getboolean("PIMC", "use_jit") 
+
+k_str = config.get('maxent', 'k')
+k = np.array([float(x.strip()) for x in k_str.split(",")], dtype=np.float64)
 
 def cJIT(func):
 
@@ -23,14 +28,15 @@ def cJIT(func):
 
 
 ############Some example potentials for testing#######################
-
 @cJIT
 def _HO(R):
-
-    return 0.5 * (R[0][0]**2 + R[0][1]**2 + R[0][2]**2)
+    total = 0.0
+    for i in range(R.shape[0]):
+        total += 0.5 * k[i] * np.dot(R[i], R[i])
+    return total
 
 ############Called from main code#######################
-    
+
 @cJIT
 def getV(R: np.array, eState: int) -> float:
     """
