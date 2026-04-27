@@ -28,4 +28,5 @@
 ![T = 0.5 ](Bilder/PIMC_Ekin_mean_Zeit_T0.5.png)
 ![T = 0.5 ](Bilder/PIMC_Epot_mean_Zeit_T0.5.png)
 
+#### es fällt auf das ber PIMC für gleich viele Montecarlo schritte viel weniger Rechenzeit braucht. Wenn man jedoch auf die Unsicherheiten der Mittelwerte schaut sieht man das der HMC bereits nach ca. 3000 Schritten ähnliche Unsicherheiten hat wie der PIMC und sich somit die Rechen Zeiten mit 5.5s beim HMC und 4s beim PIMC für die selben Unsicherheiten nicht mehr so stark unterscheiden. 
 ## Observalenmittelwerte über Temperatur
