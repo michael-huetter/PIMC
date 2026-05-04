@@ -493,6 +493,27 @@ def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: 
         return eState_old, xi_old
 
 
+@cJIT
+def HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState,Akzeptanz_counter):
+    Impulse = get_fimpuls(numTimeSlices, numParticles, simulation_dim, mu)
+    beads_old = np.copy(beads)
+    Impulse_old = np.copy(Impulse)
+
+    Impulse += 0.5 *dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)      #Leapfrog-Verfahren
+    for l in range(L):
+        beads += dt * dR_dt(Impulse, mu)
+        if l != L - 1:
+            Impulse += dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau, eState)
+        else:
+            Impulse += 0.5 * dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau, eState)
+
+    if np.random.random() < np.exp(-(Hext(beads, Impulse, tau, lam, numTimeSlices, numParticles, n, eState, mu) - Hext(beads_old, Impulse_old,tau, lam, numTimeSlices,numParticles, n, eState, mu))):
+        Akzeptanz_counter += 1
+    else:
+        beads = np.copy(beads_old)
+
+    return beads, Akzeptanz_counter
+
 """
 Correlation Functions  -----------------------------------------------------------------
 """
@@ -542,7 +563,7 @@ def imaginary_time_corr(beads: np.array, numTimeSlices: int, numParticles: int) 
 """
 Main MC loop  -----------------------------------------------------------------
 """
-
+monte_Time = []
 
 def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, echange, eState, eCL, eCG,HMC,simulation_dim,mu,dt,L):
     EnergyTrace = []
@@ -568,6 +589,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
 
     Impulse = np.zeros([numTimeSlices, numParticles, simulation_dim])
+
     Akzeptanz_counter = 0
     start_time = time.perf_counter()
 
@@ -575,25 +597,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
         if HMC == 1:
 
-            Impulse = get_fimpuls(numTimeSlices,numParticles, simulation_dim, mu)
-            beads_old = np.copy(beads)
-            Impulse_old = np.copy(Impulse)
-
-            Impulse += 0.5 *dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)      #Leapfrog-Verfahren
-            for l in range(L):
-                beads += dt * dR_dt(Impulse, mu)
-                if l != L-1:
-                    Impulse += dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)
-                else:
-                    Impulse += 0.5 * dt * dP_dt(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState)
-
-            if np.random.random() < np.exp(-(Hext(beads,Impulse, tau, lam, numTimeSlices, numParticles, n, eState,mu) - Hext(beads_old,Impulse_old, tau, lam, numTimeSlices, numParticles, n, eState,mu))):
-                Akzeptanz_counter += 1
-                numAccept["HMC"] += 1
-            else:
-                beads = np.copy(beads_old)
-                Impulse = np.copy(Impulse_old)
-
+            beads,numAccept["HMC"] = HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau, eState,numAccept["HMC"])
 
         else:
             # sample potential and kinetic action with CoM and staging/individual bead moves
@@ -648,6 +652,8 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
     end_time = time.perf_counter()
     print(end_time-start_time)
     print(Akzeptanz_counter)
+    monte_Time.append(end_time-start_time)
+
     return np.array(PositionTrace), np.array(PositionObsTrace), np.array(EnergyTrace), numAccept, np.array(
         eStateTrace), np.array(xiTrace), np.array(dbK), np.array(DTrace), np.array(CTrace)
 
@@ -765,6 +771,7 @@ if __name__ == "__main__":
     wOut(f"Stage length: {m}")
     wOut(f"Delta (CoM): {delta}")
 
+
     if not staging:
         wOut(f"Delta (Bead): {delta_bead}")
         wOut(f"Warning: Staging is turned off")
@@ -807,4 +814,5 @@ if __name__ == "__main__":
     for i in T:
         worker((i, n, echange, eCL, eCG, rSeed,HMC))
     # some basic statistics on the output_1 is written to output_1.out
+    wOut(f"Runningtime:{monte_Time}")
     rcc()
