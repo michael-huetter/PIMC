@@ -590,7 +590,6 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
     Impulse = np.zeros([numTimeSlices, numParticles, simulation_dim])
 
-    Akzeptanz_counter = 0
     start_time = time.perf_counter()
 
     for k in tqdm(range(numSteps), ascii=" >=", desc="MC steps"):
@@ -651,7 +650,6 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
             PositionTrace.append(beads)
     end_time = time.perf_counter()
     print(end_time-start_time)
-    print(Akzeptanz_counter)
     monte_Time.append(end_time-start_time)
 
     return np.array(PositionTrace), np.array(PositionObsTrace), np.array(EnergyTrace), numAccept, np.array(
