@@ -35,7 +35,8 @@
 ![T = 0.5 ](Bilder/PIMC_Ekin_mean_Zeit_T0.5.png)
 ![T = 0.5 ](Bilder/PIMC_Epot_mean_Zeit_T0.5.png)
 
-#### Auf dem ersten Blick scheint es das der HMC eine viel größere Rechenzeit als der PIMC hat. Jedoch fällt auf das der HMC nach ca. 2000 Schritten bereits eine ähnliche Unsicherheit der Kinetischen Energie hat wie der PIMC nach 10000 Schritten und bei der Potenziellen Energie nach ca. 3000 Schritten. Somit sind zumindestes bei der Temperatur von 0.5 die Rechenzeiten bis man ähnlich Unsicherheiten der Observablen hat sehr änlich. 
+#### Auf dem ersten Blick scheint es das der HMC eine viel größere Rechenzeit als der PIMC hat. Jedoch fällt auf das der HMC nach ca. 2000 Schritten bereits eine ähnliche Unsicherheit der Kinetischen Energie hat wie der PIMC nach 10000 Schritten und bei der Potenziellen Energie nach ca. 6000 Schritten. Somit sind zumindestes bei der Temperatur von 0.5 die Rechenzeiten für ähnlich Unsicherheiten der kinetischen Energie geringer wie beim HMC als bei PIMC, aber für die Potenzielle Energie ist die Rechenzeit für ähnliche Unsicherheiten beim PIMC noch schneller (hier ca. 11s beim HMC und 4 beim PIMC)
+
 ## Observalenmittelwerte über Temperatur
 
 ### Potentielle und Kinetische Energie Mittelwerte mt HMC bestimmt.
@@ -56,7 +57,7 @@
 ![T = 10.0 ](Bilder/PIMC_T10.0.png)
 
 ## Beispielplots der kinetischen und Potenziellen Energie vom HMC
-### Parameter: $\Delta T$ = 0.03 ,  $L$ = 100 (Leapfrog-Steps), $N$ = 10000 (Montecarlo-Steps) ,   $\mu$ = 2
+### Parameter: $\Delta t$ = 0.03 ,  $L$ = 100 (Leapfrog-Steps), $N$ = 10000 (Montecarlo-Steps) ,   $\mu$ = 2
 
 ![T = 0.5 ](Bilder/HMC_T0.5.png)
 ![T = 4.0 ](Bilder/HMC_T4.0.png)
