@@ -4,7 +4,7 @@ import pandas as pd
 import analysis_funktions as af
 
 
-HMC = 1
+HMC = 0
 T = 10.0
 
 
@@ -29,23 +29,27 @@ tau_int_kin = af.integrat_atokorr(kin_arc)
 tau_int_pos = af.integrat_atokorr(Pos_arc)
 
 
-print(f"{tau_int_pot}")
 print(f"{tau_int_kin}")
+print(f"{tau_int_pot}")
 print(f"{tau_int_pos}")
 
-plt.plot(pot_arc)
-plt.title("Potentielle Energie Autokorrelation")
-plt.grid(linestyle="--")
-plt.show()
-plt.clf()
 
-plt.plot(kin_arc)
-plt.title("Kinetische Energie Autokorrelation")
-plt.grid(linestyle="--")
-plt.show()
-plt.clf()
+fig, axs = plt.subplots(1, 3, figsize=(12, 4))
 
-plt.plot(Pos_arc)
-plt.title("Positions Autokorrelation")
-plt.grid(linestyle="--")
+axs[0].plot(kin_arc)
+axs[0].set_title("Kinetische Energie Autokorrelation")
+axs[0].grid(linestyle = "--")
+axs[0].text(3000,0.9,f"$\\tau_{{int}}$ = {tau_int_kin:.2f}")
+
+axs[1].plot(pot_arc)
+axs[1].set_title("Potentielle Energie Autokorrelation")
+axs[1].grid(linestyle = "--")
+axs[1].text(3000,0.9,f"$\\tau_{{int}}$ = {tau_int_pot:.2f}")
+
+
+axs[2].plot(Pos_arc)
+axs[2].set_title("Positions Autokorrelation")
+axs[2].grid(linestyle = "--")
+axs[2].text(3000,0.9,f"$\\tau_{{int}}$ = {tau_int_pos:.2f}")
+plt.tight_layout()
 plt.show()

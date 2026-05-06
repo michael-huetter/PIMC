@@ -3,10 +3,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import analysis_funktions as af
 
-HMC = 0
-T = 2.0
-start_step = 100
-skip = 100
+monte_steps = 10000
+HMC = 1
+T = 0.5
+start_step = 500
+skip = 500
+Zeit = 16 #gesammtzteit für eine Temeratur (gerade 85s bei HMC)
+Zeit_step = Zeit/monte_steps
 
 E_kin_roh = pd.read_csv(f"../output_{HMC}/{T}_KinEnergyTrace.csv")
 E_pot_roh = pd.read_csv(f"../output_{HMC}/{T}_PotEnergyTrace.csv")
@@ -43,24 +46,54 @@ for i in range(int(N/skip)):
     Epot_array[1,i] = np.sqrt(2 * tau_int_pot * np.var(Epot[start_step:Ni+start_step]) / Ni)
     Pos_array[1,i] = np.sqrt(2 * tau_int_pos * np.var(Pos[start_step:Ni+start_step]) / Ni)
 
+
+
+def steps_Zeit(x):
+    return x * Zeit_step
+
+def Zeit_steps(x):
+    return x / Zeit_step
+
 steps = np.arange(int(N/skip)) * skip + start_step
 
-plt.plot(steps,Ekin_array[0],"or")
-plt.errorbar(steps,Ekin_array[0],yerr=Ekin_array[1])
-plt.grid(linestyle ="--")
-plt.title("Ekin-Mittelwert über Schritte")
-plt.show()
-plt.clf()
 
-plt.plot(steps,Epot_array[0],"or")
-plt.errorbar(steps,Epot_array[0],yerr=Epot_array[1])
-plt.grid(linestyle ="--")
-plt.title("Epot-Mittelwert über Schritte")
-plt.show()
-plt.clf()
+fig, ax = plt.subplots(constrained_layout=True)
 
-plt.plot(steps,Pos_array[0],"or")
-plt.errorbar(steps,Pos_array[0],yerr=Pos_array[1])
-plt.grid(linestyle ="--")
-plt.title("Pos-Mittelwert über Schritte")
+#E_max = max(np.array(Ekin_array[0][np.isfinite(Ekin_array[0])]))
+#E_min = min(np.array(Ekin_array[0][np.isfinite(Ekin_array[0])]))
+ax.plot(steps,Ekin_array[0],"or")
+ax.errorbar(steps,Ekin_array[0],yerr=Ekin_array[1])
+ax.yaxis.get_major_formatter().set_useOffset(False)
+ax.grid(linestyle ="--")
+#ax.set(xlim=(0, monte_steps), ylim=(E_min, E_max))
+ax.set_title("Ekin-Mittelwert über Schritte")
+secax = ax.secondary_xaxis('top', functions=(steps_Zeit,Zeit_steps))
+secax.set_xlabel('Zeit (s)')
+
+ax.set_xlabel('Steps')
 plt.show()
+ax.cla()
+
+fig, ax = plt.subplots(constrained_layout=True)
+ax.plot(steps,Epot_array[0],"or")
+ax.errorbar(steps,Epot_array[0],yerr=Epot_array[1])
+ax.grid(linestyle ="--")
+ax.set_title("Epot-Mittelwert über Schritte")
+secax = ax.secondary_xaxis('top', functions=(steps_Zeit,Zeit_steps))
+secax.set_xlabel('Zeit (s)')
+
+ax.set_xlabel('Steps')
+plt.show()
+ax.cla()
+
+fig, ax = plt.subplots(constrained_layout=True)
+ax.plot(steps,Pos_array[0],"or")
+ax.errorbar(steps,Pos_array[0],yerr=Pos_array[1])
+ax.grid(linestyle ="--")
+ax.set_title("Pos-Mittelwert über Schritte")
+secax = ax.secondary_xaxis('top', functions=(steps_Zeit,Zeit_steps))
+secax.set_xlabel('Zeit (s)')
+
+ax.set_xlabel('Steps')
+plt.show()
+
