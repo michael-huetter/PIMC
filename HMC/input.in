@@ -1,12 +1,12 @@
 [system]
 numParticles = 1
-T = 2, 10
+T = 0.3,0.5,1,2,4,8,10
 lam = 0.5
 n = 1
 
 [PIMC]
 numMCSteps = 10000
-numTimeSlices = 32
+numTimeSlices = 36,32,30,26,22,18,16
 m = 8
 delta = 1.0
 delta_bead = 0.05
@@ -19,15 +19,17 @@ kin_virial = True
 rand_seed = 153
 
 [HMC]
-mu = 1
-dt = 0.01
-L = 20
+mu = 1.9,1.4,1.15,1.1,1.1,1.18,1.2
+mu_a = -0.8
+mu_b = 1.1
+dt = 0.03
+L = 40,45,60,80,100,140,150
 
-HMC = 1
+HMC = 0
 
 [convergence]
 thermSkip = 0
-corrSkip = 5
+corrSkip = 1
 eCG = 1
 eCL = 1
 

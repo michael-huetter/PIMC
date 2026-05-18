@@ -29,15 +29,30 @@ lam = str(config["system"]["lam"]);
 lam_list = lam.split(',');
 lam = [float(item) for item in lam_list]
 
-mu = config.getfloat("HMC", "mu") #fiktive Masse
-dt = config.getfloat("HMC", "dt")  #zeitintervall für hamiltonentwicklung
-L = config.getint("HMC","L")  #Anzahl der dt schritte in einem MC schritt
+T = str(config["system"]["T"]); #Temperatur
+T_list = T.split(',');
+T = [float(item) for item in T_list];
+
+numTimeSlices = str(config["PIMC"]["numTimeSlices"]); #Anzahl Beads
+numTimeSlices_list = numTimeSlices.split(',');
+numTimeSlices = [int(item) for item in numTimeSlices_list];
+
+mu = str(config["HMC"]["mu"]); #Fiktive Masse
+mu_list = mu.split(',');
+mu = [float(item) for item in mu_list];
+
+L = str(config["HMC"]["L"]); #Anzahl Leapfrog Schritte
+L_list = L.split(',');
+L = [int(item) for item in L_list];
+
+
+
+dt = config.getfloat("HMC", "dt")  #länge eine Leapfrogschritt
 HMC = config.getint("HMC","HMC") #HMC = 1 -> HMC    HMC = 0 -> PIMC
 
 numMCSteps = config.getint("PIMC", "numMCSteps")
 staging = config.getboolean("PIMC", "staging")
 m = config.getint("PIMC", "m")  # stage length
-numTimeSlices = config.getint("PIMC", "numTimeSlices")
 delta = config.getfloat("PIMC", "delta")  # CoM displacement
 delta_bead = config.getfloat("PIMC", "delta_bead")
 use_jit = config.getboolean("PIMC", "use_jit")
@@ -494,7 +509,7 @@ def PoE_move(eState: np.array, xi: int, xi_change_interval: int, numTimeSlices: 
 
 
 @cJIT
-def HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState,Akzeptanz_counter):
+def HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau,eState,Akzeptanz_counter,mu,dt,L):
     Impulse = get_fimpuls(numTimeSlices, numParticles, simulation_dim, mu)
     beads_old = np.copy(beads)
     Impulse_old = np.copy(Impulse)
@@ -596,7 +611,7 @@ def MCMC(numSteps, beads, tau, lam, delta, m, numTimeSlices, numParticles, n, ec
 
         if HMC == 1:
 
-            beads,numAccept["HMC"] = HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau, eState,numAccept["HMC"])
+            beads,numAccept["HMC"] = HMC_Step(beads, numTimeSlices, numParticles, simulation_dim, lam, tau, eState,numAccept["HMC"],mu,dt,L)
 
         else:
             # sample potential and kinetic action with CoM and staging/individual bead moves
@@ -661,7 +676,7 @@ Run multiple T loops in parallel  ----------------------------------------------
 """
 
 
-def main(T, n, echange, eCL, eCG, rSeed):
+def main(T, numTimeSlices, mu ,L , n, echange, eCL, eCG, rSeed):
     np.random.seed(rSeed)
 
     tau = 1.0 / (T * numTimeSlices) #Imaginäre Zeit
@@ -694,27 +709,27 @@ def main(T, n, echange, eCL, eCG, rSeed):
 
 
 def worker(args):
-    i, n, echange, eCL, eCG, rSeed, hmc = args
-    Energy, Position, PositionObs, eState, numAccept, xiTrace, dBK, DTrace, CTrace = main(i, n, echange, eCL, eCG,
+    T, numTimeSlices, mu ,L , n, echange, eCL, eCG, rSeed, hmc = args
+    Energy, Position, PositionObs, eState, numAccept, xiTrace, dBK, DTrace, CTrace = main(T, numTimeSlices, mu ,L , n, echange, eCL, eCG,
                                                                                           rSeed)
 
 
-    save_to_csv(Energy[:, 0], f'{i}_PotEnergyTrace.csv')
+    save_to_csv(Energy[:, 0], f'{T}_PotEnergyTrace.csv')
 
     if kinVirial:
-        save_to_csv(Energy[:, 2], f'{i}_KinEnergyTrace.csv')
-        save_to_csv(Energy[:, 1], f'{i}_KinThermoEnergyTrace.csv')
+        save_to_csv(Energy[:, 2], f'{T}_KinEnergyTrace.csv')
+        save_to_csv(Energy[:, 1], f'{T}_KinThermoEnergyTrace.csv')
     else:
-        save_to_csv(Energy[:, 1], f'{i}_KinEnergyTrace.csv')
+        save_to_csv(Energy[:, 1], f'{T}_KinEnergyTrace.csv')
 
     # save_to_csv(Position, f'{i}_PositionTrace.csv')
-    np.save(f'output_{hmc}/{i}_PositionTrace.npy', Position)
-    save_to_csv(PositionObs, f'{i}_PositionObsTrace.csv')
-    save_to_csv(eState, f'{i}_eStatTrace.csv')
-    save_to_csv(xiTrace, f'{i}_xiTrace.csv')
-    save_to_csv(dBK, f'{i}_dBK.csv')
-    save_to_csv(DTrace, f'{i}_DTrace.csv')
-    save_to_csv(CTrace, f'{i}_CTrace.csv')
+    np.save(f'output_{hmc}/{T}_PositionTrace.npy', Position)
+    save_to_csv(PositionObs, f'{T}_PositionObsTrace.csv')
+    save_to_csv(eState, f'{T}_eStatTrace.csv')
+    save_to_csv(xiTrace, f'{T}_xiTrace.csv')
+    save_to_csv(dBK, f'{T}_dBK.csv')
+    save_to_csv(DTrace, f'{T}_DTrace.csv')
+    save_to_csv(CTrace, f'{T}_CTrace.csv')
 
     for key in numAccept:
         numAccept[key] /= numMCSteps * numParticles
@@ -750,10 +765,7 @@ if __name__ == "__main__":
         if os.path.exists("output_0.out"):
             os.remove("output_0.out")
 
-    # Read in temperature loops
-    T = str(config["system"]["T"])
-    T_list = T.split(',')
-    T = [float(item) for item in T_list]
+
 
     # Write some input parameters to output file
     wOut(f"PIMC V1.1")
@@ -809,8 +821,8 @@ if __name__ == "__main__":
 
     rSeed = rand_seed
     # run PIMC simulations
-    for i in T:
-        worker((i, n, echange, eCL, eCG, rSeed,HMC))
-    # some basic statistics on the output_1 is written to output_1.out
+    for i in range(len(T)):
+        worker((T[i], numTimeSlices[i], mu[i] ,L[i] , n, echange, eCL, eCG, rSeed,HMC))
+    # some basic statistics on the output is written to output.out
     wOut(f"Runningtime:{monte_Time}")
     rcc()
