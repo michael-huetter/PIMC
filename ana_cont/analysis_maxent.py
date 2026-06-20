@@ -41,8 +41,7 @@ def run_maxent_for_temperature(results, params, T):
     tau = results[T]["tau"]              
     C_tau = results[T]["C_mean_pos"] # blocked mean
     cov = results[T]["C_cov_pos"] # blocked covariance
-    omega = results[T]["omega"] # HO frequency scale
-    print(f'\nOmega1 = {omega[0]}\nOmega2 = {omega[1]}\n')
+    omega = results[T]["omega"] # HO frequency
 
     # From params
     n_w = params['n_w']
@@ -50,12 +49,12 @@ def run_maxent_for_temperature(results, params, T):
     alpha_determination = params['alpha_determination']
     optimizer = params['optimizer']
     kernel_mode = params['kernel_mode']
-    wmax_abs = params['wmax_abs']            
+    wmax_abs = params['wmax_abs']
 
     # Real freq grid
-    w = np.linspace(0.0, wmax_abs, n_w)
+    w = np.linspace(1e-3, wmax_abs, n_w)
 
-    # Diferent models to try
+    # Different models to try
     ################################################################
     # # Flat positive default model, normalized
     # model = np.ones_like(w)
@@ -63,7 +62,7 @@ def run_maxent_for_temperature(results, params, T):
     # # Gauss model
     model = np.zeros_like(w)
     for i in range(len(omega)):
-        sigma_i = 0.5 * omega[i]
+        sigma_i = 0.35 * omega[i]
         model += np.exp(-(w - omega[i])**2 / (2.0 * sigma_i**2))
 
     # # Weakly decaying model
@@ -71,8 +70,11 @@ def run_maxent_for_temperature(results, params, T):
     # model = np.exp(-w / w_scale)
     ################################################################
 
-    # Model normalization
+    # Normalize model
+    K0 = 0.5 * beta * w / np.tanh(beta * w / 2) 
     model /= np.trapezoid(model, w)
+    scale = np.trapezoid(K0 * model, w)
+    model *= C_tau[0] / scale          
 
     # Build continuation problem
     probl = cont.AnalyticContinuationProblem(
@@ -121,7 +123,6 @@ if __name__ == "__main__":
         CTrace_shape = CTrace - np.mean(CTrace) 
         C_back_shape = CTrace_back - np.mean(CTrace_back)
 
-
         # Plot spectum curve
         fig = plt.figure(figsize=(10, 8))
         gs = GridSpec(2, 2, height_ratios=[1, 1])
@@ -158,4 +159,5 @@ if __name__ == "__main__":
         filename = f"spectrum_plots/T_{T}.png"
         plt.savefig(filename, dpi=300)      
 
-plt.show()
+
+    plt.show()

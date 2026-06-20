@@ -27,15 +27,36 @@ def cJIT(func):
         return func
 
 
-############Some example potentials for testing#######################
+# HO for many particle system
+# @cJIT
+# def _HO(R):
+#     total = 0.0
+#     for i in range(R.shape[0]):
+#         total += 0.5 * k[i] * np.dot(R[i], R[i])
+#     return total
+
+# 3D HO 1 particle
 @cJIT
 def _HO(R):
-    total = 0.0
-    for i in range(R.shape[0]):
-        total += 0.5 * k[i] * np.dot(R[i], R[i])
-    return total
+    return 0.5 * k[0] * (R[0][0]**2 + R[0][1]**2 + R[0][2]**2)
 
-############Called from main code#######################
+# # Double well potential
+# @cJIT
+# def double_well(R):
+#     x0 = 4
+#     delta_E = 0
+
+#     x = R[0, 0]
+#     y = R[0, 1]
+#     z = R[0, 2]
+
+#     if x < 0.0:
+#         dx = x + x0
+#         return 0.5 * k[0] * (dx*dx + y*y + z*z)
+#     else:
+#         dx = x - x0
+#         return 0.5 * k[1] * (dx*dx + y*y + z*z) + delta_E
+
 
 @cJIT
 def getV(R: np.array, eState: int) -> float:

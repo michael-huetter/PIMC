@@ -1,11 +1,11 @@
 [system]
-numParticles = 2
-T = 1, 5, 10 , 30, 50
-lam = 0.5, 0.5
+numParticles = 1
+T = .1, .5, 1, 5, 10, 15
+lam = 0.5
 n = 1
 
 [PIMC]
-numMCSteps = 100000
+numMCSteps = 500000
 numTimeSlices = 32
 m = 8  
 delta = 1.0
@@ -28,11 +28,11 @@ eCL = 1
 logging = False
 
 [maxent]
-k = 1, 20
-block_size = 10
+k = 5
+block_size = 85
 n_w = 500
-wmax_abs = 10
+wmax_abs = 30
 method = maxent_svd
-alpha_determination = bryan
+alpha_determination = chi2kink
 optimizer = newton
 kernel_mode = time_bosonic
